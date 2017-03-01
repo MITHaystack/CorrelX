@@ -1,2 +1,2 @@
 # CorrelX 
-A Cloud-Based Correlator for Very-Long Baseline Interferometry (VLBI)
+A Cloud-Based Software Correlator for Very-Long Baseline Interferometry (VLBI)
