@@ -1,3 +1,4 @@
 #!/bin/bash
-# Replace paths if required
-python correlx/src/mapred_cx.py -c correlx/conf/correlx.ini -f exper=correlx/examples/test_dataset_vgos,serial=1,parallel=0
+# Run: ./examples/run_example_vgos.sh
+# 
+python src/mapred_cx.py -c conf/correlx.ini -f exper=examples/test_dataset_vgos,serial=1,parallel=0
