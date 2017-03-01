@@ -1,0 +1,4 @@
+# Copy etc/hadoop files here:
+cp ~/hadoop/hadoop-2.7.3/etc/hadoop/* .
+# Or run installer:
+correlx/sh/configure_hadoop_cx.sh

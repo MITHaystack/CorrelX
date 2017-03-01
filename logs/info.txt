@@ -1,0 +1,2 @@
+# This folder may be used in the option "-s" of mapred_cx.py
+See documentation for details.

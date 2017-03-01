@@ -1,0 +1,2 @@
+# This folder corresponds to "App directory" in correlx/conf/correlx.ini
+See documentation for details.
