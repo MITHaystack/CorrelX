@@ -1,0 +1,722 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>lib_delay_model module &#8212; CorrelX 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="lib_fx_stack module" href="lib_fx_stack.html" />
+    <link rel="prev" title="lib_debug module" href="lib_debug.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-lib_delay_model">
+<span id="lib-delay-model-module"></span><h1>lib_delay_model module<a class="headerlink" href="#module-lib_delay_model" title="Permalink to this headline">¶</a></h1>
+<p>Library for calculating delays using polynomial models.</p>
+<div class="section" id="known-issues">
+<h2>Known issues<a class="headerlink" href="#known-issues" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div>(!) Delays currently computed w.r.t. the first station, they should computed w.r.t. the center of the Earth instead.</div></blockquote>
+</div>
+<div class="section" id="to-do">
+<h2>TO DO<a class="headerlink" href="#to-do" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div>Compute absolute delays instead of relative to reference station.</div></blockquote>
+<dl class="function">
+<dt id="lib_delay_model.apply_offset_coefficients_poly">
+<code class="descclassname">lib_delay_model.</code><code class="descname">apply_offset_coefficients_poly</code><span class="sig-paren">(</span><em>poly_found</em>, <em>seconds_from_ref</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_delay_model.html#apply_offset_coefficients_poly"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_delay_model.apply_offset_coefficients_poly" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Apply offset to polynomial, i.e. given a list of polynomial coefficients [p0,p1,p2,...] </dt>
+<dd><p class="first">from low to high order for f(x), obtain coefficientes for f(x+s) where s is an offset:</p>
+<blockquote class="last">
+<div>q(x)=p(x+s)=p0+p1(x+s)+p2(x+s)^2+p3(x+s)^3+...</div></blockquote>
+</dd>
+</dl>
+<p>The functions returns the list of polynomial coefficients [q0,q1,q2,...] for q(x).</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>poly_found <span class="classifier-delimiter">:</span> <span class="classifier">list of float</span></dt>
+<dd>list of polynomial coefficients [p0,p1,p2,...] (LIMIT_POLY_EVAL coefficients).</dd>
+<dt>seconds_from_ref <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>offset in seconds.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>poly_found <span class="classifier-delimiter">:</span> <span class="classifier">list of int</span></dt>
+<dd>list of polynomial coefficients [q0,q1,p2,...] (LIMIT_POLY_FOUND coefficients).</dd>
+<dt>seconds_from_ref <span class="classifier-delimiter">:</span> <span class="classifier">0 </span></dt>
+<dd>(since this offset has been applied to the polynomial).</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Configuration:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">LIMIT_POLY_EVAL:  maximum order coefficient in input. (e.g.: 5).</div>
+<div class="line">LIMIT_POLY_FOUND: maximum order coefficient in output (e.g.: 2).</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_delay_model.compute_initial_delays">
+<code class="descclassname">lib_delay_model.</code><code class="descname">compute_initial_delays</code><span class="sig-paren">(</span><em>params_array_delay_model</em>, <em>params_array_stations</em>, <em>s_st</em>, <em>s_so</em>, <em>s_delay</em>, <em>mjd_start</em>, <em>seconds_ref_in</em>, <em>tot_steps</em>, <em>step_seconds</em>, <em>seconds_offset=0</em>, <em>v=1</em>, <em>file_ini=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_delay_model.html#compute_initial_delays"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_delay_model.compute_initial_delays" title="Permalink to this definition">¶</a></dt>
+<dd><p>Main script for computing the initial delays and delay polynomials.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>params_array_delay_model <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>information from delay model ini file (see lib_ini_files.py).</dd>
+<dt>params_array_stations <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>information from stations ini file (see lib_ini_files.py).</dd>
+<dt>s_st</dt>
+<dd>configparser handler for stations ini.</dd>
+<dt>s_so</dt>
+<dd>configparser handler for sources ini.</dd>
+<dt>s_delay</dt>
+<dd>configparser handler for delays ini.</dd>
+<dt>mjd_start</dt>
+<dd>MJD for the start of the scan.</dd>
+<dt>seconds_ref_in</dt>
+<dd>seconds for the start of the scan.</dd>
+<dt>tot_steps</dt>
+<dd>number of accumulation periods.</dd>
+<dt>step_seconds</dt>
+<dd>accumulation period duration [s].</dd>
+<dt>seconds_offset</dt>
+<dd>[should be 0, consider removing]</dd>
+<dt>v</dt>
+<dd>verbose if 1.</dd>
+<dt>file_ini</dt>
+<dd>delays.ini output filename.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>s_delay</dt>
+<dd>configparser handler to delays.ini output filename.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Check seconds_offset, remove.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_delay_model.create_sections_config_delays">
+<code class="descclassname">lib_delay_model.</code><code class="descname">create_sections_config_delays</code><span class="sig-paren">(</span><em>s_delay</em>, <em>s_st</em>, <em>s_so</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_delay_model.html#create_sections_config_delays"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_delay_model.create_sections_config_delays" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add sections to the delay ini file handler.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>s_delay</dt>
+<dd>configparser handler for the delays ini file.</dd>
+<dt>s_st</dt>
+<dd>configparser handler for the station ini file.</dd>
+<dt>s_so</dt>
+<dd>configparser handler for the sources ini file.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>s_delay <span class="classifier-delimiter">:</span> <span class="classifier">configparserhandler</span></dt>
+<dd>updated version of input.</dd>
+<dt>pairs_vv <span class="classifier-delimiter">:</span> <span class="classifier">list of str</span></dt>
+<dd>list with headers, to be accessed using the station and source ids.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_delay_model.filter_roots">
+<code class="descclassname">lib_delay_model.</code><code class="descname">filter_roots</code><span class="sig-paren">(</span><em>roots</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_delay_model.html#filter_roots"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_delay_model.filter_roots" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the real positive smallest delay from a list of complex. 
+To be called after np_roots(pol).</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>roots <span class="classifier-delimiter">:</span> <span class="classifier">list of complex</span></dt>
+<dd>roots of a delay polynomial.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>min_val <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>result.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_delay_model.get_all_polynomials">
+<code class="descclassname">lib_delay_model.</code><code class="descname">get_all_polynomials</code><span class="sig-paren">(</span><em>params_array_delay_model</em>, <em>params_array_stations</em>, <em>s_st</em>, <em>s_so</em>, <em>mjd_start</em>, <em>seconds_ref</em>, <em>seconds_offset</em>, <em>tot_steps</em>, <em>step_seconds</em>, <em>v=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_delay_model.html#get_all_polynomials"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_delay_model.get_all_polynomials" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read and pre-process the delay polynomials from the models in the ini files.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>params_array_delay_model <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>list with configuration of delay_mode.ini.</dd>
+<dt>params_array_stations <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>list with configuration of stations.ini.</dd>
+<dt>s_st <span class="classifier-delimiter">:</span> <span class="classifier">configparser handler</span></dt>
+<dd>configparser handler for the station ini file.</dd>
+<dt>s_so <span class="classifier-delimiter">:</span> <span class="classifier">configparser handler</span></dt>
+<dd>configparser handler for the sources ini file.</dd>
+<dt>mjd_start</dt>
+<dd>MJD for the start of the scan.</dd>
+<dt>seconds_ref</dt>
+<dd>seconds for the start of the scan.</dd>
+<dt>seconds_offset</dt>
+<dd>offset seconds from the start of the scan.</dd>
+<dt>tot_steps</dt>
+<dd>number of accumulation periods.</dd>
+<dt>step_seconds</dt>
+<dd>accumulation period duration.</dd>
+<dt>v</dt>
+<dd>verbose if 1.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>seconds_inc_v <span class="classifier-delimiter">:</span> <span class="classifier">3D list (tot_steps x sources x stations) </span></dt>
+<dd>offset in seconds since scan start.</dd>
+<dt>max_saved <span class="classifier-delimiter">:</span> <span class="classifier">2D list (tot_steps x sources)</span></dt>
+<dd>maximum delay for all stations.</dd>
+<dt>min_saved <span class="classifier-delimiter">:</span> <span class="classifier">2D list (tot_steps x sources) </span></dt>
+<dd>minimum delay for all stations.</dd>
+<dt>v_delays <span class="classifier-delimiter">:</span> <span class="classifier">3D list (tot_steps x sources x stations)</span></dt>
+<dd>delays in seconds.</dd>
+<dt>v_delay_rates <span class="classifier-delimiter">:</span> <span class="classifier">3D list (tot_steps x sources x stations) </span></dt>
+<dd>lists with [poly_delay,seconds_from_ref,poly_station_clock,                    seconds_diff_clock,result_dr,result_cr,section_in_model] from get_polynomials_interval().</dd>
+<dt>no_offset_total <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of times that manual offsets have been applied (based on .ini).</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Check seconds_offset.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_delay_model.get_delay_shift_frac">
+<code class="descclassname">lib_delay_model.</code><code class="descname">get_delay_shift_frac</code><span class="sig-paren">(</span><em>delay</em>, <em>fs</em>, <em>data_type=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_delay_model.html#get_delay_shift_frac"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_delay_model.get_delay_shift_frac" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute integer and fractional shift.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>delay <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>value for the delay [s].</dd>
+<dt>fs <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>sampling frequency [Hz].</dd>
+<dt>data_type <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>0 for real, 1 for complex.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>shift_int <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>offset in number of samples.</dd>
+<dt>fractional_sample_delay <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>fractional sample.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>Data type is for being used with complex samples unpacked as a list of integers (in msvf),</dt>
+<dd>otherwise it should be left as zero.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_delay_model.get_delay_val">
+<code class="descclassname">lib_delay_model.</code><code class="descname">get_delay_val</code><span class="sig-paren">(</span><em>clock_diff</em>, <em>poly_diff</em>, <em>seconds_ref_clock</em>, <em>seconds_ref_poly</em>, <em>seconds</em>, <em>seconds_offset</em>, <em>v=0</em>, <em>diff_pol=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_delay_model.html#get_delay_val"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_delay_model.get_delay_val" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute delays at seconds_offset+seconds, considering the offsets for each polynomial (seconds_ref_clock and seconds_ref_poly).</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>clock_diff <span class="classifier-delimiter">:</span> <span class="classifier">list of float</span></dt>
+<dd>polynomial for station clock delay.</dd>
+<dt>poly_diff <span class="classifier-delimiter">:</span> <span class="classifier">list of float</span></dt>
+<dd>polynomial for geometric model delay.</dd>
+<dt>seconds_ref_clock <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>offset for the station clock polynomial.</dd>
+<dt>seconds_ref_poly <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>offset for the geometric model polynomial.</dd>
+<dt>seconds <span class="classifier-delimiter">:</span> <span class="classifier">float 1D np.array</span></dt>
+<dd>seconds (for evaluating polys).</dd>
+<dt>seconds_offset <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>offset to be applied to seconds.</dd>
+<dt>v <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>verbose if 1.</dd>
+<dt>diff_pol <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>1 if using differential polynomials.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>r_recalc <span class="classifier-delimiter">:</span> <span class="classifier">float 1D np.array</span></dt>
+<dd>delays in seconds (model+clock)</dd>
+<dt>m_delay <span class="classifier-delimiter">:</span> <span class="classifier">float 1D np.array</span></dt>
+<dd>delays in seconds (model)</dd>
+<dt>c_delay <span class="classifier-delimiter">:</span> <span class="classifier">float 1D np.array</span></dt>
+<dd>delays in seconds (clock)</dd>
+<dt>rate_mc <span class="classifier-delimiter">:</span> <span class="classifier">list of int</span></dt>
+<dd>[0]</dd>
+<dt>acce_mc <span class="classifier-delimiter">:</span> <span class="classifier">list of int</span></dt>
+<dd>[0]</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Assumptions:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">If the four first elements of poly_diff are zero the resulting model delay is zero to avoid calling polyval.</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<div class="line"><strong>Notes:</strong></div>
+<div class="line"><br /></div>
+<div class="line">simple offset reduces the computation of the offset to only the first value in the timescale provided in seconds.</div>
+<div class="line">No correction for retarded baselines.</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">This needs further work.</div>
+<div class="line">Remove rate_mc and acce_mc, no longer used.</div>
+<div class="line">Check diff_pol, different behavior ini_exper and lib_fx...</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_delay_model.get_full_frac_val">
+<code class="descclassname">lib_delay_model.</code><code class="descname">get_full_frac_val</code><span class="sig-paren">(</span><em>r_recalc</em>, <em>fs</em>, <em>diff_frac=0</em>, <em>bypass_correction=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_delay_model.html#get_full_frac_val"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_delay_model.get_full_frac_val" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute total offset in number of samples, and also fractional sample correction.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>r_recalc <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>delay.</dd>
+<dt>fs <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>sampling frequency.</dd>
+<dt>diff_frac <span class="classifier-delimiter">:</span> <span class="classifier">0</span></dt>
+<dd>[unused] 0 by default.</dd>
+<dt>bypass_correction <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><div class="first last line-block">
+<div class="line">if 0: corrects the fractional sample correction to be between -0.5 and +0.5.</div>
+<div class="line">if 1: returns the fractional sample correction between 0 and 1.</div>
+</div>
+</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>full_fractional_recalc <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>total offset in number of samples, including fractional part.</dd>
+<dt>fractional_recalc <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>fractional sample correction.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div>Bypass correction used in get_frac_over for simplicity.</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_delay_model.get_initial_abe">
+<code class="descclassname">lib_delay_model.</code><code class="descname">get_initial_abe</code><span class="sig-paren">(</span><em>poly_delay</em>, <em>seconds_ref_poly</em>, <em>seconds_offset=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_delay_model.html#get_initial_abe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_delay_model.get_initial_abe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute delay due to aberration.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_delay_model.get_poly_clock">
+<code class="descclassname">lib_delay_model.</code><code class="descname">get_poly_clock</code><span class="sig-paren">(</span><em>params_array</em>, <em>section_str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_delay_model.html#get_poly_clock"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_delay_model.get_poly_clock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get list with poly from params array and section string.
+Clock correction.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>params_array <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>information from delay model ini file (see lib_ini_files.py).</dd>
+<dt>section_str <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>section of the ini file associated with a certain station, source and time (see const_ini_files.py)</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>poly_model <span class="classifier-delimiter">:</span> <span class="classifier">list of float</span></dt>
+<dd>list of [m-th coeff] with polynomial coefficients for the station clock model with m from zero to max_order-1, in seconds.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_delay_model.get_poly_list">
+<code class="descclassname">lib_delay_model.</code><code class="descname">get_poly_list</code><span class="sig-paren">(</span><em>params_array</em>, <em>section_str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_delay_model.html#get_poly_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_delay_model.get_poly_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get list with poly from params array and section string.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>params_array <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>information from delay model ini file (see lib_ini_files.py).</dd>
+<dt>section_str <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>section of the ini file associated with a certain station, source and time (see const_ini_files.py)</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>poly_model <span class="classifier-delimiter">:</span> <span class="classifier">list of float</span></dt>
+<dd>list of [n-th coeff] with polynomial coefficients for the delay model with n from zero to max_order, in seconds.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Configuration (constants):</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">LIMIT_POLY_EVAL:  [2 by default] maximum order coefficient of the polynomial.</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<div class="line"><strong>Notes:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Coefficients in the delay model ini file are in microseconds, output polynomials in seconds.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_delay_model.get_polynomials_interval">
+<code class="descclassname">lib_delay_model.</code><code class="descname">get_polynomials_interval</code><span class="sig-paren">(</span><em>params_array_delay_model</em>, <em>params_array_stations</em>, <em>mjd</em>, <em>seconds_ref</em>, <em>seconds_from_ref</em>, <em>source_id</em>, <em>station_id</em>, <em>v</em>, <em>current_offset=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_delay_model.html#get_polynomials_interval"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_delay_model.get_polynomials_interval" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Get the polynomials for the delay and clock models for a given station, source and time:</dt>
+<dd>-day: MJD.
+-seconds: seconds_ref+seconds_from_ref.</dd>
+</dl>
+<blockquote>
+<div><dl class="docutils">
+<dt>params_array_delay_model <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>information from delay model ini file (see lib_ini_files.py).</dd>
+<dt>params_array_stations <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>information from stations ini file (see lib_ini_files.py).</dd>
+<dt>mjd <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>MJD for the start of the scan.</dd>
+<dt>seconds_ref <span class="classifier-delimiter">:</span> <span class="classifier">int or float</span></dt>
+<dd>seconds for the start of the scan.</dd>
+<dt>seconds_from_ref <span class="classifier-delimiter">:</span> <span class="classifier">int or float</span></dt>
+<dd>offset seconds from the start of the scan.</dd>
+<dt>source_id <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>source id.</dd>
+<dt>station_id <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>station id.</dd>
+<dt>v <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>verbose if 1.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>result <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>delay [s].</dd>
+<dt>poly_found</dt>
+<dd>polynomial (see get_poly_list() for format).</dd>
+<dt>seconds_from_ref</dt>
+<dd>[check this]</dd>
+<dt>poly_station_clock</dt>
+<dd>polynomial for the station clock.</dd>
+<dt>seconds_diff_clock</dt>
+<dd>seconds between the epoch and the start of the clock.</dd>
+<dt>result_dr</dt>
+<dd>geometric delay [s].</dd>
+<dt>result_cr</dt>
+<dd>station clock delay [s].</dd>
+<dt>error_model <span class="classifier-delimiter">:</span> <span class="classifier">{ 0, None}</span></dt>
+<dd>0 if success, None if error.</dd>
+<dt>section_in_model <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>section in the delay model .ini file (for debugging).</dd>
+<dt>no_offset <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>0 if no offset applied from .ini file [default], 1 otherwise.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Limitations:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Currently single source source_id=0.</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<div class="line"><strong>Notes:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">It returns delay from model ini file.</div>
+<div class="line">If no model is available returns None.</div>
+<div class="line">Clock polynomial always zero offset with respect to start time, thus no need to offset (unless delta from start).</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Organize.</div>
+<div class="line">Further testing on precision.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_delay_model.get_str_scf">
+<code class="descclassname">lib_delay_model.</code><code class="descname">get_str_scf</code><span class="sig-paren">(</span><em>val</em>, <em>tot_dec_pos=16</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_delay_model.html#get_str_scf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_delay_model.get_str_scf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get string representation of float, used for normalization.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_delay_model.np_polyder">
+<code class="descclassname">lib_delay_model.</code><code class="descname">np_polyder</code><span class="sig-paren">(</span><em>pol</em>, <em>x</em>, <em>o</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_delay_model.html#np_polyder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_delay_model.np_polyder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get derivative of order o at x. Numpy polyval, changing order of polynomial (numpy is decreasing order).</p>
+<p>See np_polyval() for more info.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_delay_model.np_polyval">
+<code class="descclassname">lib_delay_model.</code><code class="descname">np_polyval</code><span class="sig-paren">(</span><em>pol</em>, <em>x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_delay_model.html#np_polyval"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_delay_model.np_polyval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate a polynomial at x. Numpy polyval, changing order of polynomial (numpy is decreasing order).</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>pol <span class="classifier-delimiter">:</span> <span class="classifier">list of floats</span></dt>
+<dd>polynomial, leftmost term is zero order.</dd>
+<dt>x <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>value to be evaluated.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>out <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>result.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line">-For numpy polyval the rightmost term is zero order.</div>
+<div class="line">(!) &#8211;Excerpt from the reference&#8211; &#8220;Notes:Horner&#8217;s scheme [R65] is used to evaluate the polynomial. </div>
+<div class="line-block">
+<div class="line">Even so, for polynomials of high degree the values may be inaccurate due to rounding errors. </div>
+<div class="line">Use carefully.&#8221;</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_delay_model.np_roots">
+<code class="descclassname">lib_delay_model.</code><code class="descname">np_roots</code><span class="sig-paren">(</span><em>pol</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_delay_model.html#np_roots"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_delay_model.np_roots" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get roots of a polynomial. Numpy roots, changing order.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>pol <span class="classifier-delimiter">:</span> <span class="classifier">list of floats</span></dt>
+<dd>polynomial, leftmost term is zero order.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>out <span class="classifier-delimiter">:</span> <span class="classifier">list of complex</span></dt>
+<dd>roots of the polynomial.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_delay_model.print_delays">
+<code class="descclassname">lib_delay_model.</code><code class="descname">print_delays</code><span class="sig-paren">(</span><em>sti</em>, <em>poly_total</em>, <em>poly_clock</em>, <em>t0</em>, <em>t_display=None</em>, <em>v=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_delay_model.html#print_delays"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_delay_model.print_delays" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print delay information in [us] for debugging.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>sti <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>station id.</dd>
+<dt>poly_total <span class="classifier-delimiter">:</span> <span class="classifier">list of floats</span></dt>
+<dd>polynomial for total delay (leftmost is zero order).</dd>
+<dt>poly_clock <span class="classifier-delimiter">:</span> <span class="classifier">list of floats</span></dt>
+<dd>polynomial for clock (leftmost is zero order).</dd>
+<dt>t0 <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>time to evaluate polynomials at.</dd>
+<dt>t_display <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>time to be displayed.</dd>
+<dt>v <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>verbose mode if 1.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>str_out <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>line with delay information.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_delay_model.print_delays_header">
+<code class="descclassname">lib_delay_model.</code><code class="descname">print_delays_header</code><span class="sig-paren">(</span><em>v=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_delay_model.html#print_delays_header"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_delay_model.print_delays_header" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print header for summary of delay information.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>v <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>verbose mode if 1.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>str_out <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>line with header.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_delay_model.set_config_delay">
+<code class="descclassname">lib_delay_model.</code><code class="descname">set_config_delay</code><span class="sig-paren">(</span><em>s_delay</em>, <em>st_so</em>, <em>seconds_i</em>, <em>a_delay</em>, <em>r_delay</em>, <em>f_delay</em>, <em>poly_diff</em>, <em>clock_diff</em>, <em>clock_abs</em>, <em>seconds_from_ref</em>, <em>seconds_diff_clock</em>, <em>m_delay</em>, <em>c_delay</em>, <em>delta_reference_delay</em>, <em>section_in_model</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_delay_model.html#set_config_delay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_delay_model.set_config_delay" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save configuration parameters to delay ini file handler.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>s_delay <span class="classifier-delimiter">:</span> <span class="classifier">configparser handler</span></dt>
+<dd>configparser handler for the delays ini file (to be written).</dd>
+<dt>st_so <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>station - source.</dd>
+<dt>seconds_i <span class="classifier-delimiter">:</span> <span class="classifier">int or float</span></dt>
+<dd>seconds for the start of this interval since the start of the scan.</dd>
+<dt>a_delay <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>absolute delay [s].</dd>
+<dt>r_delay <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>relative delay (w.r.t. reference station) [s]</dd>
+<dt>f_delay <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>[unused?]</dd>
+<dt>poly_diff <span class="classifier-delimiter">:</span> <span class="classifier">list of float</span></dt>
+<dd>polynomial for geometric delay.</dd>
+<dt>clock_diff <span class="classifier-delimiter">:</span> <span class="classifier">list of float</span></dt>
+<dd>polynomial for station clock delay.</dd>
+<dt>clock_abs <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>[unused?] initially for ref station clock.</dd>
+<dt>seconds_from_ref <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>[same as seconds_i ?]</dd>
+<dt>seconds_diff_clock <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>seconds from epoch for the clock (zero if offset).</dd>
+<dt>m_delay <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>geometric-model-only delay.</dd>
+<dt>c_delay <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>clock-only delay.</dd>
+<dt>delta_reference_delay</dt>
+<dd>[unused?]</dd>
+<dt>section_in_model <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>section in delay model (for debugging).</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>s_delay <span class="classifier-delimiter">:</span> <span class="classifier">configparser handler</span></dt>
+<dd>updated version of input with added information.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">lib_delay_model module</a><ul>
+<li><a class="reference internal" href="#known-issues">Known issues</a></li>
+<li><a class="reference internal" href="#to-do">TO DO</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="lib_debug.html" title="previous chapter">lib_debug module</a></li>
+      <li>Next: <a href="lib_fx_stack.html" title="next chapter">lib_fx_stack module</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/lib_delay_model.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Antonio Vazquez Alvarez, Victor Pankratius, and Pedro Elosegui.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/lib_delay_model.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

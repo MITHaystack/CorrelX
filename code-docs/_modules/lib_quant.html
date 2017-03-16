@@ -1,0 +1,425 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>lib_quant &#8212; CorrelX 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for lib_quant</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># &lt;nbformat&gt;3.0&lt;/nbformat&gt;</span>
+
+<span class="c1"># &lt;codecell&gt;</span>
+
+<span class="c1">#!/usr/bin/env python</span>
+<span class="c1">#</span>
+<span class="c1">#The MIT CorrelX Correlator</span>
+<span class="c1">#</span>
+<span class="c1">#https://github.com/MITHaystack/CorrelX</span>
+<span class="c1">#Contact: correlX@haystack.mit.edu</span>
+<span class="c1">#Project leads: Victor Pankratius, Pedro Elosegui Project developer: A.J. Vazquez Alvarez</span>
+<span class="c1">#</span>
+<span class="c1">#Copyright 2017 MIT Haystack Observatory</span>
+<span class="c1">#</span>
+<span class="c1">#Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the &quot;Software&quot;), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1">#The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</span>
+<span class="c1">#</span>
+<span class="c1">#THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#------------------------------</span>
+<span class="c1">#------------------------------</span>
+<span class="c1">#Project: CorrelX.</span>
+<span class="c1">#File: lib_quant.py.</span>
+<span class="c1">#Author: A.J. Vazquez Alvarez (ajvazquez@haystack.mit.edu)</span>
+<span class="c1">#Description: </span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Module with basic quantizer and dequantizer. </span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="c1">#History:</span>
+<span class="c1">#initial version: 2015.12 ajva</span>
+<span class="c1">#MIT Haystack Observatory</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">imp</span>
+
+<span class="c1"># Quantization levels</span>
+<span class="kn">import</span> <span class="nn">const_quant</span>
+<span class="n">imp</span><span class="o">.</span><span class="n">reload</span><span class="p">(</span><span class="n">const_quant</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">const_quant</span> <span class="k">import</span> <span class="o">*</span>
+
+
+<div class="viewcode-block" id="compute_range_bits"><a class="viewcode-back" href="../lib_quant.html#lib_quant.compute_range_bits">[docs]</a><span class="k">def</span> <span class="nf">compute_range_bits</span><span class="p">(</span><span class="n">bits_per_sample</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute list of values for unpacking samples.</span>
+<span class="sd">    [Used by decode_samples_red()]</span>
+<span class="sd">    </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    |</span>
+<span class="sd">    | **Example:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  &gt;&gt;bits_per_sample=2</span>
+<span class="sd">    |  &gt;&gt;list(compute_range_bits(bits_per_sample))</span>
+<span class="sd">    |   [6, 4, 2, 0]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="n">bits_per_sample</span><span class="p">)))</span></div>
+
+<div class="viewcode-block" id="decode_samples_red"><a class="viewcode-back" href="../lib_quant.html#lib_quant.decode_samples_red">[docs]</a><span class="k">def</span> <span class="nf">decode_samples_red</span><span class="p">(</span><span class="n">words</span><span class="p">,</span><span class="n">bits_per_sample</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Unpack samples given a binary vector with the packed samples and the number of bits per sample.</span>
+<span class="sd">    [Used by sub_unpack_samples()]</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     words</span>
+<span class="sd">     bits_per_sample : int</span>
+<span class="sd">         number of bits per sample.</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     words_nostack : numpy 1D array</span>
+<span class="sd">         unpacked samples.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">range_offsets</span> <span class="o">=</span> <span class="n">compute_range_bits</span><span class="p">(</span><span class="n">bits_per_sample</span><span class="p">)</span>
+    <span class="n">mask_bits</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">&lt;&lt;</span><span class="n">bits_per_sample</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span>
+    <span class="n">words_extended</span> <span class="o">=</span> <span class="p">[((</span><span class="n">words</span><span class="p">)</span><span class="o">&gt;&gt;</span><span class="n">i</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">mask_bits</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">range_offsets</span><span class="p">]</span>
+    <span class="c1">#words_extended = [np.bitwise_and(np.right_shift(words,i),mask_bits) for i in range_offsets]</span>
+    <span class="n">words_extended2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">words_extended</span><span class="p">)</span>
+    <span class="n">words_nostack</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">words_extended2</span><span class="p">,(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">words</span><span class="p">)))</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">words_nostack</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="np_take_samples"><a class="viewcode-back" href="../lib_quant.html#lib_quant.np_take_samples">[docs]</a><span class="k">def</span> <span class="nf">np_take_samples</span><span class="p">(</span><span class="n">v_2bps</span><span class="p">,</span><span class="n">unpacked_samples</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Translate vector with sampled values into dequantized values.</span>
+<span class="sd">    [Used by sub_unpack_samples()]</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     v_2bps : list</span>
+<span class="sd">         quantization values.</span>
+<span class="sd">     unpacked_samples</span>
+<span class="sd">         quantized samples.</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     out : numpy 1D array</span>
+<span class="sd">         dequantized sample components.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="n">v_2bps</span><span class="p">,</span><span class="n">unpacked_samples</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="sub_unpack_samples"><a class="viewcode-back" href="../lib_quant.html#lib_quant.sub_unpack_samples">[docs]</a><span class="k">def</span> <span class="nf">sub_unpack_samples</span><span class="p">(</span><span class="n">samples_quant</span><span class="p">,</span><span class="n">bits_per_sample</span><span class="p">,</span><span class="n">current_data_type</span><span class="p">,</span><span class="n">v_2bps_complex</span><span class="p">,</span><span class="n">v_2bps_real</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Unpack samples packed in a binary vector into dequantized values.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     See get_samples().</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     out : numpy 1D array of complex</span>
+<span class="sd">         dequantized samples.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">unpacked_samples</span> <span class="o">=</span> <span class="n">decode_samples_red</span><span class="p">(</span><span class="n">samples_quant</span><span class="p">,</span><span class="n">bits_per_sample</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">current_data_type</span><span class="o">==</span><span class="s1">&#39;c&#39;</span><span class="p">:</span>
+        <span class="n">samples_out</span> <span class="o">=</span> <span class="n">np_take_samples</span><span class="p">(</span><span class="n">v_2bps_complex</span><span class="p">,</span><span class="n">unpacked_samples</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">samples_out</span> <span class="o">=</span> <span class="n">np_take_samples</span><span class="p">(</span><span class="n">v_2bps_real</span><span class="p">,</span><span class="n">unpacked_samples</span><span class="p">)</span>
+
+    <span class="k">return</span><span class="p">(</span><span class="n">samples_out</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="sub_pack_complex_samples"><a class="viewcode-back" href="../lib_quant.html#lib_quant.sub_pack_complex_samples">[docs]</a><span class="k">def</span> <span class="nf">sub_pack_complex_samples</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span><span class="n">bits_per_sample</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Group dequantized values into complex values (pair where first one is real part, second one imaginary part).</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     samples : numpy 1D array</span>
+<span class="sd">         samples components (complex): [real_part_0, imag_part_0, real_part_1, ... ].</span>
+<span class="sd">     bits_per_sample : int</span>
+<span class="sd">         number of bits per sample.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     complex_samples : numpy 1D array</span>
+<span class="sd">         complex samples: [complex_0, complex_1, ...]</span>
+<span class="sd">     </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    |</span>
+<span class="sd">    | **TO DO:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  Currently only 2 bits per sample.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">bits_per_sample</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="c1"># TO DO: This branch is untested...</span>
+        <span class="n">samples</span><span class="p">[</span><span class="n">samples</span><span class="o">==</span><span class="mi">0</span><span class="p">]</span><span class="o">=-</span><span class="mi">1</span>
+        <span class="n">complex_samples</span> <span class="o">=</span> <span class="n">samples</span><span class="p">[::</span><span class="mi">2</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="n">j</span><span class="o">*</span><span class="n">samples</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">samples</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">*=</span> <span class="mi">1</span><span class="n">j</span> 
+        <span class="n">samples_reshape</span><span class="o">=</span><span class="n">samples</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">complex_samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">samples_reshape</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+      
+    <span class="k">return</span><span class="p">(</span><span class="n">complex_samples</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_samples"><a class="viewcode-back" href="../lib_quant.html#lib_quant.get_samples">[docs]</a><span class="k">def</span> <span class="nf">get_samples</span><span class="p">(</span><span class="n">samples_quant</span><span class="p">,</span><span class="n">bits_per_sample</span><span class="p">,</span><span class="n">current_data_type</span><span class="p">,</span><span class="n">num_samples</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span><span class="n">single_precision</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get dequantized samples from samples in binary format.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     samples_quant : numpy 1D array</span>
+<span class="sd">         samples (components if complex), packed in binary format (uint8).</span>
+<span class="sd">     bits_per_sample : int</span>
+<span class="sd">         number of bits per sample.</span>
+<span class="sd">     current_data_type : char {&#39;c&#39;,&#39;r&#39;}</span>
+<span class="sd">         &#39;c&#39; for complex, &#39;r&#39; for real data.</span>
+<span class="sd">     num_samples : int</span>
+<span class="sd">         number of samples to be returned (first num_samples). This is used to avoid errors if the number</span>
+<span class="sd">                           samples is smaller than the number of samples fitting a uint8.</span>
+<span class="sd">     v_2bps_complex : list</span>
+<span class="sd">         quantization levels for 2 bit complex.</span>
+<span class="sd">     v_2bps_real : list</span>
+<span class="sd">         quantization levels for 2 bit real.</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     result : numpy 1D array</span>
+<span class="sd">         complex with dequantized samples.</span>
+<span class="sd">     </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    |</span>
+<span class="sd">    | **TO DO:**</span>
+<span class="sd">    | </span>
+<span class="sd">    |  Currently only 2 bits per sample, generalize for different numbers of bits per sample.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="c1">#v_2bps_complex=np.array(QUANT_LEVELS_2BIT,dtype=np.complex64) if SINGLE_PRECISION else \</span>
+    <span class="c1">#                   np.array(QUANT_LEVELS_2BIT,dtype=complex)</span>
+    <span class="n">v_2bps_complex</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">QUANT_LEVELS_2BIT</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span> <span class="k">if</span> <span class="n">single_precision</span> <span class="k">else</span> \
+                        <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">QUANT_LEVELS_2BIT</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
+    <span class="c1">#v_2bps_real=np.array(QUANT_LEVELS_2BIT,dtype=np.float32) if SINGLE_PRECISION else \</span>
+    <span class="c1">#                    np.array(QUANT_LEVELS_2BIT,dtype=float)</span>
+    <span class="n">v_2bps_real</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">QUANT_LEVELS_2BIT</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span> <span class="k">if</span> <span class="n">single_precision</span> <span class="k">else</span> \
+                        <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">QUANT_LEVELS_2BIT</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
+    
+    
+    <span class="c1"># Unpack and dequantize</span>
+    <span class="n">v_all</span> <span class="o">=</span> <span class="n">sub_unpack_samples</span><span class="p">(</span><span class="n">samples_quant</span><span class="p">,</span><span class="n">bits_per_sample</span><span class="p">,</span><span class="n">current_data_type</span><span class="p">,</span><span class="n">v_2bps_complex</span><span class="p">,</span><span class="n">v_2bps_real</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">current_data_type</span><span class="o">==</span><span class="s1">&#39;c&#39;</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">sub_pack_complex_samples</span><span class="p">(</span><span class="n">v_all</span><span class="p">,</span><span class="n">bits_per_sample</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">v_all</span>
+    <span class="k">if</span> <span class="n">num_samples</span><span class="o">&gt;-</span><span class="mi">1</span><span class="p">:</span>
+        <span class="c1">#if current_data_type==&#39;c&#39;:</span>
+        <span class="c1">#    result=result[:(num_samples//2)]</span>
+        <span class="c1">#else:</span>
+        <span class="n">result</span><span class="o">=</span><span class="n">result</span><span class="p">[:</span><span class="n">num_samples</span><span class="p">]</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">result</span><span class="p">)</span></div>
+
+
+
+
+
+
+<span class="c1"># -----------------------------------------------------------------------------</span>
+<span class="c1"># -                  First implementation, use only for testing.              -</span>
+<span class="c1"># -                  Used by signal generation libraries...</span>
+<span class="n">dictc01</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;0&quot;</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span>\
+          <span class="s2">&quot;1&quot;</span><span class="p">:</span><span class="mi">1</span><span class="p">}</span>
+<span class="n">dict1</span><span class="o">=</span><span class="p">{</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span>\
+          <span class="mi">1</span><span class="p">:</span><span class="mi">1</span><span class="p">}</span>
+<span class="n">dictc01bit</span><span class="o">=</span><span class="p">{</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span>\
+          <span class="mi">1</span><span class="p">:</span><span class="mi">1</span><span class="p">}</span>
+<span class="n">dict2bps</span><span class="o">=</span><span class="p">{</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mf">3.336</span><span class="p">,</span>\
+          <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span>\
+          <span class="mi">2</span><span class="p">:</span><span class="mf">1.0</span><span class="p">,</span>\
+          <span class="mi">3</span><span class="p">:</span><span class="mf">3.336</span><span class="p">}</span>
+
+
+<div class="viewcode-block" id="simple_quantizer"><a class="viewcode-back" href="../lib_quant.html#lib_quant.simple_quantizer">[docs]</a><span class="k">def</span> <span class="nf">simple_quantizer</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span><span class="n">bits_quant</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">signal_limits</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">+</span><span class="mi">1</span><span class="p">],</span><span class="n">force_limits</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Basic quantizer: it takes as input a list of samples and returns a list of the same size</span>
+<span class="sd">        with integers from 0 to 2**bits_quant - 1, representing the quantization thressholds,</span>
+<span class="sd">        distributed at equal intervals between teh minimum and the maximum of the signal.</span>
+<span class="sd">            </span>
+<span class="sd">        Example:</span>
+<span class="sd">            signal = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]</span>
+<span class="sd">            bits_quant = 2</span>
+<span class="sd">            output=simple_quantizer(signal,bits_quant)</span>
+<span class="sd">            output = [0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3]</span>
+<span class="sd">            </span>
+<span class="sd">        To be done:</span>
+<span class="sd">           -Introduce other quantization strategies</span>
+<span class="sd">           </span>
+<span class="sd">    (!) Use only for testing.</span>
+<span class="sd">    (!) TO DO: migrate code using this function to newer implementation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    
+
+    <span class="c1">#bits_quant=1</span>
+
+    <span class="n">levels</span><span class="o">=</span><span class="mi">2</span><span class="o">**</span><span class="n">bits_quant</span>
+    <span class="n">ths</span><span class="o">=</span><span class="n">levels</span><span class="o">-</span><span class="mi">1</span>
+
+    <span class="k">if</span> <span class="n">force_limits</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+        <span class="n">max_s</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span>
+        <span class="n">min_s</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">min_s</span> <span class="o">=</span> <span class="n">signal_limits</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">max_s</span> <span class="o">=</span> <span class="n">signal_limits</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    
+    <span class="n">values_v</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">min_s</span><span class="p">,</span><span class="n">max_s</span><span class="p">,</span><span class="n">levels</span><span class="p">)[:]</span>
+    <span class="n">ths_v_plus</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">levels</span><span class="p">)[</span><span class="mi">1</span><span class="p">:]:</span>
+        <span class="n">ths_v_plus</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="n">values_v</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="n">values_v</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+    <span class="n">ths_v_plus</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">values_v</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">ths</span><span class="o">=</span><span class="n">ths_v_plus</span>
+
+    <span class="n">q_samples</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">samples</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">levels</span><span class="p">):</span>
+            <span class="c1">#If smaller than threshold or last one (will be last if outside of range)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">i</span><span class="o">&lt;=</span><span class="n">ths_v_plus</span><span class="p">[</span><span class="n">j</span><span class="p">])</span><span class="ow">or</span><span class="p">(</span><span class="n">j</span><span class="o">==</span><span class="n">levels</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+                <span class="c1">#q_samples.append(values_v[j])</span>
+                <span class="n">q_samples</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+                <span class="k">break</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">q_samples</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="simple_dequantizer"><a class="viewcode-back" href="../lib_quant.html#lib_quant.simple_dequantizer">[docs]</a><span class="k">def</span> <span class="nf">simple_dequantizer</span><span class="p">(</span><span class="n">signal</span><span class="o">=</span><span class="p">[],</span><span class="n">bits_quant</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">limits</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Basic dequantizer: it takes as input a list of quantized samples (output of simple_quantizer())</span>
+<span class="sd">        and returns a list of the same size with float values from limits[0] to limits[1], representing </span>
+<span class="sd">        the quantization thressholds, distributed at equal intervals between these limits</span>
+<span class="sd">    </span>
+<span class="sd">        Example:</span>
+<span class="sd">            signal = [0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3]</span>
+<span class="sd">            bits_quant = 2</span>
+<span class="sd">            output=simple_dequantizer(signal,bits_quant)</span>
+<span class="sd">            output = [-0.75, -0.75, -0.75, -0.75, -0.25, -0.25, -0.25, 0.25, 0.25, 0.25, 0.75, 0.75, 0.75]</span>
+<span class="sd">            </span>
+<span class="sd">    (!) Use only for testing.</span>
+<span class="sd">    (!) TO DO: migrate code using this function to newer implementation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+
+    <span class="k">if</span> <span class="n">bits_quant</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span><span class="p">([</span><span class="n">dict1</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">signal</span><span class="p">])</span>
+    
+    
+    <span class="n">levels</span> <span class="o">=</span> <span class="mi">2</span><span class="o">**</span><span class="n">bits_quant</span>
+    
+    <span class="n">max_s</span><span class="o">=</span><span class="n">limits</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">min_s</span><span class="o">=</span><span class="n">limits</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="c1">#values_v=(np.linspace(min_s,max_s,levels+1))[1:]-((max_s-min_s)/(2*levels))</span>
+    
+    <span class="n">values_v</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">min_s</span><span class="p">,</span><span class="n">max_s</span><span class="p">,</span><span class="n">levels</span><span class="p">)</span>
+    
+
+    <span class="c1"># Don&#39;t convert to list, array is user later, so the line below has better performance</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">values_v</span><span class="p">[</span><span class="n">signal</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="group_pairs_complex"><a class="viewcode-back" href="../lib_quant.html#lib_quant.group_pairs_complex">[docs]</a><span class="k">def</span> <span class="nf">group_pairs_complex</span><span class="p">(</span><span class="n">samples</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    From a given list of samples, group into pairs of 2 (real and imaginary).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">samples_pairs</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">samples</span><span class="p">[</span><span class="mi">0</span><span class="p">::</span><span class="mi">2</span><span class="p">],</span><span class="n">samples</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]))</span>
+    <span class="n">samples_out</span><span class="o">=</span><span class="p">[</span><span class="n">scp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="n">np</span><span class="o">.</span><span class="n">complex</span><span class="p">(</span><span class="s2">&quot;j&quot;</span><span class="p">)</span><span class="o">*</span><span class="n">scp</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">scp</span> <span class="ow">in</span> <span class="n">samples_pairs</span><span class="p">]</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">samples_out</span><span class="p">)</span></div>
+
+<span class="c1"># &lt;codecell&gt;</span>
+
+
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Antonio Vazquez Alvarez, Victor Pankratius, and Pedro Elosegui.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

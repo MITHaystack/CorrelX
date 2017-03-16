@@ -1,0 +1,848 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>msvf module &#8212; CorrelX 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="process_zoom module" href="process_zoom.html" />
+    <link rel="prev" title="mapred_cx module" href="mapred_cx.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-msvf">
+<span id="msvf-module"></span><h1>msvf module<a class="headerlink" href="#module-msvf" title="Permalink to this headline">¶</a></h1>
+<p>Mapper: reads VDIF frames from std.input and generates one mapreduce line per band per frame.</p>
+<div class="section" id="parameters">
+<h2>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div>See lib_mapredcorr.get_mapper_params_str()</div></blockquote>
+</div>
+<div class="section" id="returns">
+<h2>Returns<a class="headerlink" href="#returns" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div>See msvf.get_pair_str()</div></blockquote>
+</div>
+<div class="section" id="notes">
+<h2>Notes<a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h2>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Reader:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">See msvf.read_frame()</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<div class="line"><strong>Configuration:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">See const_mapred.py</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<div class="line"><strong>Debugging:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">See const_debug.py</div>
+</div>
+</div>
+<dl class="function">
+<dt id="msvf.adjust_frame_num_and_seconds">
+<code class="descclassname">msvf.</code><code class="descname">adjust_frame_num_and_seconds</code><span class="sig-paren">(</span><em>fs</em>, <em>samples_per_channel_in_frame_full</em>, <em>samples_per_channel_in_frame_single</em>, <em>second_frame</em>, <em>frame_num</em>, <em>shift_int</em>, <em>acc_time_str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msvf.html#adjust_frame_num_and_seconds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msvf.adjust_frame_num_and_seconds" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Get adjusted number of frame and shift inside frame considering delays. This is to determine which accumulation</dt>
+<dd>period the data corresponding to this frame should go to.</dd>
+</dl>
+<blockquote>
+<div><dl class="docutils">
+<dt>fs <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>sampling frequency [Hz].</dd>
+<dt>samples_per_channel_in_frame_full <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of samples per channel per frame (full samples, i.e. R or R+jI)</dd>
+<dt>samples_per_channel_in_frame_single <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of sample components (i.e. R, I).</dd>
+<dt>second_frame <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>seconds corresponding to the first sample of the frame.</dd>
+<dt>frame_num <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>frame number.</dd>
+<dt>shift_int <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>shift in number of sample components.</dd>
+<dt>acc_time_str <span class="classifier-delimiter">:</span> <span class="classifier">str(float)</span></dt>
+<dd>accumulation period duration [s].</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>frame_num_adjusted</dt>
+<dd>frame number considering shift (forced to be positive).</dd>
+<dt>frame_num_adjusted_neg</dt>
+<dd>frame number considering shift (may be negative)</dd>
+<dt>adjusted_shift_inside_frame</dt>
+<dd>first sample component inside the frame considering the shift.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Remove acc_time_str.</div>
+<div class="line">Check for potential issues in second change... acc_time_str and second_frame are not used!</div>
+<div class="line">(!) Old implementation, may not take into account non-integer multiples of second for acc. period, check (!)</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="msvf.calculate_corr_pairs_one_baseline_per_task">
+<code class="descclassname">msvf.</code><code class="descname">calculate_corr_pairs_one_baseline_per_task</code><span class="sig-paren">(</span><em>tot_stations=3</em>, <em>tot_pols=1</em>, <em>auto_stations=0</em>, <em>auto_pols=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msvf.html#calculate_corr_pairs_one_baseline_per_task"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msvf.calculate_corr_pairs_one_baseline_per_task" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create array with identificators for all the correlation pairs for all the stations p&lt;station_i&gt;&lt;station_j&gt;.</p>
+<p>Only used in one-baseline-per-task mode.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>tot_stations <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of stations.</dd>
+<dt>tot_pols <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of polarizations</dd>
+<dt>auto_stations <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><div class="first last line-block">
+<div class="line">0 : only different stations (default)</div>
+<div class="line">1 : allow same station</div>
+<div class="line">2 : only same station</div>
+</div>
+</dd>
+<dt>auto_pols <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><div class="first last line-block">
+<div class="line">0 : only different polarizations</div>
+<div class="line">1 : allow same polarization (default)</div>
+<div class="line">2 : only same polarization</div>
+</div>
+</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div>pairs_list : list of lists [station_a,polarization_a,station_b,polarization_b]</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Limitations:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Currently assuming that all the stations have the same number of polarizations.</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">This is only used in one-baseline-per-task mode, but still called from main and used in logging.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="msvf.check_time_frame">
+<code class="descclassname">msvf.</code><code class="descname">check_time_frame</code><span class="sig-paren">(</span><em>accu_block</em>, <em>rel_pos_frame</em>, <em>actual_frame_time</em>, <em>seconds_ref</em>, <em>seconds_duration</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msvf.html#check_time_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msvf.check_time_frame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if actual timestamp of this frame is inside the experiment time wnidow.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>accu_block</dt>
+<dd>accumulation period id (-1 if outside scan window).</dd>
+<dt>rel_pos_frame</dt>
+<dd>relative frame position in accumulation period.</dd>
+<dt>actual_frame_time</dt>
+<dd>actual timestamp (considering delays) for the first sample of the frame.</dd>
+<dt>seconds_ref</dt>
+<dd>start of the scan [s].</dd>
+<dt>seconds_duration</dt>
+<dd>duration of the scan [s].</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>process_frame <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>1 if frame inside scan.</dd>
+<dt>after_end_time <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>1 if frame after end of defined window.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="msvf.compute_shift_delay_samples">
+<code class="descclassname">msvf.</code><code class="descname">compute_shift_delay_samples</code><span class="sig-paren">(</span><em>params_delays</em>, <em>vector_seconds_ref</em>, <em>freq_sample</em>, <em>seconds_frame</em>, <em>pair_st_so</em>, <em>data_type=0</em>, <em>front_time=None</em>, <em>cache_rates=[]</em>, <em>cache_delays=[]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msvf.html#compute_shift_delay_samples"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msvf.compute_shift_delay_samples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute number of samples to shift signal (always positive since reference station is closest to source).</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>params_delays</dt>
+<dd>delay model ini file.</dd>
+<dt>vector_seconds_ref</dt>
+<dd>list of floats with seconds for delay information (start time polynomials).</dd>
+<dt>freq_sample</dt>
+<dd>sampling frequency [Hz].</dd>
+<dt>seconds_frame</dt>
+<dd>seconds corresponding to the frame to be processed.</dd>
+<dt>station_id</dt>
+<dd>corresponds to id number in stations ini file.</dd>
+<dt>source_id</dt>
+<dd>[default 0], see limitations.</dd>
+</dl>
+<p>pair_st_so
+data_type</p>
+<blockquote>
+<div>0 for real, 1 for complex.</div></blockquote>
+<dl class="docutils">
+<dt>front_time</dt>
+<dd>frontier time, that is, time corresponding to the start of the integration period (takes priority over the seconds of the frame)</dd>
+<dt>cache_rates</dt>
+<dd>temporary information on delays to avoid reprocessing of the input files (see lib_ini_files.get_rates_delays()).</dd>
+<dt>cache_delays</dt>
+<dd>list with [seconds_fr_nearest,pair_st_so,delay] from previous computation.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>shift_int</dt>
+<dd>number of sample components to offset (integer delay).</dd>
+<dt>delay</dt>
+<dd>total delay (=freq_sample*(shift_int+fractional_sample_delay)).</dd>
+</dl>
+<p>fractional_sample_delay
+error_out</p>
+<blockquote>
+<div>0 if sucess, -1 if error (e.g. accumulation period not found in ini file)</div></blockquote>
+<dl class="docutils">
+<dt>cache_rates</dt>
+<dd>updated cache_rates (input).</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Limitations:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Currently assuming single source (source_id always zero</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Simplify code, no need for params_delays nor find_nearest().</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="msvf.encode_samples">
+<code class="descclassname">msvf.</code><code class="descname">encode_samples</code><span class="sig-paren">(</span><em>signal_chunk_fft_out</em>, <em>encode_b64</em>, <em>apply_compression</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msvf.html#encode_samples"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msvf.encode_samples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Encode packed samples into base64.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>signal_chunk_fft_out <span class="classifier-delimiter">:</span> <span class="classifier">1D numpy array</span></dt>
+<dd>bytes containing packed sample components.</dd>
+<dt>encode_b64 <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>use base64 encoding, 1 by default.</dd>
+<dt>apply_compression <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>0 by default.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>signal_chunk_fft_out <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>signal encoded into base64.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="msvf.get_absolute_delay">
+<code class="descclassname">msvf.</code><code class="descname">get_absolute_delay</code><span class="sig-paren">(</span><em>params_delays</em>, <em>vector_seconds_ref</em>, <em>seconds_frame</em>, <em>pair_st_so</em>, <em>front_time=None</em>, <em>cache_rates=[]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msvf.html#get_absolute_delay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msvf.get_absolute_delay" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get all the delay information structures associated to the processed station, source and integration period.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>params_delays</dt>
+<dd>delay model ini file.</dd>
+<dt>vector_seconds_ref <span class="classifier-delimiter">:</span> <span class="classifier">list of float</span></dt>
+<dd>seconds for delay information (start time polynomials).</dd>
+<dt>seconds_frame</dt>
+<dd>seconds corresponding to the frame to be processed.</dd>
+<dt>station_id</dt>
+<dd>corresponds to id number in stations ini file.</dd>
+<dt>source_id</dt>
+<dd>[default 0], see limitations.</dd>
+<dt>front_time</dt>
+<dd>frontier time, that is, time corresponding to the start of the integration period (takes priority over the seconds of the frame)</dd>
+<dt>cache_rates</dt>
+<dd>temporary information on delays to avoid reprocessing of the input files (see lib_ini_files.get_rates_delays()).</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>abs_delay</dt>
+<dd>initial absolute delay.</dd>
+<dt>rate_delay</dt>
+<dd>delay polynomials.</dd>
+<dt>ref_delay</dt>
+<dd>delay for the &#8220;reference&#8221; station.</dd>
+<dt>error_out</dt>
+<dd>-1 if station, source and accumulation period not found, 0 if sucess.</dd>
+<dt>cache_rates</dt>
+<dd>updated cache_rates (input).</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Configuration:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">VERBOSE_INI_DELAYS: from lib_ini_delays.py.</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Merge code with compute_shift_delay_samples to avoid repetition.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="msvf.get_alloc_tasks_linear_scaling">
+<code class="descclassname">msvf.</code><code class="descname">get_alloc_tasks_linear_scaling</code><span class="sig-paren">(</span><em>num_pairs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msvf.html#get_alloc_tasks_linear_scaling"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msvf.get_alloc_tasks_linear_scaling" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get allocation of stations into tasks. It computes the matrix that defines which pairs are associated to each task.
+Only used in station-based-splitting (linear scaling with number of stations).</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>num_pairs <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of pairs.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>a <span class="classifier-delimiter">:</span> <span class="classifier">binary 2D square array</span></dt>
+<dd>task allocation.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>TODO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Detail the algorithm.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="msvf.get_codebook_info">
+<code class="descclassname">msvf.</code><code class="descname">get_codebook_info</code><span class="sig-paren">(</span><em>codecs_serial</em>, <em>params_media</em>, <em>current_file_name</em>, <em>station_name</em>, <em>chunk_size</em>, <em>apply_compression</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msvf.html#get_codebook_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msvf.get_codebook_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get information for compression library (e.g. vector quantization) if used.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>codecs_serial <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>serialized codecs for compression.</dd>
+<dt>params_media <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>with serialized media.ini.</dd>
+<dt>current_file_name <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>name of the file currently being processed.</dd>
+<dt>station_name <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>name of the station.</dd>
+<dt>chunk_size <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of samples per chunk.</dd>
+<dt>apply_compression <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
+<dd>whether to apply compression or not</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>encoding</dt>
+<dd>[HARDCODED TO NO COMPRESSION]</dd>
+<dt>codebook</dt>
+<dd>codebook extracted from the codecs (vector quantization).</dd>
+<dt>codebook_name</dt>
+<dd>codebook name from .ini.</dd>
+<dt>apply_compression</dt>
+<dd>updated version of input based on configuration in .ini.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Harcoded output.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="msvf.get_current_filename">
+<code class="descclassname">msvf.</code><code class="descname">get_current_filename</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/msvf.html#get_current_filename"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msvf.get_current_filename" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the name of the file currently being processed from the environment variable.
+Note this is only for hadoop, thus the variable has to be created if running in pipeline, (which</p>
+<blockquote>
+<div>is already done in lib_mapredcorr.py.</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="msvf.get_num_samples_per_frame">
+<code class="descclassname">msvf.</code><code class="descname">get_num_samples_per_frame</code><span class="sig-paren">(</span><em>allsamples</em>, <em>num_channels</em>, <em>data_type</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msvf.html#get_num_samples_per_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msvf.get_num_samples_per_frame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Based on number of channels and data type (complex or real, get number of samples per frame.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>allsamples <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>total number of sample components in the frame.</dd>
+<dt>num_channels <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of channels in the frame.</dd>
+<dt>data_type <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>0 for real, 1 for complex.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>tot_samples_per_channel_and_frame_full <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of samples per channel per frame (full samples, i.e. R or R+jI)</dd>
+<dt>totsamples_per_channel_and_frame_single <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of sample components (i.e. R, I).</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="msvf.get_pair_all_baselines_per_task">
+<code class="descclassname">msvf.</code><code class="descname">get_pair_all_baselines_per_task</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/msvf.html#get_pair_all_baselines_per_task"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msvf.get_pair_all_baselines_per_task" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get pair for all baselines per tasks.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="msvf.get_pair_linear_scaling">
+<code class="descclassname">msvf.</code><code class="descname">get_pair_linear_scaling</code><span class="sig-paren">(</span><em>s0</em>, <em>t0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msvf.html#get_pair_linear_scaling"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msvf.get_pair_linear_scaling" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get pair for linear scaling with number of stations.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>s0 <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>station id</dd>
+<dt>t0 <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>polarization id</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="msvf.get_pair_str">
+<code class="descclassname">msvf.</code><code class="descname">get_pair_str</code><span class="sig-paren">(</span><em>char_p</em>, <em>pair</em>, <em>accu_block</em>, <em>mod_channel</em>, <em>num_channels</em>, <em>seconds_fr</em>, <em>first_sample_signal</em>, <em>station_id</em>, <em>mod_polarization_id</em>, <em>freq_sample</em>, <em>bits_per_sample</em>, <em>data_type_char</em>, <em>encoding</em>, <em>n_bins_pcal_val</em>, <em>pcal_freq</em>, <em>one_baseline_per_task</em>, <em>task_scaling_stations</em>, <em>id_pair=0</em>, <em>tot_pairs=0</em>, <em>tot_accu_blocks=1</em>, <em>num_samples=0</em>, <em>abs_delay=0.0</em>, <em>rate_delay=[]</em>, <em>freq_channel=0.0</em>, <em>fractional_sample_delay=0.0</em>, <em>accumulation_time=0.0</em>, <em>shift_int=0</em>, <em>sideband='L'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msvf.html#get_pair_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msvf.get_pair_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build output string with key and first part of value (metadata) for map output.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>char_p <span class="classifier-delimiter">:</span> <span class="classifier">char {&#8216;x&#8217;,&#8217;r&#8217;,&#8217;y&#8217;}</span></dt>
+<dd><dl class="first last docutils">
+<dt>identifies the mode of operation:</dt>
+<dd><div class="first last line-block">
+<div class="line">&#8216;x&#8217; for all-baselines-per-task,</div>
+<div class="line">&#8216;r&#8217; for linear scaling with the number of stations,</div>
+<div class="line">&#8216;y&#8217; for one-baseline-per-task.</div>
+</div>
+</dd>
+</dl>
+</dd>
+<dt>pair <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>A.A-A.A for all-baselines-per-task, station0.polarization0-station1.polarization1 for single-baseline-per-task.</dd>
+<dt>accu_block <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>accumulation period id.</dd>
+<dt>mod_channel <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>channel id.</dd>
+<dt>num_channels <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of channels.</dd>
+<dt>seconds_fr <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>[repeated] currently same as accu_block.</dd>
+<dt>first_sample_signal <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>sample number for the first sample in this chunk of samples.</dd>
+<dt>station_id <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>station identifier corresponding to this chunk of samples.</dd>
+<dt>mod_polarization_id <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>polarization identifier corresponding to this chunk of samples.</dd>
+<dt>freq_sample <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>sampling frequency [Hz].</dd>
+<dt>bits_per_sample <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of bits per sample component.</dd>
+<dt>data_type_char <span class="classifier-delimiter">:</span> <span class="classifier">char {&#8216;r&#8217;,&#8217;c&#8217;}</span></dt>
+<dd>&#8216;r&#8217; for real, &#8216;c&#8217; for complex.</dd>
+<dt>encoding <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>type of encoding compression used (C_INI_MEDIA_C_*).</dd>
+<dt>n_bins_pcal_val <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of bins for the phase calibration window.</dd>
+<dt>pcal_freq <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>phase calibration tone separation [Hz].</dd>
+<dt>one_baseline_per_task <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>[default 0], 1 for one baseline per task (work in progress)</dd>
+<dt>task_scaling_stations <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>[default 0], 1 for linear scaling with stations (work in progress)</dd>
+<dt>id_pair</dt>
+<dd>[only used if one_baseline_per_task==1]</dd>
+<dt>tot_pairs </dt>
+<dd>[currently unused, but should be used if one-baseline-per-task]</dd>
+<dt>tot_accu_blocks <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of accumulation periods in the scan.</dd>
+<dt>num_samples <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of samples in this chunk (required in reducer in case last bytes not filled with samples).</dd>
+<dt>abs_delay <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>absolute delay for this chunk.</dd>
+<dt>rate_delay <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>list with delay polynomials (see get_absolute_delay()).</dd>
+<dt>freq_channel <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>edge frequency [Hz] corresponding to the samples in this chunk.</dd>
+<dt>fractional_sample_delay <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>fractional sample delay for the first sample in this chunk.</dd>
+<dt>accumulation_time <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>accumulation period duration [s].</dd>
+<dt>shift_int <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of sample components used to offset these samples (integer delay).</dd>
+<dt>sideband <span class="classifier-delimiter">:</span> <span class="classifier">char {&#8216;L&#8217;,&#8217;U&#8217;}</span></dt>
+<dd>&#8216;L&#8217; for lower-sideband &#8216;U&#8217; for upper-sideband.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>pair_str <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>complete header for the current set of samples being processed.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Output formatting and conventions:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">The fields in the key below (k1,k2,...) separated by FIELD_SEP are referenced in const_mapred.py for the sorting configuration.</div>
+<div class="line-block">
+<div class="line">The metadata must follow the same order as defined in const_mapred.py.</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="line"><strong>Notes:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">The full output corresponds to the output string generated here and the samples packed in base64 (done outside).</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Simplify interface.</div>
+<div class="line">seconds_fr, delete and take accu block... </div>
+<div class="line">Define constants for real and complex chars, and for lower and upper sideband.</div>
+<div class="line">Define constant for initial &#8220;p&#8221; in line, initially for pair.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="msvf.get_pointers_samples">
+<code class="descclassname">msvf.</code><code class="descname">get_pointers_samples</code><span class="sig-paren">(</span><em>tot_samples_one_frame</em>, <em>adjusted_shift_inside_frame</em>, <em>accu_block</em>, <em>rel_pos_frame</em>, <em>tot_samples_sup_frame</em>, <em>ref_offset=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msvf.html#get_pointers_samples"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msvf.get_pointers_samples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute metadata relative to sample organization (sample ids, offsets, chunk sizes...).</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>tot_samples_one_frame</dt>
+<dd>number of samples per channel per frame.</dd>
+<dt>adjusted_shift_inside_frame</dt>
+<dd>shift (number of samples) for the first sample inside the frame.</dd>
+<dt>accu_block</dt>
+<dd>accumulation block corresponding to these samples (last sample).</dd>
+<dt>rel_pos_frame</dt>
+<dd>number of frame relative to the accumulation period.</dd>
+<dt>tot_samples_sup_frame</dt>
+<dd>number of samples per frame [see notes below].</dd>
+<dt>ref_offset</dt>
+<dd>integer shift (number of samples) for the first sample of the stream</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>tot_samples_v</dt>
+<dd>number of samples in this chunk.</dd>
+<dt>seconds_v</dt>
+<dd>seconds corresponding to the start of the accumulation period (reference is zero).</dd>
+<dt>offset_first_sample_iterator_v</dt>
+<dd>offset used to fetch samples from the array with the samples.</dd>
+<dt>offset_first_sample_signal_v</dt>
+<dd>offset used to compute the position of this chunk in the complete stream.</dd>
+<dt>chunk_size_v</dt>
+<dd>same as tot_samples_v [remove].</dd>
+<dt>acc_v</dt>
+<dd>same as seconds_v [remove].</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Superframe functionality needs debugging.</div>
+<div class="line">Check ref_offset.</div>
+<div class="line">Remove chunk_size_v and acc_v.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="msvf.get_seconds_fr_front">
+<code class="descclassname">msvf.</code><code class="descname">get_seconds_fr_front</code><span class="sig-paren">(</span><em>front_time</em>, <em>vector_seconds_ref</em>, <em>seconds_frame</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msvf.html#get_seconds_fr_front"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msvf.get_seconds_fr_front" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find frontier seconds only if not available.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>front_time</dt>
+<dd>frontier seconds (i.e. timestamp for start time polynomials).</dd>
+<dt>vector_seconds_ref</dt>
+<dd>list of floats with seconds for delay information (start time polynomials).</dd>
+<dt>seconds_frame</dt>
+<dd>seconds corresponding to this frame.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>seconds_fr_nearest</dt>
+<dd>frontier seconds.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="msvf.main">
+<code class="descclassname">msvf.</code><code class="descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/msvf.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msvf.main" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="msvf.pack_and_encode_samples">
+<code class="descclassname">msvf.</code><code class="descname">pack_and_encode_samples</code><span class="sig-paren">(</span><em>signal_chunk_fft</em>, <em>use_bitarrays</em>, <em>encode_b64</em>, <em>apply_compression</em>, <em>bits_per_sample</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msvf.html#pack_and_encode_samples"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msvf.pack_and_encode_samples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Encode signal chunk for output of mapper.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>signal_chunk_fft <span class="classifier-delimiter">:</span> <span class="classifier">1D numpy array of int</span></dt>
+<dd>sample components (integer values).</dd>
+<dt>use_bitarrays <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>0 by default.</dd>
+<dt>encode_b64 <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>use base64 encoding, 1 by default.</dd>
+<dt>apply_compression <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>0 by default.</dd>
+<dt>bits_per_sample <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of bits per sample component.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>signal_chunk_fft_out <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>signal encoded into base64.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Place together with decode_samples_b64() for better organization.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="msvf.pack_samples">
+<code class="descclassname">msvf.</code><code class="descname">pack_samples</code><span class="sig-paren">(</span><em>signal_chunk_fft</em>, <em>bits_per_sample</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msvf.html#pack_samples"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msvf.pack_samples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pack the sample components into bytes to avoid data storage overhead.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>signal_chunk_fft <span class="classifier-delimiter">:</span> <span class="classifier">1D numpy array</span></dt>
+<dd>sample components (integer values).</dd>
+<dt>bits_per_sample <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of bits per sample component.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>signal_chunk_fft_out <span class="classifier-delimiter">:</span> <span class="classifier">1D numpy array</span></dt>
+<dd>bytes containing packed sample components.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="msvf.read_frame">
+<code class="descclassname">msvf.</code><code class="descname">read_frame</code><span class="sig-paren">(</span><em>reader</em>, <em>show_errors</em>, <em>forced_frame_length=0</em>, <em>forced_format='VDIF'</em>, <em>forced_version='custom'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/msvf.html#read_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#msvf.read_frame" title="Permalink to this definition">¶</a></dt>
+<dd><p>It returns the header and samples in the frame, based on the information from the media.ini file. If this information
+is not available then it assumes that it is a vdif frame.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>reader <span class="classifier-delimiter">:</span> <span class="classifier">file handle</span></dt>
+<dd>sys.stdin.</dd>
+<dt>show_errors <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>[0 by default] 1 for verbose mode.</dd>
+<dt>forced_frame_length <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>[0 by default] &gt;0 to force the number of bytes per frame (if ==0 frame length is read in header)</dd>
+<dt>forced_format</dt>
+<dd>[leave deafult value] use only for new implementations of readers.</dd>
+<dt>forced_version</dt>
+<dd>[leave deafult value] use only for new implementations of readers.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>header <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd><dl class="first last docutils">
+<dt>frame header following the format: </dt>
+<dd><div class="first last line-block">
+<div class="line">[seconds_frame,invalid_marker,legacy_marker,reference_epoch,frame_number,</div>
+<div class="line">vdif_version,log_2_channels,frame_length,data_type,bits_per_sample,thread_id,station_id] where:</div>
+<div class="line-block">
+<div class="line">seconds_frame:     integer value with seconds for this frame.</div>
+<div class="line">invalid_marker:    VDIF invalid bit.</div>
+<div class="line">legacy_marker:     VDIF legacy bit.</div>
+<div class="line">reference_epoch:   VDIF frame epoch (float with MJD (TBC)).</div>
+<div class="line">frame_number:      VDIF frame number (integer).</div>
+<div class="line">vdif_version:      VDIF frame version (integer).</div>
+<div class="line">log_2_channels:    VDIF logarithm in base 2 of the number of channels in the frame.</div>
+<div class="line">frame_length:      VDIF frame length (integer with number of bytes).</div>
+<div class="line">data_type:         VDIF frame data type bit.</div>
+<div class="line">bits_per_sample:   number of bits per sample.</div>
+<div class="line">thread_id:         VDIF thread identifier field (integer).</div>
+<div class="line">station_id:        VDIF station id field (integer).</div>
+</div>
+</div>
+</dd>
+</dl>
+</dd>
+<dt>allsamples <span class="classifier-delimiter">:</span> <span class="classifier">1d numpy array of int</span></dt>
+<dd>sample components (see below for details).</dd>
+<dt>check_size_samples <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>1 if read as many samples as expected from the frame length (and rest of metadata), 0 otherwise.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Adding new libraries:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">-Each library will be identified by &#8220;format&#8221; and &#8220;version&#8221;, to be specified in the media.ini file.</div>
+<div class="line">-Add the new format and version into const_ini_media.py</div>
+<div class="line">-Add the check for new format in the if structure below (if forced format==...)</div>
+<div class="line">-See the definition of the header to be returned above.</div>
+<div class="line">-The samples should be in a 1D numpy array of integers. E.g. for VDIF complex frame, [I0, Q0, I1, Q1, ...]</div>
+<div class="line">-The implementation is currently tied to the VDIF format, so samples corresponding to different channels will be interleaved.</div>
+<div class="line">-If multiple bands or polarizations per file see VDIF specification (multiple thread or multiple channels).</div>
+<div class="line">-If simple case with single band and single polarization then log_2_channels=0 and thread_id=0 (and configure media.ini accordingly)</div>
+<div class="line">-See lib_vdif.py for more info.</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Consider providing a general interface to allow easy development of new libraries.</div>
+<div class="line">use_ini_info always used, remove option.</div>
+<div class="line">forced_frame_length is not taken into account, remove it (length is read in the VDIF frame).</div>
+<div class="line">Remove option for bitarray_structures, no longer used.</div>
+</div>
+</div>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">msvf module</a><ul>
+<li><a class="reference internal" href="#parameters">Parameters</a></li>
+<li><a class="reference internal" href="#returns">Returns</a></li>
+<li><a class="reference internal" href="#notes">Notes</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="mapred_cx.html" title="previous chapter">mapred_cx module</a></li>
+      <li>Next: <a href="process_zoom.html" title="next chapter">process_zoom module</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/msvf.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Antonio Vazquez Alvarez, Victor Pankratius, and Pedro Elosegui.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/msvf.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

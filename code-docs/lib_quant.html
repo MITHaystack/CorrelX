@@ -1,0 +1,292 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>lib_quant module &#8212; CorrelX 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="lib_vdif module" href="lib_vdif.html" />
+    <link rel="prev" title="lib_profiling module" href="lib_profiling.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-lib_quant">
+<span id="lib-quant-module"></span><h1>lib_quant module<a class="headerlink" href="#module-lib_quant" title="Permalink to this headline">¶</a></h1>
+<p>Module with basic quantizer and dequantizer.</p>
+<dl class="function">
+<dt id="lib_quant.compute_range_bits">
+<code class="descclassname">lib_quant.</code><code class="descname">compute_range_bits</code><span class="sig-paren">(</span><em>bits_per_sample</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_quant.html#compute_range_bits"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_quant.compute_range_bits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute list of values for unpacking samples.
+[Used by decode_samples_red()]</p>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Example:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">&gt;&gt;bits_per_sample=2</div>
+<div class="line">&gt;&gt;list(compute_range_bits(bits_per_sample))</div>
+<div class="line-block">
+<div class="line">[6, 4, 2, 0]</div>
+</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_quant.decode_samples_red">
+<code class="descclassname">lib_quant.</code><code class="descname">decode_samples_red</code><span class="sig-paren">(</span><em>words</em>, <em>bits_per_sample</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_quant.html#decode_samples_red"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_quant.decode_samples_red" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unpack samples given a binary vector with the packed samples and the number of bits per sample.
+[Used by sub_unpack_samples()]</p>
+<blockquote>
+<div><p>words
+bits_per_sample : int</p>
+<blockquote>
+<div>number of bits per sample.</div></blockquote>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>words_nostack <span class="classifier-delimiter">:</span> <span class="classifier">numpy 1D array</span></dt>
+<dd>unpacked samples.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_quant.get_samples">
+<code class="descclassname">lib_quant.</code><code class="descname">get_samples</code><span class="sig-paren">(</span><em>samples_quant</em>, <em>bits_per_sample</em>, <em>current_data_type</em>, <em>num_samples=-1</em>, <em>single_precision=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_quant.html#get_samples"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_quant.get_samples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get dequantized samples from samples in binary format.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>samples_quant <span class="classifier-delimiter">:</span> <span class="classifier">numpy 1D array</span></dt>
+<dd>samples (components if complex), packed in binary format (uint8).</dd>
+<dt>bits_per_sample <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of bits per sample.</dd>
+<dt>current_data_type <span class="classifier-delimiter">:</span> <span class="classifier">char {&#8216;c&#8217;,&#8217;r&#8217;}</span></dt>
+<dd>&#8216;c&#8217; for complex, &#8216;r&#8217; for real data.</dd>
+<dt>num_samples <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><dl class="first last docutils">
+<dt>number of samples to be returned (first num_samples). This is used to avoid errors if the number</dt>
+<dd>samples is smaller than the number of samples fitting a uint8.</dd>
+</dl>
+</dd>
+<dt>v_2bps_complex <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>quantization levels for 2 bit complex.</dd>
+<dt>v_2bps_real <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>quantization levels for 2 bit real.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>result <span class="classifier-delimiter">:</span> <span class="classifier">numpy 1D array</span></dt>
+<dd>complex with dequantized samples.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Currently only 2 bits per sample, generalize for different numbers of bits per sample.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_quant.group_pairs_complex">
+<code class="descclassname">lib_quant.</code><code class="descname">group_pairs_complex</code><span class="sig-paren">(</span><em>samples</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_quant.html#group_pairs_complex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_quant.group_pairs_complex" title="Permalink to this definition">¶</a></dt>
+<dd><p>From a given list of samples, group into pairs of 2 (real and imaginary).</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_quant.np_take_samples">
+<code class="descclassname">lib_quant.</code><code class="descname">np_take_samples</code><span class="sig-paren">(</span><em>v_2bps</em>, <em>unpacked_samples</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_quant.html#np_take_samples"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_quant.np_take_samples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Translate vector with sampled values into dequantized values.
+[Used by sub_unpack_samples()]</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>v_2bps <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>quantization values.</dd>
+<dt>unpacked_samples</dt>
+<dd>quantized samples.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>out <span class="classifier-delimiter">:</span> <span class="classifier">numpy 1D array</span></dt>
+<dd>dequantized sample components.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_quant.simple_dequantizer">
+<code class="descclassname">lib_quant.</code><code class="descname">simple_dequantizer</code><span class="sig-paren">(</span><em>signal=[], bits_quant=1, limits=[-1, 1]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_quant.html#simple_dequantizer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_quant.simple_dequantizer" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Basic dequantizer: it takes as input a list of quantized samples (output of simple_quantizer())</dt>
+<dd><p class="first">and returns a list of the same size with float values from limits[0] to limits[1], representing 
+the quantization thressholds, distributed at equal intervals between these limits</p>
+<dl class="last docutils">
+<dt>Example:</dt>
+<dd>signal = [0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3]
+bits_quant = 2
+output=simple_dequantizer(signal,bits_quant)
+output = [-0.75, -0.75, -0.75, -0.75, -0.25, -0.25, -0.25, 0.25, 0.25, 0.25, 0.75, 0.75, 0.75]</dd>
+</dl>
+</dd>
+</dl>
+<p>(!) Use only for testing.
+(!) TO DO: migrate code using this function to newer implementation.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_quant.simple_quantizer">
+<code class="descclassname">lib_quant.</code><code class="descname">simple_quantizer</code><span class="sig-paren">(</span><em>samples, bits_quant=1, signal_limits=[-1, 1], force_limits=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_quant.html#simple_quantizer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_quant.simple_quantizer" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Basic quantizer: it takes as input a list of samples and returns a list of the same size</dt>
+<dd><p class="first">with integers from 0 to 2**bits_quant - 1, representing the quantization thressholds,
+distributed at equal intervals between teh minimum and the maximum of the signal.</p>
+<dl class="last docutils">
+<dt>Example:</dt>
+<dd>signal = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+bits_quant = 2
+output=simple_quantizer(signal,bits_quant)
+output = [0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3]</dd>
+<dt>To be done:</dt>
+<dd>-Introduce other quantization strategies</dd>
+</dl>
+</dd>
+</dl>
+<p>(!) Use only for testing.
+(!) TO DO: migrate code using this function to newer implementation.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_quant.sub_pack_complex_samples">
+<code class="descclassname">lib_quant.</code><code class="descname">sub_pack_complex_samples</code><span class="sig-paren">(</span><em>samples</em>, <em>bits_per_sample</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_quant.html#sub_pack_complex_samples"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_quant.sub_pack_complex_samples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Group dequantized values into complex values (pair where first one is real part, second one imaginary part).</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>samples <span class="classifier-delimiter">:</span> <span class="classifier">numpy 1D array</span></dt>
+<dd>samples components (complex): [real_part_0, imag_part_0, real_part_1, ... ].</dd>
+<dt>bits_per_sample <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of bits per sample.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>complex_samples <span class="classifier-delimiter">:</span> <span class="classifier">numpy 1D array</span></dt>
+<dd>complex samples: [complex_0, complex_1, ...]</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Currently only 2 bits per sample.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_quant.sub_unpack_samples">
+<code class="descclassname">lib_quant.</code><code class="descname">sub_unpack_samples</code><span class="sig-paren">(</span><em>samples_quant</em>, <em>bits_per_sample</em>, <em>current_data_type</em>, <em>v_2bps_complex</em>, <em>v_2bps_real</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_quant.html#sub_unpack_samples"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_quant.sub_unpack_samples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unpack samples packed in a binary vector into dequantized values.</p>
+<blockquote>
+<div>See get_samples().</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>out <span class="classifier-delimiter">:</span> <span class="classifier">numpy 1D array of complex</span></dt>
+<dd>dequantized samples.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="lib_profiling.html" title="previous chapter">lib_profiling module</a></li>
+      <li>Next: <a href="lib_vdif.html" title="next chapter">lib_vdif module</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/lib_quant.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Antonio Vazquez Alvarez, Victor Pankratius, and Pedro Elosegui.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/lib_quant.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

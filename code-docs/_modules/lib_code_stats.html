@@ -1,0 +1,396 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>lib_code_stats &#8212; CorrelX 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for lib_code_stats</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># &lt;nbformat&gt;3.0&lt;/nbformat&gt;</span>
+
+<span class="c1"># &lt;codecell&gt;</span>
+
+<span class="c1">#!/usr/bin/env python</span>
+<span class="c1">#</span>
+<span class="c1">#The MIT CorrelX Correlator</span>
+<span class="c1">#</span>
+<span class="c1">#https://github.com/MITHaystack/CorrelX</span>
+<span class="c1">#Contact: correlX@haystack.mit.edu</span>
+<span class="c1">#Project leads: Victor Pankratius, Pedro Elosegui Project developer: A.J. Vazquez Alvarez</span>
+<span class="c1">#</span>
+<span class="c1">#Copyright 2017 MIT Haystack Observatory</span>
+<span class="c1">#</span>
+<span class="c1">#Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the &quot;Software&quot;), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1">#The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</span>
+<span class="c1">#</span>
+<span class="c1">#THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#------------------------------</span>
+<span class="c1">#------------------------------</span>
+<span class="c1">#Project: CorrelX.</span>
+<span class="c1">#File: lib_code_stats.py.</span>
+<span class="c1">#Author: A.J. Vazquez Alvarez (ajvazquez@haystack.mit.edu)</span>
+<span class="c1">#Description</span>
+<span class="sd">&quot;&quot;&quot;     </span>
+<span class="sd">CorrelX line counter tools.</span>
+
+<span class="sd">Usage</span>
+<span class="sd">-----     </span>
+<span class="sd">     get_cx_code_stats()</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="c1">#History:</span>
+<span class="c1">#initial version: 2016.11 ajva</span>
+<span class="c1">#MIT Haystack Observatory</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+
+<span class="n">WIDTH_NUM</span><span class="o">=</span><span class="mi">14</span>
+<span class="n">FILELIST_V</span><span class="o">=</span><span class="p">[[</span><span class="s2">&quot;Launcher and Filesystem Management&quot;</span><span class="p">,</span>\
+                     <span class="s2">&quot;mapred_cx.py,&quot;</span><span class="o">+</span>\
+                     <span class="s2">&quot;lib_mapredcorr.py,&quot;</span><span class="o">+</span>\
+                     <span class="s2">&quot;lib_profiling.py,&quot;</span><span class="o">+</span>\
+                     <span class="s2">&quot;lib_net_stats.py,&quot;</span><span class="o">+</span>\
+                     <span class="s2">&quot;lib_ini_exper.py,&quot;</span><span class="o">+</span>\
+                     <span class="s2">&quot;lib_hadoop_hdfs.py,&quot;</span><span class="o">+</span>\
+                     <span class="s2">&quot;lib_config.py,&quot;</span><span class="o">+</span>\
+                     <span class="s2">&quot;const_config.py,&quot;</span><span class="o">+</span>\
+                     <span class="s2">&quot;const_hadoop.py&quot;</span><span class="p">],</span>\
+            <span class="p">[</span><span class="s2">&quot;Application&quot;</span><span class="p">,</span>\
+                     <span class="s2">&quot;msvf.py,&quot;</span><span class="o">+</span>\
+                     <span class="s2">&quot;rsvf.py&quot;</span><span class="p">],</span>\
+            <span class="p">[</span><span class="s2">&quot;Libraries&quot;</span><span class="p">,</span>\
+                     <span class="s2">&quot;const_mapred.py,&quot;</span><span class="o">+</span>\
+                     <span class="s2">&quot;const_quant.py,&quot;</span><span class="o">+</span>\
+                     <span class="s2">&quot;lib_quant.py,&quot;</span><span class="o">+</span>\
+                     <span class="s2">&quot;lib_vdif.py,&quot;</span><span class="o">+</span>\
+                     <span class="s2">&quot;const_ini_files.py,&quot;</span><span class="o">+</span>\
+                     <span class="s2">&quot;lib_ini_files.py,&quot;</span><span class="o">+</span>\
+                     <span class="s2">&quot;lib_acc_comp.py,&quot;</span><span class="o">+</span>\
+                     <span class="s2">&quot;lib_delay_model.py,&quot;</span><span class="o">+</span>\
+                     <span class="s2">&quot;lib_fx_stack.py,&quot;</span><span class="o">+</span>\
+                     <span class="s2">&quot;lib_pcal.py,&quot;</span><span class="o">+</span>\
+                     <span class="s2">&quot;const_debug.py,&quot;</span><span class="o">+</span>\
+                     <span class="s2">&quot;const_performance.py,&quot;</span><span class="o">+</span>\
+                     <span class="s2">&quot;lib_debug.py&quot;</span><span class="p">],</span>\
+            <span class="p">[</span><span class="s2">&quot;Tools&quot;</span><span class="p">,</span>\
+                     <span class="s2">&quot;lib_code_stats.py,&quot;</span><span class="o">+</span>\
+                     <span class="s2">&quot;vdif_info.py,&quot;</span><span class="o">+</span>\
+                     <span class="s2">&quot;vdif_generator.py,&quot;</span><span class="o">+</span>\
+                     <span class="s2">&quot;vis_compare.py,&quot;</span><span class="o">+</span>\
+                     <span class="s2">&quot;cx2d_lib.py,&quot;</span><span class="o">+</span>\
+                     <span class="s2">&quot;convert_im_cx.py,&quot;</span><span class="o">+</span>\
+                     <span class="s2">&quot;process_zoom.py,&quot;</span><span class="o">+</span>\
+                     <span class="s2">&quot;convert_cx2d.py&quot;</span><span class="p">]]</span>
+
+
+
+
+
+<div class="viewcode-block" id="get_file_stats"><a class="viewcode-back" href="../lib_code_stats.html#lib_code_stats.get_file_stats">[docs]</a><span class="k">def</span> <span class="nf">get_file_stats</span><span class="p">(</span><span class="n">full_input_file</span><span class="p">,</span><span class="n">full_debug_file</span><span class="p">,</span><span class="n">debug_doc</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get statistics for a single file.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     full_input_file : str</span>
+<span class="sd">         path to file to process (.py).</span>
+<span class="sd">     full_debug_file : str</span>
+<span class="sd">         path to file to debug doc section.</span>
+<span class="sd">     debug_doc : int</span>
+<span class="sd">         1 to debug.</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     c_line : int</span>
+<span class="sd">         number of lines (total).</span>
+<span class="sd">     c_code : int</span>
+<span class="sd">         number of lines with code.</span>
+<span class="sd">     c_comment : int</span>
+<span class="sd">         number of comment-only lines.</span>
+<span class="sd">     c_empty : int</span>
+<span class="sd">         number of blank lines.</span>
+<span class="sd">     c_ne : int</span>
+<span class="sd">         number of non-blank lines.</span>
+<span class="sd">     </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    |</span>
+<span class="sd">    | **Assumptions:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  It is assumed that the three quotations marks are only used to delimit </span>
+<span class="sd">    |</span>
+<span class="sd">    |</span>
+<span class="sd">    | **Notes:**</span>
+<span class="sd">    |</span>
+<span class="sd">    | All non-empty lines in the doc section of the functions is accounted as comments.</span>
+<span class="sd">    | Lines of code containing both code and comment are counted as code only</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">c_empty</span><span class="o">=</span><span class="mi">0</span>
+    <span class="n">c_ne</span><span class="o">=</span><span class="mi">0</span>
+    <span class="n">c_comment</span><span class="o">=</span><span class="mi">0</span>
+    <span class="n">c_line</span><span class="o">=</span><span class="mi">0</span>
+    <span class="n">lines_debug</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">comment_mode</span><span class="o">=</span><span class="kc">False</span> <span class="c1"># used to count lines in initial doc section.</span>
+    
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">full_input_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+            <span class="n">line_strip</span><span class="o">=</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="n">c_line</span><span class="o">+=</span><span class="mi">1</span>
+            
+            <span class="k">if</span> <span class="p">(</span><span class="s2">&quot;</span><span class="se">\&quot;\&quot;\&quot;</span><span class="s2">&quot;</span> <span class="ow">in</span> <span class="n">line_strip</span> <span class="ow">or</span> <span class="s2">&quot;</span><span class="se">\&#39;\&#39;\&#39;</span><span class="s2">&quot;</span> <span class="ow">in</span> <span class="n">line_strip</span><span class="p">):</span> <span class="c1"># switch doc-section mode</span>
+                <span class="k">if</span> <span class="n">line_strip</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">!=</span><span class="s2">&quot;#&quot;</span><span class="p">:</span>
+                    <span class="n">comment_mode</span><span class="o">=</span><span class="ow">not</span><span class="p">(</span><span class="n">comment_mode</span><span class="p">)</span>
+                    <span class="n">lines_debug</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;---&gt; comment mode = &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">comment_mode</span><span class="p">))</span>
+            
+            
+            <span class="k">if</span> <span class="n">comment_mode</span><span class="p">:</span>                                     <span class="c1"># doc section</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">line_strip</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>                           <span class="c1">#                      empty line</span>
+                    <span class="n">c_empty</span><span class="o">+=</span><span class="mi">1</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">c_comment</span><span class="o">+=</span><span class="mi">1</span>
+                <span class="k">if</span> <span class="n">debug_doc</span><span class="p">:</span>
+                    <span class="n">lines_debug</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line_strip</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>                                                <span class="c1"># non doc section</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">line_strip</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>                           <span class="c1">#                      empty line</span>
+                    <span class="n">c_empty</span><span class="o">+=</span><span class="mi">1</span>
+                <span class="k">elif</span> <span class="n">line_strip</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">==</span><span class="s2">&quot;#&quot;</span><span class="p">:</span>                         <span class="c1">#                      only-comment line</span>
+                    <span class="n">c_comment</span><span class="o">+=</span><span class="mi">1</span>
+                
+
+    <span class="k">if</span> <span class="n">debug_doc</span> <span class="ow">and</span> <span class="n">lines_debug</span><span class="o">!=</span><span class="p">[]:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">full_debug_file</span><span class="p">,</span><span class="s1">&#39;a&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f_dd</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line_debug</span> <span class="ow">in</span> <span class="n">lines_debug</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">line_debug</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">f_dd</span><span class="p">)</span>
+    
+    <span class="n">c_code</span><span class="o">=</span><span class="n">c_line</span><span class="o">-</span><span class="n">c_comment</span><span class="o">-</span><span class="n">c_empty</span>
+    <span class="n">c_ne</span><span class="o">=</span><span class="n">c_line</span><span class="o">-</span><span class="n">c_empty</span>
+    <span class="k">return</span><span class="p">([</span><span class="n">c_line</span><span class="p">,</span><span class="n">c_code</span><span class="p">,</span><span class="n">c_comment</span><span class="p">,</span><span class="n">c_empty</span><span class="p">,</span><span class="n">c_ne</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="get_out_line_stats"><a class="viewcode-back" href="../lib_code_stats.html#lib_code_stats.get_out_line_stats">[docs]</a><span class="k">def</span> <span class="nf">get_out_line_stats</span><span class="p">(</span><span class="n">str_v</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate output line with statistics.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     str_v : list of str</span>
+<span class="sd">         [&quot;str_identifier&quot;, str1, str2, ...] or [&quot;str_identifier&quot;, int1, int2, ...]</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     str</span>
+<span class="sd">         tabulated output line.</span>
+<span class="sd">    </span>
+<span class="sd">    Example    </span>
+<span class="sd">    -------</span>
+<span class="sd">     lines_out.append(&quot; &quot;+&quot;[File]&quot;.ljust(20)+str(&quot;[Total]&quot;).rjust(WIDTH_NUM)+\</span>
+<span class="sd">              str(&quot;[Code]&quot;).rjust(WIDTH_NUM)+\</span>
+<span class="sd">              str(&quot;[Comments]&quot;).rjust(WIDTH_NUM)+\</span>
+<span class="sd">              str(&quot;[Empty]&quot;).rjust(WIDTH_NUM)+\</span>
+<span class="sd">              str(&quot;[Non-empty]&quot;).rjust(WIDTH_NUM))</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">+</span><span class="n">str_v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="n">WIDTH_NUM</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">str_v</span><span class="p">[</span><span class="mi">1</span><span class="p">:]]))</span></div>
+
+
+<div class="viewcode-block" id="get_cx_code_stats"><a class="viewcode-back" href="../lib_code_stats.html#lib_code_stats.get_cx_code_stats">[docs]</a><span class="k">def</span> <span class="nf">get_cx_code_stats</span><span class="p">(</span><span class="n">filelist_v</span><span class="o">=</span><span class="n">FILELIST_V</span><span class="p">,</span><span class="n">p</span><span class="o">=</span><span class="s2">&quot;./&quot;</span><span class="p">,</span><span class="n">output_file</span><span class="o">=</span><span class="s2">&quot;stats_code&quot;</span><span class="p">,</span><span class="n">debug_doc_file</span><span class="o">=</span><span class="s2">&quot;stats_code_debug&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate statistics for CorrelX source code.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     filelist_v</span>
+<span class="sd">         list of lists following the format [&quot;group identifier&quot;, &quot;lib1.py,lib2.py,...,libN.py&quot;]</span>
+<span class="sd">     p : str</span>
+<span class="sd">         path to source file.</span>
+<span class="sd">     output_file : str</span>
+<span class="sd">         prefix for output file.</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">debug_doc</span><span class="o">=</span><span class="mi">1</span>
+    
+    <span class="n">suffix_file</span><span class="o">=</span><span class="s2">&quot;_&quot;</span><span class="o">+</span><span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;.txt&quot;</span>
+    
+    <span class="n">output_file</span><span class="o">+=</span>    <span class="n">suffix_file</span>
+    <span class="n">debug_doc_file</span><span class="o">+=</span> <span class="n">suffix_file</span>
+    
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">debug_doc_file</span><span class="p">,</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f_dd</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span><span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">f_dd</span><span class="p">)</span>
+    
+    
+    <span class="n">all_c_code</span><span class="o">=</span><span class="mi">0</span>
+    <span class="n">all_c_empty</span><span class="o">=</span><span class="mi">0</span>
+    <span class="n">all_c_ne</span><span class="o">=</span><span class="mi">0</span>
+    <span class="n">all_c_comment</span><span class="o">=</span><span class="mi">0</span>
+    <span class="n">all_c_line</span><span class="o">=</span><span class="mi">0</span>
+    
+    <span class="n">lines_out</span><span class="o">=</span><span class="p">[]</span>
+    
+    <span class="c1"># Main title</span>
+    <span class="n">lines_out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Statistics for CorrelX Python sources on &quot;</span><span class="o">+</span><span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y/%m/</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># Iterate all groups of files</span>
+    <span class="k">for</span> <span class="n">filelist_two</span> <span class="ow">in</span> <span class="n">filelist_v</span><span class="p">:</span>
+        <span class="p">[</span><span class="n">section</span><span class="p">,</span><span class="n">filelist</span><span class="p">]</span><span class="o">=</span><span class="n">filelist_two</span>
+        
+        <span class="n">t_c_code</span><span class="o">=</span><span class="mi">0</span>
+        <span class="n">t_c_empty</span><span class="o">=</span><span class="mi">0</span>
+        <span class="n">t_c_ne</span><span class="o">=</span><span class="mi">0</span>
+        <span class="n">t_c_comment</span><span class="o">=</span><span class="mi">0</span>
+        <span class="n">t_c_line</span><span class="o">=</span><span class="mi">0</span>
+        
+        <span class="n">file_v</span><span class="o">=</span><span class="nb">sorted</span><span class="p">(</span><span class="n">filelist</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">))</span>
+        
+        <span class="c1"># Section title</span>
+        <span class="n">lines_out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">lines_out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">section</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
+        <span class="n">lines_out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="o">*</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">section</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">lines_out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Header for stats</span>
+        <span class="n">lines_out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">get_out_line_stats</span><span class="p">([</span><span class="s2">&quot;[File]&quot;</span><span class="p">,</span><span class="s2">&quot;[Total]&quot;</span><span class="p">,</span><span class="s2">&quot;[Code]&quot;</span><span class="p">,</span><span class="s2">&quot;[Doc+Comm]&quot;</span><span class="p">,</span><span class="s2">&quot;[Empty]&quot;</span><span class="p">,</span><span class="s2">&quot;[Non-empty]&quot;</span><span class="p">]))</span>
+        
+        <span class="k">for</span> <span class="n">file_i</span> <span class="ow">in</span> <span class="n">file_v</span><span class="p">:</span>
+            
+            <span class="c1"># Statistics for current file</span>
+            <span class="n">full_input_file</span><span class="o">=</span><span class="n">p</span><span class="o">+</span><span class="n">file_i</span>
+            <span class="p">[</span><span class="n">c_line</span><span class="p">,</span><span class="n">c_code</span><span class="p">,</span><span class="n">c_comment</span><span class="p">,</span><span class="n">c_empty</span><span class="p">,</span><span class="n">c_ne</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_file_stats</span><span class="p">(</span><span class="n">full_input_file</span><span class="p">,</span><span class="n">debug_doc_file</span><span class="p">,</span><span class="n">debug_doc</span><span class="p">)</span>
+            
+            <span class="c1"># Cumulated statistics</span>
+            <span class="n">t_c_code</span><span class="o">+=</span><span class="n">c_code</span>
+            <span class="n">t_c_line</span><span class="o">+=</span><span class="n">c_line</span>
+            <span class="n">t_c_comment</span><span class="o">+=</span><span class="n">c_comment</span>
+            <span class="n">t_c_empty</span><span class="o">+=</span><span class="n">c_empty</span>
+            <span class="n">t_c_ne</span><span class="o">+=</span><span class="n">c_ne</span>
+            
+            <span class="c1"># Current file stats</span>
+            <span class="n">lines_out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">get_out_line_stats</span><span class="p">([</span><span class="n">file_i</span><span class="p">,</span><span class="n">c_line</span><span class="p">,</span><span class="n">c_code</span><span class="p">,</span><span class="n">c_comment</span><span class="p">,</span><span class="n">c_empty</span><span class="p">,</span><span class="n">c_ne</span><span class="p">]))</span>
+        
+        <span class="c1"># Totals for current group</span>
+        <span class="n">lines_out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">get_out_line_stats</span><span class="p">([</span><span class="s2">&quot;&lt;Totals&gt;&quot;</span><span class="p">,</span><span class="n">t_c_line</span><span class="p">,</span><span class="n">t_c_code</span><span class="p">,</span><span class="n">t_c_comment</span><span class="p">,</span><span class="n">t_c_empty</span><span class="p">,</span><span class="n">t_c_ne</span><span class="p">]))</span>
+        
+        <span class="n">lines_out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">all_c_code</span><span class="o">+=</span><span class="n">t_c_code</span>
+        <span class="n">all_c_line</span><span class="o">+=</span><span class="n">t_c_line</span>
+        <span class="n">all_c_comment</span><span class="o">+=</span><span class="n">t_c_comment</span>
+        <span class="n">all_c_empty</span><span class="o">+=</span><span class="n">t_c_empty</span>
+        <span class="n">all_c_ne</span><span class="o">+=</span><span class="n">t_c_ne</span>
+        
+    <span class="c1"># Totals</span>
+    <span class="n">lines_out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">get_out_line_stats</span><span class="p">([</span><span class="s2">&quot;&lt;TOTALS&gt;&quot;</span><span class="p">,</span><span class="n">all_c_line</span><span class="p">,</span><span class="n">all_c_code</span><span class="p">,</span><span class="n">all_c_comment</span><span class="p">,</span><span class="n">all_c_empty</span><span class="p">,</span><span class="n">all_c_ne</span><span class="p">]))</span>
+    
+    
+    <span class="c1"># Summary</span>
+    <span class="n">lines_sum</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">lines_sum</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">lines_sum</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;*Summary:&quot;</span><span class="p">)</span>
+    <span class="n">lines_sum</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">lines_sum</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;  Lines of code:&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">all_c_code</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="n">WIDTH_NUM</span><span class="p">))</span>
+    <span class="n">lines_sum</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;  Lines of comments:&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">all_c_comment</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="n">WIDTH_NUM</span><span class="p">))</span>
+    <span class="n">lines_sum</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">lines_sum</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">lines_sum</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;*Details:&quot;</span><span class="p">)</span>
+    
+    <span class="n">lines_out</span><span class="o">=</span><span class="p">[</span><span class="n">lines_out</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">+</span><span class="n">lines_sum</span><span class="p">[:]</span><span class="o">+</span><span class="n">lines_out</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+    
+    
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">lines_out</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">lines_out</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">f</span><span class="p">)</span>
+        
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Results written to &quot;</span><span class="o">+</span><span class="n">output_file</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Debug doc written to &quot;</span><span class="o">+</span><span class="n">debug_doc_file</span><span class="p">)</span></div>
+
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Antonio Vazquez Alvarez, Victor Pankratius, and Pedro Elosegui.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

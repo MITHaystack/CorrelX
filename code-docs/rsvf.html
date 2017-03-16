@@ -1,0 +1,527 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>rsvf module &#8212; CorrelX 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="vdif_generator module" href="vdif_generator.html" />
+    <link rel="prev" title="process_zoom module" href="process_zoom.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-rsvf">
+<span id="rsvf-module"></span><h1>rsvf module<a class="headerlink" href="#module-rsvf" title="Permalink to this headline">¶</a></h1>
+<dl class="docutils">
+<dt>Reducer: performs VLBI correlation from a text file with the lines for all the stations, </dt>
+<dd>sorted as defined in const_mapred.py based on the key and format defined in msvf.get_pair_str().</dd>
+</dl>
+<div class="section" id="parameters">
+<h2>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div>See lib_mapredcorr.get_reducer_params_str()</div></blockquote>
+</div>
+<div class="section" id="returns">
+<h2>Returns<a class="headerlink" href="#returns" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div>See rsvf.get_lines_out_for_all() for visibilities.
+See rsvf.get_lines_stats() for statistics.</div></blockquote>
+</div>
+<div class="section" id="notes">
+<h2>Notes<a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h2>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><a href="#id1"><span class="problematic" id="id2">**</span></a>Reader:</div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Expecting lines with </div>
+<div class="line">See rsvf.split_input_line()</div>
+</div>
+</div>
+<dl class="function">
+<dt id="rsvf.decode_samples_b64">
+<code class="descclassname">rsvf.</code><code class="descname">decode_samples_b64</code><span class="sig-paren">(</span><em>vector_split_samples</em>, <em>vector_split_encoding</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/rsvf.html#decode_samples_b64"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rsvf.decode_samples_b64" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decode base64.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>vector_split_samples</dt>
+<dd>string with the samples (that is a component of the list vector_split).</dd>
+<dt>vector_split_encoding</dt>
+<dd>compression (VQ) encoding, disabled by default.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>out: 1D numpy array</dt>
+<dd>samples (components if complex), packed in binary format (uint8). Samples still need to be &#8220;dequantized&#8221;.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="rsvf.extract_params_split">
+<code class="descclassname">rsvf.</code><code class="descname">extract_params_split</code><span class="sig-paren">(</span><em>vector_split</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/rsvf.html#extract_params_split"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rsvf.extract_params_split" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get paramters from line header (header of the data, not part of the key).</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>vector_split <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><dl class="first last docutils">
+<dt>second part of the header with all the parameters provided by the mapper, </dt>
+<dd>associated to the samples to be processed.</dd>
+</dl>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="docutils">
+<dt>bits_per_sample</dt>
+<dd>number of bits for each component of the sample.</dd>
+<dt>block_first_sample</dt>
+<dd>accumulation period. TO DO: check this.</dd>
+<dt>data_type</dt>
+<dd>sample type, &#8216;r&#8217; for real, &#8216;c&#8217; for complex.</dd>
+<dt>encoding</dt>
+<dd>[unused] initially used for introducing compression in the data (VQ), currently not used.</dd>
+<dt>encoding_width</dt>
+<dd>[unused] also associated to compression.</dd>
+<dt>n_bins_pcal</dt>
+<dd>number of samples for the windows to be accumulated for the pcal signal.</dd>
+<dt>num_samples</dt>
+<dd>number of samples in this line.</dd>
+<dt>abs_delay</dt>
+<dd>absolute delay.</dd>
+<dt>rate_delay</dt>
+<dd>delay information corresponding these samples (polynomials, etc).</dd>
+<dt>fs</dt>
+<dd>sampling frequency.</dd>
+<dt>fs_pcal</dt>
+<dd>[unused] phase calibration signal frequency spacing.</dd>
+<dt>freq_channel</dt>
+<dd>sky frequency.</dd>
+<dt>first_sample</dt>
+<dd>first sample number (integer starting at 0).</dd>
+<dt>fractional_sample_delay</dt>
+<dd>fractional sample delay corresponding to the sample 0 of this stream.</dd>
+<dt>accumulation_time</dt>
+<dd>time duration of the integration period.</dd>
+<dt>shift_delay</dt>
+<dd>integer number of samples offset for the sample 0 of this stream.</dd>
+<dt>sideband</dt>
+<dd>single side band side, &#8216;l&#8217; for LSB, &#8216;u&#8217; for USB.</dd>
+</dl>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Conventions:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">See const_mapred.py for constants positions and descriptions.  </div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="rsvf.get_key_all_out">
+<code class="descclassname">rsvf.</code><code class="descname">get_key_all_out</code><span class="sig-paren">(</span><em>char_type</em>, <em>F_ind_s0</em>, <em>F_ind_s1</em>, <em>acc_str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/rsvf.html#get_key_all_out"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rsvf.get_key_all_out" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get key for reducer output.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>char_type <span class="classifier-delimiter">:</span> <span class="classifier">char</span></dt>
+<dd>operation mode (see split_input_line())</dd>
+<dt>F_ind_s0</dt>
+<dd>first station-polarization for this baseline.</dd>
+<dt>F_ind_s1</dt>
+<dd>second station-polarization for this baseline.</dd>
+<dt>acc_str <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>multi-key for output line.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>output <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>key for output line.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="rsvf.get_lines_out_for_all">
+<code class="descclassname">rsvf.</code><code class="descname">get_lines_out_for_all</code><span class="sig-paren">(</span><em>char_type</em>, <em>n_sp</em>, <em>F_ind</em>, <em>current_acc_str</em>, <em>count_acc</em>, <em>acc_mat</em>, <em>current_block_first_sample</em>, <em>current_vector_split</em>, <em>acc_pcal</em>, <em>count_acc_pcal</em>, <em>scaling_pair='A.A'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/rsvf.html#get_lines_out_for_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rsvf.get_lines_out_for_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get output lines for all results in accumulation matrix.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>char_type</dt>
+<dd>operation mode (see split_input_line()).</dd>
+<dt>n_sp</dt>
+<dd>number of station-polarizations.</dd>
+<dt>F_ind</dt>
+<dd>structure with ids for station-polarizations.</dd>
+<dt>current_acc_str</dt>
+<dd>multi-key</dd>
+<dt>count_acc</dt>
+<dd>number of accumulations for the visibilities.</dd>
+<dt>acc_mat <span class="classifier-delimiter">:</span> <span class="classifier">complex 3D array</span></dt>
+<dd>visibilities for all baselines for this acc period and band. See lib_fx_stack.compute_x_all() for more info.</dd>
+<dt>current_block_first_sample</dt>
+<dd>&lt;first_sample&gt;.&lt;channel_index&gt;.</dd>
+<dt>current_vector_split</dt>
+<dd>metadata as in the input line.</dd>
+<dt>acc_pcal <span class="classifier-delimiter">:</span> <span class="classifier">complex 2D array</span></dt>
+<dd>phase calibration results for all stations for this acc period and band. See lib_pcal.accumulate_pcal_all() for more info.</dd>
+<dt>count_acc_pcal</dt>
+<dd>number of accumulations for the phase calibration results.</dd>
+<dt>scaling_pair</dt>
+<dd>station-polarization for this task (used in linear-scaling, &#8220;A.A&#8221; by default (all-baseslines-per-task).</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>lines_out</dt>
+<dd>list of lines with output results (visibilities and phase calibration).</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="rsvf.get_lines_stats">
+<code class="descclassname">rsvf.</code><code class="descname">get_lines_stats</code><span class="sig-paren">(</span><em>current_key_pair_accu</em>, <em>F_stack_shift</em>, <em>F_adj_shift_partial</em>, <em>F_lti</em>, <em>F_ind</em>, <em>failed_acc_count</em>, <em>current_block_first_sample</em>, <em>dismissed_acc_count</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/rsvf.html#get_lines_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rsvf.get_lines_stats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get list of lines with stats for this accumulation period including:
+-Number of dropped/added samples (for fractional sample overflows) (stack)
+-Number of fractional sample overflows (shift)
+-For each stationpol: last sample, total samples, missing/invalid samples (lti)
+-Number of failed accumulations (will be one if some data is uncorrelated, which may be</p>
+<blockquote>
+<div>simply due to missalignment from delays.</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>current_key_pair_accu</dt>
+<dd>part of the key with pair (station-pol A and station-pol B) and accumulation period.</dd>
+<dt>F_stack_shift</dt>
+<dd>[unused?] see lib_fx_stack().</dd>
+<dt>F_adj_shift_partial</dt>
+<dd>[unused?] see lib_fx_stack().</dd>
+<dt>F_lti</dt>
+<dd><dl class="first last docutils">
+<dt>list with last sample (l), total number of samples processed (t), invalid samples (i), and </dt>
+<dd>adjuted samples for each stream.</dd>
+</dl>
+</dd>
+<dt>F_ind</dt>
+<dd>list with station-polarizations.</dd>
+<dt>failed_acc_count</dt>
+<dd>number of failed accumulations.</dd>
+<dt>current_block_first_sample</dt>
+<dd>&lt;first_sample&gt;.&lt;channel_index&gt;</dd>
+<dt>dismissed_acc_count</dt>
+<dd>number of dismissed accumulations.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>lines_stats <span class="classifier-delimiter">:</span> <span class="classifier">list of str</span></dt>
+<dd>lines with stats.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Remove unused.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="rsvf.get_shapes_F1">
+<code class="descclassname">rsvf.</code><code class="descname">get_shapes_F1</code><span class="sig-paren">(</span><em>F1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/rsvf.html#get_shapes_F1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rsvf.get_shapes_F1" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get string showing shapes of F1.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>F1:    list of multidimensional np.arrays</dt>
+<dd>(each elment has the samples for each station-poliarization.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div>out : str</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="rsvf.get_str_pcal_out">
+<code class="descclassname">rsvf.</code><code class="descname">get_str_pcal_out</code><span class="sig-paren">(</span><em>acc_pcal</em>, <em>current_n_bins_pcal</em>, <em>count_acc_pcal</em>, <em>current_key_pair_accu</em>, <em>current_vector_split</em>, <em>current_block_first_sample</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/rsvf.html#get_str_pcal_out"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rsvf.get_str_pcal_out" title="Permalink to this definition">¶</a></dt>
+<dd><p>[Only used in one-baseline-per-task mode]
+Get output string for phase calibration.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>acc_pcal <span class="classifier-delimiter">:</span> <span class="classifier">complex 1D np.array</span></dt>
+<dd>phase calibration results for one baseline, one band and one accumulation period.</dd>
+<dt>current_n_bins_pcal</dt>
+<dd>number of bins (number of elements in acc_pcal).</dd>
+<dt>count_acc_pcal</dt>
+<dd>number of accumulations performed to get pcal results.</dd>
+<dt>current_key_pair_accu</dt>
+<dd>part of the key with the baseline and the accumulation multi-key.</dd>
+<dt>current_vector_split</dt>
+<dd>metadata as in the input line.</dd>
+<dt>current_block_first_sample</dt>
+<dd>&lt;first_sample&gt;.&lt;channel_index&gt;.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>str_print <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>output line with phase calibration results.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="rsvf.get_str_pcal_out_all">
+<code class="descclassname">rsvf.</code><code class="descname">get_str_pcal_out_all</code><span class="sig-paren">(</span><em>sp</em>, <em>acc_pcal</em>, <em>current_n_bins_pcal</em>, <em>count_acc_pcal</em>, <em>current_key_pair_accu</em>, <em>current_vector_split</em>, <em>current_block_first_sample</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/rsvf.html#get_str_pcal_out_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rsvf.get_str_pcal_out_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get output string for phase calibration (all-baselines-per-task).</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>sp</dt>
+<dd>station-polarization</dd>
+<dt>acc_pcal <span class="classifier-delimiter">:</span> <span class="classifier">complex 1D np.array</span></dt>
+<dd>phase calibration results for one baseline, one band and one accumulation period.</dd>
+<dt>current_n_bins_pcal</dt>
+<dd>number of bins (number of elements in acc_pcal).</dd>
+<dt>count_acc_pcal</dt>
+<dd>number of accumulations performed to get pcal results.</dd>
+<dt>current_key_pair_accu</dt>
+<dd>part of the key with the baseline and the accumulation multi-key.</dd>
+<dt>current_vector_split</dt>
+<dd>metadata as in the input line.</dd>
+<dt>current_block_first_sample</dt>
+<dd>&lt;first_sample&gt;.&lt;channel_index&gt;.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>str_print <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>output line with phase calibration results.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="rsvf.get_str_r_out">
+<code class="descclassname">rsvf.</code><code class="descname">get_str_r_out</code><span class="sig-paren">(</span><em>current_key_pair_accu</em>, <em>count_acc</em>, <em>current_vector_split</em>, <em>current_block_first_sample</em>, <em>accu_prod_div</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/rsvf.html#get_str_r_out"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rsvf.get_str_r_out" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get output string for reducer.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>current_key_pair_accu</dt>
+<dd>part of the key with the baseline and the accumulation multi-key.</dd>
+<dt>count_acc</dt>
+<dd>number of accumulations.</dd>
+<dt>current_vector_split</dt>
+<dd>list with metadata.</dd>
+<dt>current_block_first_sample</dt>
+<dd>&lt;first_sample&gt;.&lt;channel_index&gt;</dd>
+<dt>accu_prod_div <span class="classifier-delimiter">:</span> <span class="classifier">complex 1D np.array</span></dt>
+<dd>visibilities for one baseline, one band and one accumulation period.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>str_print <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>output line with visibilities.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="rsvf.main">
+<code class="descclassname">rsvf.</code><code class="descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/rsvf.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rsvf.main" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="rsvf.restore_Fs">
+<code class="descclassname">rsvf.</code><code class="descname">restore_Fs</code><span class="sig-paren">(</span><em>last_F_delays</em>, <em>last_F_rates</em>, <em>last_F_frac</em>, <em>last_F_fs</em>, <em>last_F_fs_pcal</em>, <em>last_F_side</em>, <em>last_F_first_sample</em>, <em>F_delays</em>, <em>F_rates</em>, <em>F_frac</em>, <em>F_fs</em>, <em>F_fs_pcal</em>, <em>F_side</em>, <em>F_first_sample</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/rsvf.html#restore_Fs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rsvf.restore_Fs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Keep previous structures in case there is no data for all stationpols.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rsvf.split_input_line">
+<code class="descclassname">rsvf.</code><code class="descname">split_input_line</code><span class="sig-paren">(</span><em>line</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/rsvf.html#split_input_line"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rsvf.split_input_line" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get sub-keys from read line.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>line <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>whole line read from input.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>key_pair_accu <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>part of the key with pair (station-pol A and station-pol B) and accumulation period.</dd>
+<dt>key_sample <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>part of they key with sample number.</dd>
+<dt>key_station</dt>
+<dd>station identifier</dd>
+<dt>vector_split</dt>
+<dd>second part of the header with information necessary for the processing of the samples.</dd>
+<dt>is_autocorr</dt>
+<dd><dl class="first last docutils">
+<dt>used in one-baseline-per-task mode, indicates that this pair is an autocorrelation and therefore</dt>
+<dd>these samples will be correlated with themselves.</dd>
+</dl>
+</dd>
+<dt>key_station_pol</dt>
+<dd>station-polarization identifier.</dd>
+<dt>char_type</dt>
+<dd><dl class="first last docutils">
+<dt>identifies the mode of operation, as defined in the mapper:</dt>
+<dd><div class="first last line-block">
+<div class="line">&#8216;x&#8217; for all-baselines-per-task,</div>
+<div class="line">&#8216;r&#8217; for linear scaling with the number of stations,</div>
+<div class="line">&#8216;y&#8217; for one-baseline-per-task.</div>
+</div>
+</dd>
+</dl>
+</dd>
+<dt>accu_block</dt>
+<dd>integration period number.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Move char_type (char_p in mapper) to constants section.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="rsvf.str_list">
+<code class="descclassname">rsvf.</code><code class="descname">str_list</code><span class="sig-paren">(</span><em>F_list</em>, <em>sep_c='</em>, <em>'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/rsvf.html#str_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rsvf.str_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get string with representation of list.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rsvf.update_stored_samples">
+<code class="descclassname">rsvf.</code><code class="descname">update_stored_samples</code><span class="sig-paren">(</span><em>v_dequant</em>, <em>F1</em>, <em>F_ind</em>, <em>key_station_pol</em>, <em>F_delays</em>, <em>F_rates</em>, <em>F_fs</em>, <em>F_fs_pcal</em>, <em>abs_delay</em>, <em>rate_delay</em>, <em>fs</em>, <em>fs_pcal</em>, <em>F_first_sample</em>, <em>first_sample</em>, <em>data_type</em>, <em>F_frac</em>, <em>fractional_sample_delay</em>, <em>shift_delay</em>, <em>F_side</em>, <em>sideband</em>, <em>fft_size_in</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/rsvf.html#update_stored_samples"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rsvf.update_stored_samples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store samples and metadata, to be processed later.</p>
+<blockquote>
+<div><p><a href="#id3"><span class="problematic" id="id4">*</span></a>For data structures see output below.
+<a href="#id5"><span class="problematic" id="id6">*</span></a>For metadata parameters see extract_params_split().
+v_dequant :numpy 1D array of complex</p>
+<blockquote>
+<div>dequantized samples.</div></blockquote>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>F_*: lists where each element correspond to one read line. All these lists are related, i.e. the n-th element</dt>
+<dd>of all lists correspond to the same read line.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Add checks.</div>
+</div>
+</div>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">rsvf module</a><ul>
+<li><a class="reference internal" href="#parameters">Parameters</a></li>
+<li><a class="reference internal" href="#returns">Returns</a></li>
+<li><a class="reference internal" href="#notes">Notes</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="process_zoom.html" title="previous chapter">process_zoom module</a></li>
+      <li>Next: <a href="vdif_generator.html" title="next chapter">vdif_generator module</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/rsvf.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Antonio Vazquez Alvarez, Victor Pankratius, and Pedro Elosegui.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/rsvf.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

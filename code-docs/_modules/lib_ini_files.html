@@ -1,0 +1,778 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>lib_ini_files &#8212; CorrelX 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for lib_ini_files</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># &lt;nbformat&gt;3.0&lt;/nbformat&gt;</span>
+
+<span class="c1"># &lt;codecell&gt;</span>
+
+<span class="c1">#!/usr/bin/env python</span>
+<span class="c1">#</span>
+<span class="c1">#The MIT CorrelX Correlator</span>
+<span class="c1">#</span>
+<span class="c1">#https://github.com/MITHaystack/CorrelX</span>
+<span class="c1">#Contact: correlX@haystack.mit.edu</span>
+<span class="c1">#Project leads: Victor Pankratius, Pedro Elosegui Project developer: A.J. Vazquez Alvarez</span>
+<span class="c1">#</span>
+<span class="c1">#Copyright 2017 MIT Haystack Observatory</span>
+<span class="c1">#</span>
+<span class="c1">#Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the &quot;Software&quot;), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1">#The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</span>
+<span class="c1">#</span>
+<span class="c1">#THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#------------------------------</span>
+<span class="c1">#------------------------------</span>
+<span class="c1">#Project: CorrelX.</span>
+<span class="c1">#File: lib_ini_files.py.</span>
+<span class="c1">#Author: A.J. Vazquez Alvarez (ajvazquez@haystack.mit.edu)</span>
+<span class="c1">#Description: </span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Routines for generating/accessing the .ini files with the configuration of the scenario for the correlation.</span>
+
+<span class="sd">Notes</span>
+<span class="sd">-----</span>
+<span class="sd"> Parameters and values are case sensitive!</span>
+
+<span class="sd">| Experiment files:</span>
+<span class="sd">| Every experiment requires the following files:</span>
+<span class="sd">|    correation.ini:             configuration of the correlation (start and end time, FFT length, etc.)</span>
+<span class="sd">|    stations.ini:               information about stations clocks (polynomials).</span>
+<span class="sd">|    sources.ini:                information about sources.</span>
+<span class="sd">|    media.ini:                  information about media (input file names, formats, etc)</span>
+<span class="sd">|    delay_model.ini:            information aobut delay model (polynomials).</span>
+<span class="sd">| </span>
+<span class="sd">| Additionally, the following file is generated during initialization:</span>
+<span class="sd">|    delays.ini:                 re-processed polynomials for delay model.</span>
+
+<span class="sd">Regarding initialization files</span>
+<span class="sd">------------------------------</span>
+<span class="sd"> Initialization files follow this format:</span>
+<span class="sd"> | </span>
+<span class="sd"> | [section]</span>
+<span class="sd"> | param: value</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="c1">#History:</span>
+<span class="c1">#initial version: 2015.12 ajva</span>
+<span class="c1">#MIT Haystack Observatory</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+
+<span class="kn">import</span> <span class="nn">imp</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">import</span> <span class="nn">const_ini_files</span>
+<span class="n">imp</span><span class="o">.</span><span class="n">reload</span><span class="p">(</span><span class="n">const_ini_files</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">const_ini_files</span> <span class="k">import</span> <span class="o">*</span>
+
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">configparser</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">ConfigParser</span> <span class="k">as</span> <span class="nn">configparser</span>
+
+
+
+
+<div class="viewcode-block" id="serialize_config"><a class="viewcode-back" href="../lib_ini_files.html#lib_ini_files.serialize_config">[docs]</a><span class="k">def</span> <span class="nf">serialize_config</span><span class="p">(</span><span class="n">sources_file</span><span class="o">=</span><span class="s1">&#39;media.ini&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Converts configuration file into string.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     sources_file : str</span>
+<span class="sd">         name of initialization [.ini] file (e.g.: media.ini, stations.ini, delays.ini, etc.)</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     serial_str : str</span>
+<span class="sd">         serialized contents of initialization file.</span>
+<span class="sd">    </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    | **Format configuration:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  See const_ini_files.py:</span>
+<span class="sd">    |   SEPARATOR_ELEMENTS</span>
+<span class="sd">    |   SEPARATOR_VECTOR</span>
+<span class="sd">    |   SEP_VALUES</span>
+<span class="sd">    |  </span>
+<span class="sd">    |</span>
+<span class="sd">    | **Notes:</span>
+<span class="sd">    |</span>
+<span class="sd">    |  Avoid use of reserved separators from list of file if existing</span>
+<span class="sd">    |   E.g.: list of files separated with commas</span>
+<span class="sd">    |         file1,file2 -&gt; file1:file2</span>
+<span class="sd">    |</span>
+<span class="sd">    |</span>
+<span class="sd">    | **Example:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  &gt;&gt;&gt; serial_str=serialize_config()</span>
+<span class="sd">    |  &gt;&gt;&gt; print(serial_str)</span>
+<span class="sd">    |   VF-0.vt,polarizations/L:R:L:R,station/At,channels/0:0:1:1;VF-1.vt,polarizations/L:R:L:R,station/At,channels/0:0:1:1</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">s</span> <span class="o">=</span> <span class="n">configparser</span><span class="o">.</span><span class="n">ConfigParser</span><span class="p">()</span>
+    <span class="n">s</span><span class="o">.</span><span class="n">optionxform</span><span class="o">=</span><span class="nb">str</span>
+    <span class="n">s</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">sources_file</span><span class="p">)</span>
+    <span class="n">serial_str</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">section</span> <span class="ow">in</span> <span class="n">s</span><span class="o">.</span><span class="n">sections</span><span class="p">():</span>
+        <span class="n">serial_str</span><span class="o">+=</span><span class="n">section</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">each_key</span><span class="p">,</span> <span class="n">each_val</span><span class="p">)</span> <span class="ow">in</span> <span class="n">s</span><span class="o">.</span><span class="n">items</span><span class="p">(</span><span class="n">section</span><span class="p">):</span>
+            <span class="n">each_val_mod</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">each_val</span><span class="p">:</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">i</span><span class="o">==</span><span class="n">SEPARATOR_ELEMENTS</span><span class="p">)</span><span class="ow">or</span><span class="p">(</span><span class="n">i</span><span class="o">==</span><span class="n">SEPARATOR_VECTOR</span><span class="p">):</span>
+                    <span class="n">each_val_mod</span><span class="o">+=</span><span class="n">SEP_VALUES</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">each_val_mod</span><span class="o">+=</span><span class="n">i</span>
+            
+            <span class="n">serial_str</span><span class="o">+=</span> <span class="n">SEPARATOR_ELEMENTS</span> <span class="o">+</span> <span class="n">each_key</span> <span class="o">+</span> <span class="n">SEPARATOR_PARAM_VAL</span> <span class="o">+</span> <span class="n">each_val_mod</span>
+        <span class="n">serial_str</span><span class="o">+=</span> <span class="n">SEPARATOR_VECTOR</span>
+    <span class="n">serial_str</span><span class="o">=</span><span class="n">serial_str</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    
+    <span class="k">return</span><span class="p">(</span><span class="n">serial_str</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="serial_params_to_array"><a class="viewcode-back" href="../lib_ini_files.html#lib_ini_files.serial_params_to_array">[docs]</a><span class="k">def</span> <span class="nf">serial_params_to_array</span><span class="p">(</span><span class="n">read_str</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Converts string with serialized configuration file into array.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     read_str : str</span>
+<span class="sd">         serialized configuration [created with serialize_config()].</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     files_param : list of lists</span>
+<span class="sd">         list of lists based on serialized configuration.</span>
+<span class="sd">     </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    |</span>
+<span class="sd">    | **Example:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  &gt;&gt;&gt; params_array=serial_params_to_array(serial_str)</span>
+<span class="sd">    |  &gt;&gt;&gt; print(params_array)</span>
+<span class="sd">    |   [[&#39;VF-0.vt&#39;, &#39;polarizations/L:R:L:R&#39;, &#39;station/At&#39;, &#39;channels/0:0:1:1&#39;], [&#39;VF-1.vt&#39;, &#39;polarizations/L:R:L:R&#39;, &#39;station/At&#39;, &#39;channels/0:0:1:1&#39;]]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">read_split</span> <span class="o">=</span> <span class="n">read_str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">SEPARATOR_VECTOR</span><span class="p">)</span>
+    <span class="n">files_param</span> <span class="o">=</span><span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">read_split</span><span class="p">:</span>
+        <span class="n">files_param</span> <span class="o">+=</span> <span class="p">[</span><span class="n">i</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">SEPARATOR_ELEMENTS</span><span class="p">)]</span>
+    
+    <span class="k">return</span><span class="p">(</span><span class="n">files_param</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="get_param_serial"><a class="viewcode-back" href="../lib_ini_files.html#lib_ini_files.get_param_serial">[docs]</a><span class="k">def</span> <span class="nf">get_param_serial</span><span class="p">(</span><span class="n">params_array</span><span class="p">,</span><span class="n">section</span><span class="p">,</span><span class="n">param</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Retrieves value given an array with parameters, the filename and the parameter.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     params_array : list</span>
+<span class="sd">         configuration [created with serial_params_to_array()].</span>
+<span class="sd">     section : str</span>
+<span class="sd">         section to be looked up.</span>
+<span class="sd">     param : str</span>
+<span class="sd">         parameter to be looked up.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     value : str</span>
+<span class="sd">         value corresponding to requested section and param.</span>
+<span class="sd">     </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    |</span>
+<span class="sd">    | **Example:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  &gt;&gt;&gt; value = get_param_serial(params_array,&#39;VF-0.vt&#39;,&#39;channels&#39;)</span>
+<span class="sd">    |  &gt;&gt;&gt; print(value)</span>
+<span class="sd">    |   0:0:1:1</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="mi">1</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="n">will_break</span><span class="o">=</span><span class="mi">0</span>
+        <span class="n">value</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">vector</span> <span class="ow">in</span> <span class="n">params_array</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">will_break</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="k">if</span> <span class="n">vector</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">==</span><span class="n">section</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">vector</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+                    <span class="k">if</span> <span class="n">will_break</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                        <span class="k">break</span>
+                    <span class="k">if</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">i</span><span class="p">:</span>
+                        <span class="n">value</span><span class="o">=</span><span class="n">i</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">SEPARATOR_PARAM_VAL</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+                        <span class="n">will_break</span><span class="o">=</span><span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">value</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+        <span class="n">id_section</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">params_array</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">section</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">params_array</span><span class="p">[</span><span class="n">id_section</span><span class="p">][</span><span class="mi">1</span><span class="p">:]:</span>
+            <span class="k">if</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">i</span><span class="p">:</span>
+                <span class="n">value</span><span class="o">=</span><span class="n">i</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">SEPARATOR_PARAM_VAL</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_param_total"><a class="viewcode-back" href="../lib_ini_files.html#lib_ini_files.get_param_total">[docs]</a><span class="k">def</span> <span class="nf">get_param_total</span><span class="p">(</span><span class="n">params_array</span><span class="p">,</span><span class="n">section</span><span class="p">,</span><span class="n">param</span><span class="p">,</span><span class="n">separator_values</span><span class="o">=</span><span class="n">SEP_VALUES</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns the number of different values for a parameter.</span>
+<span class="sd">    This is e.g. for getting the number of polarizations in a media.ini file for a station.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     params_array : list</span>
+<span class="sd">         configuration [created with serial_params_to_array()].</span>
+<span class="sd">     section : str</span>
+<span class="sd">         section to be looked up.</span>
+<span class="sd">     param : str</span>
+<span class="sd">         parameter to be looked up.</span>
+<span class="sd">     separator_values</span>
+<span class="sd">         separator for values [SEP_VALUES from const_ini_files.py by default].</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     total : int</span>
+<span class="sd">            number of different values separated by separator_vaules.</span>
+<span class="sd">    </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    |</span>
+<span class="sd">    | **Example:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  &gt;&gt;&gt; tot = get_param_total(params_array,&#39;VF-0.vt&#39;,&#39;Channels&#39;)</span>
+<span class="sd">    |  &gt;&gt;&gt; print(tot)</span>
+<span class="sd">    |   2</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">value</span> <span class="o">=</span> <span class="n">get_param_serial</span><span class="p">(</span><span class="n">params_array</span><span class="p">,</span><span class="n">section</span><span class="p">,</span><span class="n">param</span><span class="p">)</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">SEP_VALUES</span><span class="p">)))</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">total</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="get_param_eq_vector"><a class="viewcode-back" href="../lib_ini_files.html#lib_ini_files.get_param_eq_vector">[docs]</a><span class="k">def</span> <span class="nf">get_param_eq_vector</span><span class="p">(</span><span class="n">params_array</span><span class="p">,</span><span class="n">section</span><span class="p">,</span><span class="n">param</span><span class="p">,</span><span class="n">separator_values</span><span class="o">=</span><span class="n">SEP_VALUES</span><span class="p">,</span><span class="n">modein</span><span class="o">=</span><span class="s2">&quot;int&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns the vector with the mapped values for the specified parameters.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     params_array : list</span>
+<span class="sd">         configuration [created with serial_params_to_array()].</span>
+<span class="sd">     section : str</span>
+<span class="sd">         section to be looked up.</span>
+<span class="sd">     param : str</span>
+<span class="sd">         parameter to be looked up.</span>
+<span class="sd">     separator_values</span>
+<span class="sd">         separator for values [SEP_VALUES from const_ini_files.py by default].</span>
+<span class="sd">     modein : str</span>
+<span class="sd">         selector of format for output:</span>
+<span class="sd">         |    &quot;int&quot; : convert values in output list to integer.</span>
+<span class="sd">         |    else:   return output list as is (strings).</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     eq_vector</span>
+<span class="sd">         equivalent vector with indices reported at the first sections of the ini file.</span>
+<span class="sd">     </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    |</span>
+<span class="sd">    | **Example:**</span>
+<span class="sd">    |</span>
+<span class="sd">    | Given the file media.ini:</span>
+<span class="sd">    |   [channels]</span>
+<span class="sd">    |   CH2 = 1</span>
+<span class="sd">    |   CH1 = 0</span>
+<span class="sd">    |   [polarizations]</span>
+<span class="sd">    |   L = 0</span>
+<span class="sd">    |   R = 1</span>
+<span class="sd">    |   [VDF-0.vt]</span>
+<span class="sd">    |   polarizations = L:R:L:R</span>
+<span class="sd">    |   channels = CH1:CH1:CH2:CH2</span>
+<span class="sd">    |   station = At</span>
+<span class="sd">    |   ...</span>
+<span class="sd">    |  &gt;&gt;&gt;params_array=serial_params_to_array(serialize_config(sources_file=&#39;media.ini&#39;))    </span>
+<span class="sd">    |  &gt;&gt;&gt;eq_vector=get_param_eq_vector(params_array,&#39;VDF-0.vt&#39;,&#39;polarizations&#39;)</span>
+<span class="sd">    |  &gt;&gt;&gt;print(eq_vector)</span>
+<span class="sd">    |   [0, 1, 0, 1]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">get_param_serial</span><span class="p">(</span><span class="n">params_array</span><span class="p">,</span><span class="n">section</span><span class="p">,</span><span class="n">param</span><span class="p">)</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">SEP_VALUES</span><span class="p">)</span>
+    <span class="n">eq_vector</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">if</span> <span class="n">modein</span><span class="o">==</span><span class="s2">&quot;int&quot;</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
+            <span class="n">eq_vector</span><span class="o">+=</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">get_param_serial</span><span class="p">(</span><span class="n">params_array</span><span class="p">,</span><span class="n">param</span><span class="p">,</span><span class="n">i</span><span class="p">))]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
+            <span class="n">eq_vector</span><span class="o">+=</span><span class="p">[</span><span class="n">get_param_serial</span><span class="p">(</span><span class="n">params_array</span><span class="p">,</span><span class="n">param</span><span class="p">,</span><span class="n">i</span><span class="p">)]</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">eq_vector</span><span class="p">)</span></div>
+    
+    
+    
+<span class="c1">#def get_param_eq_vector_list(params_array,section,param,separator_values=SEP_VALUES):</span>
+<span class="c1">#    &quot;&quot;&quot;</span>
+<span class="c1">#    Returns the vector with the mapped values for the specified parameters for separated elements.</span>
+<span class="c1">#    </span>
+<span class="c1">#    Example:</span>
+<span class="c1">#    --------</span>
+<span class="c1">#     Given the file media.ini:</span>
+<span class="c1">#      [channels]</span>
+<span class="c1">#      P15 = 4,5</span>
+<span class="c1">#</span>
+<span class="c1">#            </span>
+<span class="c1">#    &quot;&quot;&quot;</span>
+<span class="c1">#    value = get_param_serial(params_array,section,param)</span>
+<span class="c1">#    values = value.split(SEP_VALUES)</span>
+<span class="c1">#    eq_vector=[]</span>
+<span class="c1">#    for i in values:</span>
+<span class="c1">#        eq_vector+=[list(map(int,get_val_vector(params_array,param,i)))]</span>
+<span class="c1">#    return(eq_vector)</span>
+    
+<div class="viewcode-block" id="get_val_vector"><a class="viewcode-back" href="../lib_ini_files.html#lib_ini_files.get_val_vector">[docs]</a><span class="k">def</span> <span class="nf">get_val_vector</span><span class="p">(</span><span class="n">params_array</span><span class="p">,</span><span class="n">section</span><span class="p">,</span><span class="n">param</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns vector with list of values.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     params_array : list</span>
+<span class="sd">         configuration [created with serial_params_to_array()].</span>
+<span class="sd">     section : str</span>
+<span class="sd">         string with section to be looked up.</span>
+<span class="sd">     param : str</span>
+<span class="sd">         parameter to be looked up.</span>
+<span class="sd">    </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    |</span>
+<span class="sd">    | **Example:**</span>
+<span class="sd">    |  Given the file media.ini:</span>
+<span class="sd">    |   ...</span>
+<span class="sd">    |   [file1]</span>
+<span class="sd">    |   sidebands = U:U:U:U</span>
+<span class="sd">    |   ...</span>
+<span class="sd">    |  &gt;&gt;&gt;&gt;sidebands=get_val_vector(params_media,&quot;file1&quot;,C_INI_MEDIA_SIDEBANDS)</span>
+<span class="sd">    |  &gt;&gt;&gt;&gt;print(sidebands)</span>
+<span class="sd">    |   [&#39;U&#39;, &#39;U&#39;, &#39;U&#39;, &#39;U&#39;]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">get_param_serial</span><span class="p">(</span><span class="n">params_array</span><span class="p">,</span><span class="n">section</span><span class="p">,</span><span class="n">param</span><span class="p">)</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">SEP_VALUES</span><span class="p">)</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">values</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="get_all_params_serial"><a class="viewcode-back" href="../lib_ini_files.html#lib_ini_files.get_all_params_serial">[docs]</a><span class="k">def</span> <span class="nf">get_all_params_serial</span><span class="p">(</span><span class="n">params_array</span><span class="p">,</span><span class="n">section</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Retrieves list with all the parameters for a section.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     params_array : list</span>
+<span class="sd">         list with configuration [created with serial_params_to_array()].</span>
+<span class="sd">     section : str</span>
+<span class="sd">         section to be looked up.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     values : str</span>
+<span class="sd">         lists of strings corresponding to the parameters in the section.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">values</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">for</span> <span class="n">vector</span> <span class="ow">in</span> <span class="n">params_array</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">vector</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">==</span><span class="n">section</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">vector</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+                <span class="n">values</span><span class="o">+=</span><span class="p">[</span><span class="n">i</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">SEPARATOR_PARAM_VAL</span><span class="p">)[</span><span class="mi">0</span><span class="p">]]</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">values</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="get_all_values_serial"><a class="viewcode-back" href="../lib_ini_files.html#lib_ini_files.get_all_values_serial">[docs]</a><span class="k">def</span> <span class="nf">get_all_values_serial</span><span class="p">(</span><span class="n">params_array</span><span class="p">,</span><span class="n">param</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Retrieves list with all the values of a paramter for all the section.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     params_array : list</span>
+<span class="sd">            configuration [created with serial_params_to_array()].</span>
+<span class="sd">     param : str</span>
+<span class="sd">            parameter to be looked up through all sections.</span>
+<span class="sd">                </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     values</span>
+<span class="sd">        list with strings with all the values corresponding to the requested paramter.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">values</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">for</span> <span class="n">vector</span> <span class="ow">in</span> <span class="n">params_array</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">vector</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+            <span class="k">if</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">i</span><span class="p">:</span>
+                <span class="n">values</span><span class="o">+=</span><span class="p">[</span><span class="n">i</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">SEPARATOR_PARAM_VAL</span><span class="p">)[</span><span class="mi">1</span><span class="p">]]</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">values</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_all_sections"><a class="viewcode-back" href="../lib_ini_files.html#lib_ini_files.get_all_sections">[docs]</a><span class="k">def</span> <span class="nf">get_all_sections</span><span class="p">(</span><span class="n">params_array</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Retrieves list with all the section names.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     params_array</span>
+<span class="sd">         list with configuration [created with serial_params_to_array()].</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     sections</span>
+<span class="sd">         list of strings with the names of all the sections in the ini file.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sections</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">for</span> <span class="n">vector</span> <span class="ow">in</span> <span class="n">params_array</span><span class="p">:</span>
+        <span class="n">sections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vector</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">sections</span><span class="p">)</span></div>
+
+
+
+<span class="c1">##################################################################</span>
+<span class="c1">#</span>
+<span class="c1">#                      Specific routines</span>
+<span class="c1">#</span>
+<span class="c1">##################################################################</span>
+
+<span class="c1"># Specific for delay model</span>
+
+
+
+
+<div class="viewcode-block" id="get_pair_st_so"><a class="viewcode-back" href="../lib_ini_files.html#lib_ini_files.get_pair_st_so">[docs]</a><span class="k">def</span> <span class="nf">get_pair_st_so</span><span class="p">(</span><span class="n">st_id</span><span class="p">,</span><span class="n">so_id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get string st&lt;st_id&gt;-so&lt;so_id&gt; (e.g. st0-so0).</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     st_id : int</span>
+<span class="sd">         station id.</span>
+<span class="sd">     so_id : int</span>
+<span class="sd">         source id.</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     pair_st_so : str</span>
+<span class="sd">         output.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span><span class="p">(</span><span class="s2">&quot;st&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">st_id</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;-&quot;</span><span class="o">+</span><span class="s2">&quot;so&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">so_id</span><span class="p">))</span></div>
+    
+
+
+<div class="viewcode-block" id="get_section_delay_model"><a class="viewcode-back" href="../lib_ini_files.html#lib_ini_files.get_section_delay_model">[docs]</a><span class="k">def</span> <span class="nf">get_section_delay_model</span><span class="p">(</span><span class="n">params_array</span><span class="p">,</span><span class="n">mjd_in</span><span class="p">,</span><span class="n">seconds</span><span class="p">,</span><span class="n">source_id_in</span><span class="p">,</span><span class="n">station_id_in</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get section from delay model ini file.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     params_array : list</span>
+<span class="sd">         information from delay model ini file (see lib_ini_files.py).</span>
+<span class="sd">     mjd_in</span>
+<span class="sd">         MJD for the start of the experiment.</span>
+<span class="sd">     seconds</span>
+<span class="sd">         number of seconds for the start of the experiment.</span>
+<span class="sd">     source_id_in : int</span>
+<span class="sd">         source identifier in sources ini file.</span>
+<span class="sd">     station_id_in : int</span>
+<span class="sd">         stations identifier in stations ini file.</span>
+<span class="sd">     v : int</span>
+<span class="sd">         0 by default, 1 for verbose mode.</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     section_found : str</span>
+<span class="sd">         section found in the delay model ini file, otherwise &quot;&quot;.</span>
+<span class="sd">     start_s : int</span>
+<span class="sd">         seconds for this section.</span>
+<span class="sd">    </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    |</span>
+<span class="sd">    | **TO DO:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  Move to lib_ini_files.py</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">section_found</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">sections</span> <span class="o">=</span> <span class="n">get_all_sections</span><span class="p">(</span><span class="n">params_array</span><span class="p">)</span>
+    <span class="n">start_s</span><span class="o">=</span><span class="mi">0</span>
+    
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">sections</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="p">[</span><span class="n">mjd_str</span><span class="p">,</span><span class="n">start_str</span><span class="p">,</span><span class="n">end_str</span><span class="p">,</span><span class="n">so_str</span><span class="p">,</span><span class="n">st_str</span><span class="p">]</span><span class="o">=</span><span class="n">i</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)</span>
+        <span class="n">mjd</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">mjd_str</span><span class="p">)</span>
+        <span class="n">start_s</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">start_str</span><span class="p">)</span>
+        <span class="n">end_s</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">end_str</span><span class="p">)</span>
+        <span class="n">so_id</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">so_str</span><span class="p">[</span><span class="mi">2</span><span class="p">:])</span>
+        <span class="n">st_id</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">st_str</span><span class="p">[</span><span class="mi">2</span><span class="p">:])</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">mjd_in</span><span class="o">==</span><span class="n">mjd</span><span class="p">)</span><span class="ow">and</span><span class="p">(</span><span class="n">start_s</span><span class="o">&lt;=</span><span class="n">seconds</span><span class="p">)</span><span class="ow">and</span><span class="p">(</span><span class="n">seconds</span><span class="o">&lt;</span><span class="n">end_s</span><span class="p">)</span><span class="ow">and</span><span class="p">(</span><span class="n">source_id_in</span><span class="o">==</span><span class="n">so_id</span><span class="p">)</span><span class="ow">and</span><span class="p">(</span><span class="n">station_id_in</span><span class="o">==</span><span class="n">st_id</span><span class="p">):</span>
+            <span class="n">section_found</span><span class="o">=</span><span class="n">i</span>
+            <span class="k">break</span>
+    <span class="k">return</span><span class="p">([</span><span class="n">section_found</span><span class="p">,</span><span class="n">start_s</span><span class="p">])</span></div>
+
+
+
+<div class="viewcode-block" id="get_vector_delay_ref"><a class="viewcode-back" href="../lib_ini_files.html#lib_ini_files.get_vector_delay_ref">[docs]</a><span class="k">def</span> <span class="nf">get_vector_delay_ref</span><span class="p">(</span><span class="n">vector_params_delay</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get seconds corresponding to elements in delays.ini.</span>
+<span class="sd">        </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     vector_params_delay : str</span>
+<span class="sd">         serialized representation of the delay model ini file.</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     sv : list of floats</span>
+<span class="sd">         seconds for delay information (start time polynomials).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sv</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">vector_params_delay</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">DELAY_MODEL_REL_MARKER</span> <span class="ow">in</span> <span class="n">i</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="n">DELAY_MODEL_REL_MARKER</span><span class="p">)]:</span>
+            <span class="c1">#sv+=[int(i.split(DELAY_MODEL_REL_MARKER)[1])]</span>
+            <span class="n">sv</span><span class="o">+=</span><span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">DELAY_MODEL_REL_MARKER</span><span class="p">)[</span><span class="mi">1</span><span class="p">])]</span>
+
+    <span class="n">sv</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">sv</span><span class="p">)</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">sv</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="find_nearest_seconds"><a class="viewcode-back" href="../lib_ini_files.html#lib_ini_files.find_nearest_seconds">[docs]</a><span class="k">def</span> <span class="nf">find_nearest_seconds</span><span class="p">(</span><span class="n">vector_seconds_ref</span><span class="p">,</span><span class="n">seconds_fr</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Find second which is nearest to seconds_fr in delay param vector. In other words, find the timestamp</span>
+<span class="sd">     (start time) of the accumulation period to which the timestamp of the frame corresponds.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     vector_seconds_ref : list of floats</span>
+<span class="sd">         seconds for delay information (start time polynomials).</span>
+<span class="sd">     seconds_fr</span>
+<span class="sd">         seconds to be searched for in the previous item.</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     seconds_out</span>
+<span class="sd">         highest value lesser than the input number of seconds, or -1 if not found</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    
+    <span class="n">sv</span> <span class="o">=</span> <span class="n">vector_seconds_ref</span> <span class="c1"># get_vector_delay_ref(vector_params_delay)</span>
+    <span class="n">sv_sub</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">seconds_fr</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">sv</span><span class="p">))</span>
+
+
+
+
+    <span class="n">difference</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">sv</span><span class="p">,</span><span class="n">sv_sub</span><span class="p">)</span>
+
+    
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">difference</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">difference</span><span class="p">)</span><span class="o">.</span><span class="n">size</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># TO DO: internal log? if so argument to function</span>
+        <span class="c1">#if INTERNAL_LOG==1:</span>
+        <span class="c1">#print(&quot;zM&quot;+KEY_SEP+&quot;Failed find_nearest=&quot;+str(seconds_fr)+ &quot; in (&quot;+&#39;,&#39;.join(vector_params_delay)+&quot;)&quot;)</span>
+        <span class="k">if</span> <span class="n">DEBUG_GENERAL_M</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;zM</span><span class="se">\t</span><span class="s2">Failed find_nearest=&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">seconds_fr</span><span class="p">)</span><span class="o">+</span> <span class="s2">&quot; in (&quot;</span><span class="o">+</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">vector_params_delay</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;)&quot;</span><span class="p">)</span>
+        <span class="n">seconds_out</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">seconds_out</span> <span class="o">=</span> <span class="n">sv</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">difference</span><span class="p">))]</span>
+
+    <span class="k">return</span><span class="p">(</span><span class="n">seconds_out</span><span class="p">)</span></div>
+
+
+
+<span class="c1">#def get_rates_delays(seconds_fr_nearest,pair_st_so,params_delays,cache_rates=[]):</span>
+<div class="viewcode-block" id="get_rates_cache"><a class="viewcode-back" href="../lib_ini_files.html#lib_ini_files.get_rates_cache">[docs]</a><span class="k">def</span> <span class="nf">get_rates_cache</span><span class="p">(</span><span class="n">seconds_fr_nearest</span><span class="p">,</span><span class="n">pair_st_so</span><span class="p">,</span><span class="n">params_delays</span><span class="p">,</span><span class="n">cache_rates</span><span class="o">=</span><span class="p">[]):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get rates from delays.ini. It allows to keep a cache (currently only one element) to </span>
+<span class="sd">     reduce the number of look-ups.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">found</span><span class="o">=</span><span class="kc">None</span>
+    <span class="k">if</span> <span class="n">cache_rates</span><span class="o">!=</span><span class="p">[]:</span>
+        <span class="c1">#i = cache_rates[0]</span>
+        <span class="k">if</span> <span class="n">seconds_fr_nearest</span><span class="o">==</span><span class="n">cache_rates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">and</span> <span class="n">pair_st_so</span><span class="o">==</span><span class="n">cache_rates</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="c1">#found=i[2][0]</span>
+            <span class="n">found</span><span class="o">=</span><span class="mi">0</span>
+    <span class="c1">#found = check_delay_cache(seconds_fr_nearest,pair_st_so,cache_rates)</span>
+
+    <span class="k">if</span> <span class="n">found</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="p">[</span><span class="n">rate_delay</span><span class="p">,</span><span class="n">ref_delay</span><span class="p">,</span><span class="n">abs_delay</span><span class="p">,</span><span class="n">delay</span><span class="p">]</span><span class="o">=</span> <span class="n">cache_rates</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="c1">#found_rates</span>
+        
+    <span class="k">else</span><span class="p">:</span>
+        
+        <span class="c1">#if VERBOSE_INI_DELAYS:</span>
+        <span class="n">rr0_epoch</span><span class="o">=</span><span class="n">DELAY_MODEL_RR0_MARKER</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">seconds_fr_nearest</span><span class="p">)</span>
+        <span class="n">rr1_epoch</span><span class="o">=</span><span class="n">DELAY_MODEL_RR1_MARKER</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">seconds_fr_nearest</span><span class="p">)</span>
+        <span class="n">rr2_epoch</span><span class="o">=</span><span class="n">DELAY_MODEL_RR2_MARKER</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">seconds_fr_nearest</span><span class="p">)</span>
+        <span class="n">rrr_epoch</span><span class="o">=</span><span class="n">DELAY_MODEL_RRR_MARKER</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">seconds_fr_nearest</span><span class="p">)</span>
+        <span class="n">rc0_epoch</span><span class="o">=</span><span class="n">DELAY_MODEL_RC0_MARKER</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">seconds_fr_nearest</span><span class="p">)</span>
+        <span class="n">rc1_epoch</span><span class="o">=</span><span class="n">DELAY_MODEL_RC1_MARKER</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">seconds_fr_nearest</span><span class="p">)</span>
+        <span class="n">zc0_epoch</span><span class="o">=</span><span class="n">DELAY_MODEL_ZC0_MARKER</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">seconds_fr_nearest</span><span class="p">)</span>
+        <span class="n">zc1_epoch</span><span class="o">=</span><span class="n">DELAY_MODEL_ZC1_MARKER</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">seconds_fr_nearest</span><span class="p">)</span>
+        <span class="n">rcr_epoch</span><span class="o">=</span><span class="n">DELAY_MODEL_RCR_MARKER</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">seconds_fr_nearest</span><span class="p">)</span>
+        <span class="n">rcm_epoch</span><span class="o">=</span><span class="n">DELAY_MODEL_RCM_MARKER</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">seconds_fr_nearest</span><span class="p">)</span>
+        <span class="n">rcc_epoch</span><span class="o">=</span><span class="n">DELAY_MODEL_RCC_MARKER</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">seconds_fr_nearest</span><span class="p">)</span>
+        <span class="n">ddd_epoch</span><span class="o">=</span><span class="n">DELAY_MODEL_DDD_MARKER</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">seconds_fr_nearest</span><span class="p">)</span>
+        <span class="n">rate_delay</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">get_param_serial</span><span class="p">(</span><span class="n">params_delays</span><span class="p">,</span><span class="n">pair_st_so</span><span class="p">,</span><span class="n">rr0_epoch</span><span class="p">)),</span>\
+                  <span class="nb">float</span><span class="p">(</span><span class="n">get_param_serial</span><span class="p">(</span><span class="n">params_delays</span><span class="p">,</span><span class="n">pair_st_so</span><span class="p">,</span><span class="n">rr1_epoch</span><span class="p">)),</span>\
+                  <span class="nb">float</span><span class="p">(</span><span class="n">get_param_serial</span><span class="p">(</span><span class="n">params_delays</span><span class="p">,</span><span class="n">pair_st_so</span><span class="p">,</span><span class="n">rr2_epoch</span><span class="p">)),</span>\
+                  <span class="nb">float</span><span class="p">(</span><span class="n">get_param_serial</span><span class="p">(</span><span class="n">params_delays</span><span class="p">,</span><span class="n">pair_st_so</span><span class="p">,</span><span class="n">rrr_epoch</span><span class="p">)),</span>\
+                  <span class="nb">float</span><span class="p">(</span><span class="n">get_param_serial</span><span class="p">(</span><span class="n">params_delays</span><span class="p">,</span><span class="n">pair_st_so</span><span class="p">,</span><span class="n">rc0_epoch</span><span class="p">)),</span>\
+                  <span class="nb">float</span><span class="p">(</span><span class="n">get_param_serial</span><span class="p">(</span><span class="n">params_delays</span><span class="p">,</span><span class="n">pair_st_so</span><span class="p">,</span><span class="n">rc1_epoch</span><span class="p">)),</span>\
+                  <span class="nb">float</span><span class="p">(</span><span class="n">get_param_serial</span><span class="p">(</span><span class="n">params_delays</span><span class="p">,</span><span class="n">pair_st_so</span><span class="p">,</span><span class="n">zc0_epoch</span><span class="p">)),</span>\
+                  <span class="nb">float</span><span class="p">(</span><span class="n">get_param_serial</span><span class="p">(</span><span class="n">params_delays</span><span class="p">,</span><span class="n">pair_st_so</span><span class="p">,</span><span class="n">zc1_epoch</span><span class="p">)),</span>\
+                  <span class="nb">float</span><span class="p">(</span><span class="n">get_param_serial</span><span class="p">(</span><span class="n">params_delays</span><span class="p">,</span><span class="n">pair_st_so</span><span class="p">,</span><span class="n">rcr_epoch</span><span class="p">)),</span>\
+                  <span class="nb">float</span><span class="p">(</span><span class="n">get_param_serial</span><span class="p">(</span><span class="n">params_delays</span><span class="p">,</span><span class="n">pair_st_so</span><span class="p">,</span><span class="n">rcm_epoch</span><span class="p">)),</span>\
+                  <span class="nb">float</span><span class="p">(</span><span class="n">get_param_serial</span><span class="p">(</span><span class="n">params_delays</span><span class="p">,</span><span class="n">pair_st_so</span><span class="p">,</span><span class="n">rcc_epoch</span><span class="p">)),</span>\
+                  <span class="nb">float</span><span class="p">(</span><span class="n">get_param_serial</span><span class="p">(</span><span class="n">params_delays</span><span class="p">,</span><span class="n">pair_st_so</span><span class="p">,</span><span class="n">ddd_epoch</span><span class="p">))]</span>
+        
+        <span class="n">rel_epoch</span><span class="o">=</span><span class="n">DELAY_MODEL_REL_MARKER</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">seconds_fr_nearest</span><span class="p">)</span>
+        <span class="n">delay</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">get_param_serial</span><span class="p">(</span><span class="n">params_delays</span><span class="p">,</span><span class="n">pair_st_so</span><span class="p">,</span><span class="n">rel_epoch</span><span class="p">))</span>
+        
+        <span class="n">f_epoch</span><span class="o">=</span><span class="n">DELAY_MODEL_REF_MARKER</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">seconds_fr_nearest</span><span class="p">)</span>
+        <span class="n">ref_delay</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">get_param_serial</span><span class="p">(</span><span class="n">params_delays</span><span class="p">,</span><span class="n">pair_st_so</span><span class="p">,</span><span class="n">f_epoch</span><span class="p">))</span>
+        
+        <span class="n">abs_epoch</span><span class="o">=</span><span class="n">DELAY_MODEL_ABS_MARKER</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">seconds_fr_nearest</span><span class="p">)</span>
+        <span class="n">abs_delay</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">get_param_serial</span><span class="p">(</span><span class="n">params_delays</span><span class="p">,</span><span class="n">pair_st_so</span><span class="p">,</span><span class="n">abs_epoch</span><span class="p">))</span>
+        
+        <span class="c1">#else:</span>
+        <span class="c1">#    di_epoch=DELAY_MODEL_DI_MARKER+str(seconds_fr_nearest)</span>
+        <span class="c1">#    rate_delay=map(float,get_param_serial(params_delays,pair_st_so,di_epoch).split(SEP_VALUES))</span>
+        <span class="c1">#if rate_delay!=rate_delay2:</span>
+        <span class="c1">#    print(&quot;Diff&quot;)</span>
+        
+        <span class="n">new_rates</span> <span class="o">=</span> <span class="p">[</span><span class="n">rate_delay</span><span class="p">,</span><span class="n">ref_delay</span><span class="p">,</span><span class="n">abs_delay</span><span class="p">,</span><span class="n">delay</span><span class="p">]</span>
+        
+        <span class="c1"># Simply store last element</span>
+        <span class="c1">#cache_rates=[]</span>
+        <span class="c1">#cache_rates.append([seconds_fr_nearest,pair_st_so,[new_rates]])</span>
+        <span class="n">cache_rates</span> <span class="o">=</span> <span class="p">[</span><span class="n">seconds_fr_nearest</span><span class="p">,</span><span class="n">pair_st_so</span><span class="p">,[</span><span class="n">new_rates</span><span class="p">]]</span>
+    
+    <span class="n">rates_out</span> <span class="o">=</span> <span class="p">[</span><span class="n">rate_delay</span><span class="p">,</span><span class="n">ref_delay</span><span class="p">,</span><span class="n">abs_delay</span><span class="p">,</span><span class="n">cache_rates</span><span class="p">]</span>
+    <span class="c1">#delays_out = [delay,cache_rates]</span>
+    <span class="c1">#return([rates_out,delays_out])</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">rates_out</span><span class="p">)</span></div>
+
+
+
+<span class="c1">#    [rates_out,delays_out] = get_rates_delays(seconds_fr_nearest,pair_st_so,params_delays,cache_rates)</span>
+<span class="c1">#    return(rates_out)</span>
+
+<div class="viewcode-block" id="get_delay_cache"><a class="viewcode-back" href="../lib_ini_files.html#lib_ini_files.get_delay_cache">[docs]</a><span class="k">def</span> <span class="nf">get_delay_cache</span><span class="p">(</span><span class="n">seconds_fr_nearest</span><span class="p">,</span><span class="n">pair_st_so</span><span class="p">,</span><span class="n">params_delays</span><span class="p">,</span><span class="n">cache_delays</span><span class="o">=</span><span class="p">[]):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the delays from the cache.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">#print(&quot;get: &quot;+str(seconds_fr_nearest))</span>
+    <span class="c1"># First try to find in delay cache, then complete cache, then fetch from ini info.</span>
+    <span class="n">found</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="c1">#if 1==0: #cache_delays!=[]:</span>
+    <span class="k">if</span> <span class="n">cache_delays</span><span class="o">!=</span><span class="p">[]:</span>
+        <span class="c1">#i = cache_rates[0]</span>
+        <span class="k">if</span> <span class="n">seconds_fr_nearest</span><span class="o">==</span><span class="n">cache_delays</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">and</span> <span class="n">pair_st_so</span><span class="o">==</span><span class="n">cache_delays</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">delay_new</span><span class="o">=</span><span class="n">cache_delays</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+            <span class="n">found</span><span class="o">=</span><span class="mi">1</span>
+    <span class="k">if</span> <span class="n">found</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1">#[rates_out,delays_out] = get_rates_delays(seconds_fr_nearest,pair_st_so,params_delays,cache_rates)</span>
+        
+        <span class="n">rel_epoch</span><span class="o">=</span><span class="n">DELAY_MODEL_REL_MARKER</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">seconds_fr_nearest</span><span class="p">)</span>
+        <span class="n">delay</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">get_param_serial</span><span class="p">(</span><span class="n">params_delays</span><span class="p">,</span><span class="n">pair_st_so</span><span class="p">,</span><span class="n">rel_epoch</span><span class="p">))</span>
+        
+
+        <span class="n">cache_delays</span> <span class="o">=</span> <span class="p">[</span><span class="n">seconds_fr_nearest</span><span class="p">,</span><span class="n">pair_st_so</span><span class="p">,</span><span class="n">delay</span><span class="p">]</span>
+        <span class="n">delays_out</span><span class="o">=</span> <span class="p">[</span><span class="n">delay</span><span class="p">,</span><span class="n">cache_delays</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1">#cache_delays = [seconds_fr_nearest,pair_st_so,delay_new]</span>
+        <span class="n">delays_out</span><span class="o">=</span><span class="p">[</span><span class="n">delay_new</span><span class="p">,</span><span class="n">cache_delays</span><span class="p">]</span>
+    
+    <span class="c1">#print(delays_out)</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">delays_out</span><span class="p">)</span></div>
+
+<span class="c1"># &lt;codecell&gt;</span>
+
+
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Antonio Vazquez Alvarez, Victor Pankratius, and Pedro Elosegui.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

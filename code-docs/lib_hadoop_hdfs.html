@@ -1,0 +1,486 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>lib_hadoop_hdfs module &#8212; CorrelX 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="lib_ini_exper module" href="lib_ini_exper.html" />
+    <link rel="prev" title="lib_fx_stack module" href="lib_fx_stack.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-lib_hadoop_hdfs">
+<span id="lib-hadoop-hdfs-module"></span><h1>lib_hadoop_hdfs module<a class="headerlink" href="#module-lib_hadoop_hdfs" title="Permalink to this headline">¶</a></h1>
+<p>Functions for starting and stopping hadoop, and for sending files to HDFS (or copying files to Lustre).</p>
+<dl class="function">
+<dt id="lib_hadoop_hdfs.cluster_start">
+<code class="descclassname">lib_hadoop_hdfs.</code><code class="descname">cluster_start</code><span class="sig-paren">(</span><em>wait_time</em>, <em>hadoop_conf_dir</em>, <em>hadoop_dir</em>, <em>file_slaves</em>, <em>temp_dir</em>, <em>username</em>, <em>temp_log</em>, <em>single_node=0</em>, <em>use_lustre_plugin=0</em>, <em>v=0</em>, <em>file_log=&lt;_io.TextIOWrapper name='&lt;stdout&gt;' mode='w' encoding='UTF-8'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_hadoop_hdfs.html#cluster_start"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_hadoop_hdfs.cluster_start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start hadoop. It returns the number of active nodes after initialization.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>wait_time <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>time [s] to wait after each command sent to Hadoop.</dd>
+<dt>hadoop_conf_dir <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Hadoop configuration folder path [hadoop_home/etc/hadoop].</dd>
+<dt>hadoop_dir <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Hadoop home folder path.</dd>
+<dt>file_slaves <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Path to Hadoop slaves file.</dd>
+<dt>temp_dir <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Path to temporary folder path</dd>
+<dt>username <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>user name (to be used to login into slave nodes through ssh).</dd>
+<dt>temp_log <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Path to temporary log file.</dd>
+<dt>single_node <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>If 1 will only delete temporary folders on current machine (master), if 0 on all (master and slaves)</dd>
+<dt>use_lustre_plugin <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>1 for Lustre filesystem, 0 for HDFS.</dd>
+<dt>v <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>1 for verbose.</dd>
+<dt>file_log <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Path to log file.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>int_t_nodes <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>(t_nodes) number of nodes up and running in the Hadoop cluster.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Summary:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">1. Delete temporary files (otherwise there may be problems with previous process IDs...).</div>
+<div class="line">2. Format HDFS (in the future the hadoop service may be running continuously to avoid initialization for every correlation...).</div>
+<div class="line">3. Start HDFS.</div>
+<div class="line">4. Start YARN.</div>
+<div class="line">5. Check running processes.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_hadoop_hdfs.cluster_stop">
+<code class="descclassname">lib_hadoop_hdfs.</code><code class="descname">cluster_stop</code><span class="sig-paren">(</span><em>wait_time</em>, <em>hadoop_dir</em>, <em>hadoop_conf_dir</em>, <em>temp_log</em>, <em>timeout=-1</em>, <em>v=0</em>, <em>file_log=&lt;_io.TextIOWrapper name='&lt;stdout&gt;' mode='w' encoding='UTF-8'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_hadoop_hdfs.html#cluster_stop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_hadoop_hdfs.cluster_stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stop hadoop.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>wait_time <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>Time [s] to wait after each command sent to Hadoop.</dd>
+<dt>hadoop_dir <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Hadoop home folder path.</dd>
+<dt>hadoop_conf_dir <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Hadoop configuration folder path [hadoop_home/etc/hadoop].</dd>
+<dt>temp_log <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Path to temporary log file.</dd>
+<dt>timeout <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>If &gt;0 will terminate Hadoop stop command after &#8220;timeout&#8221; seconds.</dd>
+<dt>v <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>1 for verbose.</dd>
+<dt>file_log <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Path to log file.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div>N/A</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Summary:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">-Stop YARN.</div>
+<div class="line">-Stop DFS.</div>
+<div class="line">-Wait &#8220;wait_time&#8221; seconds for termination.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_hadoop_hdfs.copy_files_to_hdfs">
+<code class="descclassname">lib_hadoop_hdfs.</code><code class="descname">copy_files_to_hdfs</code><span class="sig-paren">(</span><em>replication</em>, <em>input_files</em>, <em>data_dir</em>, <em>data_dir_tmp</em>, <em>hadoop_dir</em>, <em>hadoop_conf_dir</em>, <em>hdfs_data_dir</em>, <em>packets_per_hdfs_block</em>, <em>temp_log</em>, <em>copy_delay=0</em>, <em>checksum_size=100</em>, <em>text_mode=1</em>, <em>use_lustre_plugin=0</em>, <em>lustre_prefix='/nobackup1/ajva/hadoop'</em>, <em>bm_avoid_copy=0</em>, <em>v=0</em>, <em>file_log=&lt;_io.TextIOWrapper name='&lt;stdout&gt;' mode='w' encoding='UTF-8'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_hadoop_hdfs.html#copy_files_to_hdfs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_hadoop_hdfs.copy_files_to_hdfs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Copy files from local directories to HDFS. It returns the elapsed time for moving the files (including the applied delay).</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>replication <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>Number of copies of the same file block in the HDFS system.</dd>
+<dt>input_files <span class="classifier-delimiter">:</span> <span class="classifier">list of str</span></dt>
+<dd>names of the files to be moved into HDFS/LustreFS.</dd>
+<dt>data_dir <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Path (in local filesystem) to the folder hosting the files to be moved into HDFS/LustreFS.</dd>
+<dt>data_dir_tmp <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Path (in local filesystem) to the folder for copy split input data before being moved into HDFS/LustreFS.</dd>
+<dt>hadoop_dir <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Hadoop home folder path (local filesystem).</dd>
+<dt>hadoop_conf_dir <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Hadoop configuration folder path (etc/hadoop).</dd>
+<dt>hdfs_data_dir <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Path (in HDFS/LustreFS), thus relative to &#8220;lustre_prefix&#8221;, to host input files.</dd>
+<dt>packets_per_hdfs_block <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>Number of VDIF frames per file split.</dd>
+<dt>temp_log <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Path to temporary log file.</dd>
+<dt>copy_delay <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>Time [s] to wait after each command sent to Hadoop.</dd>
+<dt>checksum_size <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>Number of bytes for checksum (for each split) [this overrides automatic calculation].</dd>
+<dt>text_mode <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>[default 1] If 1 use checksum_size to override value computed automatically.</dd>
+<dt>use_lustre_plugin <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>If 1 use Lustre filesysm.</dd>
+<dt>lustre_prefix <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Path in Lustre to preceed &#8220;hdfs_data_dir&#8221; if using Lustre.</dd>
+<dt>bm_avoid_copy <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><dl class="first last docutils">
+<dt>[default 0] If 1 it will not split input files if &#8220;lustre_prefix&#8221;+&#8221;hdfs_data_dir&#8221; has already the data</dt>
+<dd>for the file in &#8220;input_files&#8221; from a previous execution. See notes below.</dd>
+</dl>
+</dd>
+<dt>v <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>1 for verbose.</dd>
+<dt>file_log <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Path to log file.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>put_t_s <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>timestamp with start time for loop copying files.</dd>
+<dt>put_t_e <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>timestamp with stop time for loop copying files.</dd>
+<dt>put_d <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>total execution time for loop copying files.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Summary:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">-Delete existing files in HDFS (to avoid errors on existing files)</div>
+<div class="line">TODO: consider overwritting files.</div>
+<div class="line">-Wait for delay if applicable.</div>
+<div class="line">-Move files to HDFS (with specified block size)</div>
+<div class="line">2015.12.1. packet_size is read from the first frame of the file.</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<div class="line"><strong>Notes:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">-Regarding filesystems:</div>
+<div class="line-block">
+<div class="line">HDFS: Path inside Hadoop distributed filesystem (accessible from Hadoop).</div>
+<div class="line">LustreFS: Path relative to Hadoop Lustre home folder (accessible from Hadoop).</div>
+<div class="line">Local filesystem: Path accesible from this command, it can be local, NFS, Lustre, etc.</div>
+<div class="line"><br /></div>
+</div>
+<div class="line">-Regarding &#8220;bm_avoid_copy&#8221;:</div>
+<div class="line-block">
+<div class="line">Always 0 by default.</div>
+<div class="line">After each execution, for each processed file there will be a folder in &#8220;lustre_prefix&#8221;+&#8221;hdfs_data_dir&#8221;+&#8221;file_name&#8221;+... with</div>
+<div class="line-block">
+<div class="line">the splits for that file. Setting this to 1 will avoid to re-split the file if it was already used previously. Use only </div>
+<div class="line">for repeated benchmarking.</div>
+</div>
+</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_hadoop_hdfs.distribute_files">
+<code class="descclassname">lib_hadoop_hdfs.</code><code class="descname">distribute_files</code><span class="sig-paren">(</span><em>simply_copy_local</em>, <em>file_group</em>, <em>files</em>, <em>source_dir</em>, <em>conf_dir</em>, <em>destination_dir</em>, <em>nodes</em>, <em>temp_log</em>, <em>v=0</em>, <em>exec_permission=0</em>, <em>file_log=&lt;_io.TextIOWrapper name='&lt;stdout&gt;' mode='w' encoding='UTF-8'&gt;</em>, <em>username='hduser'</em>, <em>force_node=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_hadoop_hdfs.html#distribute_files"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_hadoop_hdfs.distribute_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Copy configuration and application files to nodes.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>simply_copy_local <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><div class="first last line-block">
+<div class="line">If 1 it will only copy app and config files to the specified folder for the current machine.</div>
+<div class="line">If 0, it will distribute the app and config files to the rest of the nodes via ssh.</div>
+</div>
+</dd>
+<dt>file_group <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>identifier for this batch of files, only for reporting.</dd>
+<dt>source_dir</dt>
+<dd>path to folder with the files that will be distributed.</dd>
+<dt>files</dt>
+<dd>list of files (relative to the &#8220;source_dir&#8221; folder&#8221;).</dd>
+<dt>destination_dir</dt>
+<dd>path to destination folder in the remote machines (thise in &#8220;nodes&#8221;).</dd>
+<dt>conf_dir</dt>
+<dd>path to folder that includes the file &#8220;nodes&#8221;.</dd>
+<dt>nodes</dt>
+<dd>filename (relative to &#8220;conf_dir&#8221;) with one machine per line.</dd>
+<dt>temp_log</dt>
+<dd>handler for intermediate file (buffer) for system calls.</dd>
+<dt>v</dt>
+<dd>verbose if 1.</dd>
+<dt>exec_permission</dt>
+<dd>if 1 it will give execution permissions to the distributed files.</dd>
+<dt>file_log</dt>
+<dd>handler for log file.</dd>
+<dt>username <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>user name (to be used to login into slave nodes through ssh).</dd>
+<dt>force_node <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>if not &#8220;&#8221;, it will only send the files to this node (&#8220;force_node&#8221;).</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div>0</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">(!) It will delete ipython-notebook lines. Need to add this as an option, or add another configuration option for third-party sources.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_hadoop_hdfs.fix_file_header">
+<code class="descclassname">lib_hadoop_hdfs.</code><code class="descname">fix_file_header</code><span class="sig-paren">(</span><em>filename='x.py'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_hadoop_hdfs.html#fix_file_header"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_hadoop_hdfs.fix_file_header" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Remove the first line which the iPython notebook adds to the .py files, since</dt>
+<dd>files that do not begin with #!/usr/bin/env python may raise errors in hadoop.</dd>
+</dl>
+<blockquote>
+<div><dl class="docutils">
+<dt>filename</dt>
+<dd>path to python script.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div>N/A</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_hadoop_hdfs.nodes_to_slaves_masters">
+<code class="descclassname">lib_hadoop_hdfs.</code><code class="descname">nodes_to_slaves_masters</code><span class="sig-paren">(</span><em>conf_dir</em>, <em>hadoop_conf_dir</em>, <em>file_nodes</em>, <em>file_slaves</em>, <em>file_masters</em>, <em>max_slaves=0</em>, <em>master_is_slave=0</em>, <em>v=0</em>, <em>file_log=&lt;_io.TextIOWrapper name='&lt;stdout&gt;' mode='w' encoding='UTF-8'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_hadoop_hdfs.html#nodes_to_slaves_masters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_hadoop_hdfs.nodes_to_slaves_masters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert list of nodes (obtained by slurm or by local script) into hadoop slaves file.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>conf_dir</dt>
+<dd>path to folder where master and slaves files are copied to.</dd>
+<dt>hadoop_conf_dir</dt>
+<dd>path to folder where masters and slaves files are created.</dd>
+<dt>file_nodes</dt>
+<dd>filename for file with all nodes in the allocation (master+slaves), one node per line.</dd>
+<dt>file_slaves</dt>
+<dd>filename for Hadoop slave nodes file.</dd>
+<dt>file_masters</dt>
+<dd>filename for Hadoop master node file.</dd>
+<dt>max_slaves</dt>
+<dd>maximum number of slave nodes.</dd>
+<dt>master_is_slave</dt>
+<dd>if 1 include master node in list of slave nodes.</dd>
+<dt>v</dt>
+<dd>verbose if 1.</dd>
+<dt>file_log</dt>
+<dd>handler for log file.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div>N/A</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Remove hadoop_conf_dir (check correct folder).</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_hadoop_hdfs.process_hadoop_config_files">
+<code class="descclassname">lib_hadoop_hdfs.</code><code class="descname">process_hadoop_config_files</code><span class="sig-paren">(</span><em>list_configurations</em>, <em>pairs_config</em>, <em>templates_dir</em>, <em>conf_dir</em>, <em>v=0</em>, <em>file_log=&lt;_io.TextIOWrapper name='&lt;stdout&gt;' mode='w' encoding='UTF-8'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_hadoop_hdfs.html#process_hadoop_config_files"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_hadoop_hdfs.process_hadoop_config_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process a set of Hadoop configuration files (core-site.xml, etc).</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>list_configurations</dt>
+<dd>list of headers in configuration file associated to &#8220;pairs_config&#8221; below.</dd>
+<dt>pairs_config</dt>
+<dd>list of lists of pairs [[(param0,value0),(param1,value1),...]] to update xml files.</dd>
+<dt>templates_dir</dt>
+<dd>path to folder with Hadoop .xml file templates.</dd>
+<dt>v</dt>
+<dd>verbose if 1.</dd>
+<dt>file_log</dt>
+<dd>handler for log file.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>configuration_files</dt>
+<dd>list of str with filenames of processed configuration files.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_hadoop_hdfs.process_hcfile">
+<code class="descclassname">lib_hadoop_hdfs.</code><code class="descname">process_hcfile</code><span class="sig-paren">(</span><em>pairs</em>, <em>conf_dir</em>, <em>templates_dir</em>, <em>v=0</em>, <em>file_log=&lt;_io.TextIOWrapper name='&lt;stdout&gt;' mode='w' encoding='UTF-8'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_hadoop_hdfs.html#process_hcfile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_hadoop_hdfs.process_hcfile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process hadoop configuration file.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>pairs</dt>
+<dd>list (by file) of lists (param,value) for overriding Hadoop configuration files.</dd>
+<dt>conf_dir</dt>
+<dd>path to folder for placing modified Hadoop configuration files.</dd>
+<dt>templates_dir</dt>
+<dd>path to folder with templates for Hadoop configuration files.</dd>
+<dt>v</dt>
+<dd>verbose if 1.</dd>
+<dt>file_log</dt>
+<dd>handler for log file.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>processed_filename</dt>
+<dd>filename of the processed file.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>TO DO</strong></div>
+<div class="line"><br /></div>
+<div class="line">Currently assuming that the filename is the first value in the list (i.e. [0][1]),</div>
+<div class="line-block">
+<div class="line">need to use C_CONF_H_ALL_CONFIG_FILE instead</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_hadoop_hdfs.update_hcparam">
+<code class="descclassname">lib_hadoop_hdfs.</code><code class="descname">update_hcparam</code><span class="sig-paren">(</span><em>source_file</em>, <em>destination_file</em>, <em>pairs</em>, <em>v=0</em>, <em>file_log=&lt;_io.TextIOWrapper name='&lt;stdout&gt;' mode='w' encoding='UTF-8'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_hadoop_hdfs.html#update_hcparam"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_hadoop_hdfs.update_hcparam" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update parameter for hadoop configuration file.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>source_file</dt>
+<dd>Template for Hadoop xml configuration file.</dd>
+<dt>destination_file</dt>
+<dd>Final Hadoop xml configuration file (template with mods applied).</dd>
+<dt>pairs</dt>
+<dd>list of pairs [parameter, value]. See notes below.</dd>
+<dt>v</dt>
+<dd>verbose if 1.</dd>
+<dt>file_log</dt>
+<dd>handler for log file.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div>N/A</div></blockquote>
+<div class="line-block">
+<div class="line">If the parameter already exists in the file, its value is overriden.</div>
+<div class="line">If the parameter does not exist, it is added following the required format (Hadoop xml).</div>
+<div class="line">That is, given a list of pairs [PARAMETER,VALUE]</div>
+<div class="line"><br /></div>
+<div class="line">&lt;configuration&gt;</div>
+<div class="line-block">
+<div class="line">&lt;property&gt;</div>
+<div class="line-block">
+<div class="line">&lt;name&gt;PARAMETER&lt;/name&gt;</div>
+<div class="line">&lt;value&gt;VALUE&lt;/value&gt;</div>
+</div>
+<div class="line">&lt;/property&gt;</div>
+</div>
+<div class="line">...</div>
+<div class="line">&lt;/configuration&gt;</div>
+</div>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="lib_fx_stack.html" title="previous chapter">lib_fx_stack module</a></li>
+      <li>Next: <a href="lib_ini_exper.html" title="next chapter">lib_ini_exper module</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/lib_hadoop_hdfs.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Antonio Vazquez Alvarez, Victor Pankratius, and Pedro Elosegui.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/lib_hadoop_hdfs.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

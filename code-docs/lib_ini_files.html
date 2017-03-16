@@ -1,0 +1,557 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>lib_ini_files module &#8212; CorrelX 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="lib_mapredcorr module" href="lib_mapredcorr.html" />
+    <link rel="prev" title="lib_ini_exper module" href="lib_ini_exper.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-lib_ini_files">
+<span id="lib-ini-files-module"></span><h1>lib_ini_files module<a class="headerlink" href="#module-lib_ini_files" title="Permalink to this headline">¶</a></h1>
+<p>Routines for generating/accessing the .ini files with the configuration of the scenario for the correlation.</p>
+<div class="section" id="notes">
+<h2>Notes<a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div>Parameters and values are case sensitive!</div></blockquote>
+<div class="line-block">
+<div class="line">Experiment files:</div>
+<div class="line">Every experiment requires the following files:</div>
+<div class="line-block">
+<div class="line">correation.ini:             configuration of the correlation (start and end time, FFT length, etc.)</div>
+<div class="line">stations.ini:               information about stations clocks (polynomials).</div>
+<div class="line">sources.ini:                information about sources.</div>
+<div class="line">media.ini:                  information about media (input file names, formats, etc)</div>
+<div class="line">delay_model.ini:            information aobut delay model (polynomials).</div>
+<div class="line"><br /></div>
+</div>
+<div class="line">Additionally, the following file is generated during initialization:</div>
+<div class="line-block">
+<div class="line">delays.ini:                 re-processed polynomials for delay model.</div>
+</div>
+</div>
+</div>
+<div class="section" id="regarding-initialization-files">
+<h2>Regarding initialization files<a class="headerlink" href="#regarding-initialization-files" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div>Initialization files follow this format:
+| 
+| [section]
+| param: value</div></blockquote>
+<dl class="function">
+<dt id="lib_ini_files.find_nearest_seconds">
+<code class="descclassname">lib_ini_files.</code><code class="descname">find_nearest_seconds</code><span class="sig-paren">(</span><em>vector_seconds_ref</em>, <em>seconds_fr</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_ini_files.html#find_nearest_seconds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_ini_files.find_nearest_seconds" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Find second which is nearest to seconds_fr in delay param vector. In other words, find the timestamp</dt>
+<dd>(start time) of the accumulation period to which the timestamp of the frame corresponds.</dd>
+</dl>
+<blockquote>
+<div><dl class="docutils">
+<dt>vector_seconds_ref <span class="classifier-delimiter">:</span> <span class="classifier">list of floats</span></dt>
+<dd>seconds for delay information (start time polynomials).</dd>
+<dt>seconds_fr</dt>
+<dd>seconds to be searched for in the previous item.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>seconds_out</dt>
+<dd>highest value lesser than the input number of seconds, or -1 if not found</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_ini_files.get_all_params_serial">
+<code class="descclassname">lib_ini_files.</code><code class="descname">get_all_params_serial</code><span class="sig-paren">(</span><em>params_array</em>, <em>section</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_ini_files.html#get_all_params_serial"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_ini_files.get_all_params_serial" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves list with all the parameters for a section.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>params_array <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>list with configuration [created with serial_params_to_array()].</dd>
+<dt>section <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>section to be looked up.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>values <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>lists of strings corresponding to the parameters in the section.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_ini_files.get_all_sections">
+<code class="descclassname">lib_ini_files.</code><code class="descname">get_all_sections</code><span class="sig-paren">(</span><em>params_array</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_ini_files.html#get_all_sections"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_ini_files.get_all_sections" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves list with all the section names.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>params_array</dt>
+<dd>list with configuration [created with serial_params_to_array()].</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>sections</dt>
+<dd>list of strings with the names of all the sections in the ini file.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_ini_files.get_all_values_serial">
+<code class="descclassname">lib_ini_files.</code><code class="descname">get_all_values_serial</code><span class="sig-paren">(</span><em>params_array</em>, <em>param</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_ini_files.html#get_all_values_serial"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_ini_files.get_all_values_serial" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves list with all the values of a paramter for all the section.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>params_array <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>configuration [created with serial_params_to_array()].</dd>
+<dt>param <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>parameter to be looked up through all sections.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>values</dt>
+<dd>list with strings with all the values corresponding to the requested paramter.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_ini_files.get_delay_cache">
+<code class="descclassname">lib_ini_files.</code><code class="descname">get_delay_cache</code><span class="sig-paren">(</span><em>seconds_fr_nearest</em>, <em>pair_st_so</em>, <em>params_delays</em>, <em>cache_delays=[]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_ini_files.html#get_delay_cache"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_ini_files.get_delay_cache" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the delays from the cache.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_ini_files.get_pair_st_so">
+<code class="descclassname">lib_ini_files.</code><code class="descname">get_pair_st_so</code><span class="sig-paren">(</span><em>st_id</em>, <em>so_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_ini_files.html#get_pair_st_so"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_ini_files.get_pair_st_so" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get string st&lt;st_id&gt;-so&lt;so_id&gt; (e.g. st0-so0).</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>st_id <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>station id.</dd>
+<dt>so_id <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>source id.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>pair_st_so <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>output.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_ini_files.get_param_eq_vector">
+<code class="descclassname">lib_ini_files.</code><code class="descname">get_param_eq_vector</code><span class="sig-paren">(</span><em>params_array</em>, <em>section</em>, <em>param</em>, <em>separator_values=':'</em>, <em>modein='int'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_ini_files.html#get_param_eq_vector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_ini_files.get_param_eq_vector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the vector with the mapped values for the specified parameters.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>params_array <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>configuration [created with serial_params_to_array()].</dd>
+<dt>section <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>section to be looked up.</dd>
+<dt>param <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>parameter to be looked up.</dd>
+<dt>separator_values</dt>
+<dd>separator for values [SEP_VALUES from const_ini_files.py by default].</dd>
+<dt>modein <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>selector of format for output:
+|    &#8220;int&#8221; : convert values in output list to integer.
+|    else:   return output list as is (strings).</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>eq_vector</dt>
+<dd>equivalent vector with indices reported at the first sections of the ini file.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Example:</strong></div>
+<div class="line"><br /></div>
+<div class="line">Given the file media.ini:</div>
+<div class="line-block">
+<div class="line-block">
+<div class="line">[channels]</div>
+<div class="line">CH2 = 1</div>
+<div class="line">CH1 = 0</div>
+<div class="line">[polarizations]</div>
+<div class="line">L = 0</div>
+<div class="line">R = 1</div>
+<div class="line">[VDF-0.vt]</div>
+<div class="line">polarizations = L:R:L:R</div>
+<div class="line">channels = CH1:CH1:CH2:CH2</div>
+<div class="line">station = At</div>
+<div class="line">...</div>
+</div>
+<div class="line">&gt;&gt;&gt;params_array=serial_params_to_array(serialize_config(sources_file=&#8217;media.ini&#8217;))    </div>
+<div class="line">&gt;&gt;&gt;eq_vector=get_param_eq_vector(params_array,&#8217;VDF-0.vt&#8217;,&#8217;polarizations&#8217;)</div>
+<div class="line">&gt;&gt;&gt;print(eq_vector)</div>
+<div class="line-block">
+<div class="line">[0, 1, 0, 1]</div>
+</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_ini_files.get_param_serial">
+<code class="descclassname">lib_ini_files.</code><code class="descname">get_param_serial</code><span class="sig-paren">(</span><em>params_array</em>, <em>section</em>, <em>param</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_ini_files.html#get_param_serial"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_ini_files.get_param_serial" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves value given an array with parameters, the filename and the parameter.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>params_array <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>configuration [created with serial_params_to_array()].</dd>
+<dt>section <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>section to be looked up.</dd>
+<dt>param <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>parameter to be looked up.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>value <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>value corresponding to requested section and param.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Example:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">&gt;&gt;&gt; value = get_param_serial(params_array,&#8217;VF-0.vt&#8217;,&#8217;channels&#8217;)</div>
+<div class="line">&gt;&gt;&gt; print(value)</div>
+<div class="line-block">
+<div class="line">0:0:1:1</div>
+</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_ini_files.get_param_total">
+<code class="descclassname">lib_ini_files.</code><code class="descname">get_param_total</code><span class="sig-paren">(</span><em>params_array</em>, <em>section</em>, <em>param</em>, <em>separator_values=':'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_ini_files.html#get_param_total"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_ini_files.get_param_total" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the number of different values for a parameter.
+This is e.g. for getting the number of polarizations in a media.ini file for a station.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>params_array <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>configuration [created with serial_params_to_array()].</dd>
+<dt>section <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>section to be looked up.</dd>
+<dt>param <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>parameter to be looked up.</dd>
+<dt>separator_values</dt>
+<dd>separator for values [SEP_VALUES from const_ini_files.py by default].</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>total <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of different values separated by separator_vaules.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Example:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">&gt;&gt;&gt; tot = get_param_total(params_array,&#8217;VF-0.vt&#8217;,&#8217;Channels&#8217;)</div>
+<div class="line">&gt;&gt;&gt; print(tot)</div>
+<div class="line-block">
+<div class="line">2</div>
+</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_ini_files.get_rates_cache">
+<code class="descclassname">lib_ini_files.</code><code class="descname">get_rates_cache</code><span class="sig-paren">(</span><em>seconds_fr_nearest</em>, <em>pair_st_so</em>, <em>params_delays</em>, <em>cache_rates=[]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_ini_files.html#get_rates_cache"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_ini_files.get_rates_cache" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Get rates from delays.ini. It allows to keep a cache (currently only one element) to </dt>
+<dd>reduce the number of look-ups.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_ini_files.get_section_delay_model">
+<code class="descclassname">lib_ini_files.</code><code class="descname">get_section_delay_model</code><span class="sig-paren">(</span><em>params_array</em>, <em>mjd_in</em>, <em>seconds</em>, <em>source_id_in</em>, <em>station_id_in</em>, <em>v=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_ini_files.html#get_section_delay_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_ini_files.get_section_delay_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get section from delay model ini file.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>params_array <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>information from delay model ini file (see lib_ini_files.py).</dd>
+<dt>mjd_in</dt>
+<dd>MJD for the start of the experiment.</dd>
+<dt>seconds</dt>
+<dd>number of seconds for the start of the experiment.</dd>
+<dt>source_id_in <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>source identifier in sources ini file.</dd>
+<dt>station_id_in <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>stations identifier in stations ini file.</dd>
+<dt>v <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>0 by default, 1 for verbose mode.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>section_found <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>section found in the delay model ini file, otherwise &#8220;&#8221;.</dd>
+<dt>start_s <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>seconds for this section.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Move to lib_ini_files.py</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_ini_files.get_val_vector">
+<code class="descclassname">lib_ini_files.</code><code class="descname">get_val_vector</code><span class="sig-paren">(</span><em>params_array</em>, <em>section</em>, <em>param</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_ini_files.html#get_val_vector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_ini_files.get_val_vector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns vector with list of values.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>params_array <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>configuration [created with serial_params_to_array()].</dd>
+<dt>section <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>string with section to be looked up.</dd>
+<dt>param <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>parameter to be looked up.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Example:</strong></div>
+<div class="line-block">
+<div class="line">Given the file media.ini:</div>
+<div class="line-block">
+<div class="line">...</div>
+<div class="line">[file1]</div>
+<div class="line">sidebands = U:U:U:U</div>
+<div class="line">...</div>
+</div>
+<div class="line">&gt;&gt;&gt;&gt;sidebands=get_val_vector(params_media,&#8221;file1&#8221;,C_INI_MEDIA_SIDEBANDS)</div>
+<div class="line">&gt;&gt;&gt;&gt;print(sidebands)</div>
+<div class="line-block">
+<div class="line">[&#8216;U&#8217;, &#8216;U&#8217;, &#8216;U&#8217;, &#8216;U&#8217;]</div>
+</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_ini_files.get_vector_delay_ref">
+<code class="descclassname">lib_ini_files.</code><code class="descname">get_vector_delay_ref</code><span class="sig-paren">(</span><em>vector_params_delay</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_ini_files.html#get_vector_delay_ref"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_ini_files.get_vector_delay_ref" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get seconds corresponding to elements in delays.ini.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>vector_params_delay <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>serialized representation of the delay model ini file.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>sv <span class="classifier-delimiter">:</span> <span class="classifier">list of floats</span></dt>
+<dd>seconds for delay information (start time polynomials).</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_ini_files.serial_params_to_array">
+<code class="descclassname">lib_ini_files.</code><code class="descname">serial_params_to_array</code><span class="sig-paren">(</span><em>read_str=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_ini_files.html#serial_params_to_array"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_ini_files.serial_params_to_array" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts string with serialized configuration file into array.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>read_str <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>serialized configuration [created with serialize_config()].</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>files_param <span class="classifier-delimiter">:</span> <span class="classifier">list of lists</span></dt>
+<dd>list of lists based on serialized configuration.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Example:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">&gt;&gt;&gt; params_array=serial_params_to_array(serial_str)</div>
+<div class="line">&gt;&gt;&gt; print(params_array)</div>
+<div class="line-block">
+<div class="line">[[&#8216;VF-0.vt&#8217;, &#8216;polarizations/L:R:L:R&#8217;, &#8216;station/At&#8217;, &#8216;channels/0:0:1:1&#8217;], [&#8216;VF-1.vt&#8217;, &#8216;polarizations/L:R:L:R&#8217;, &#8216;station/At&#8217;, &#8216;channels/0:0:1:1&#8217;]]</div>
+</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_ini_files.serialize_config">
+<code class="descclassname">lib_ini_files.</code><code class="descname">serialize_config</code><span class="sig-paren">(</span><em>sources_file='media.ini'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_ini_files.html#serialize_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_ini_files.serialize_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts configuration file into string.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>sources_file <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>name of initialization [.ini] file (e.g.: media.ini, stations.ini, delays.ini, etc.)</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>serial_str <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>serialized contents of initialization file.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><strong>Format configuration:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">See const_ini_files.py:</div>
+<div class="line-block">
+<div class="line">SEPARATOR_ELEMENTS</div>
+<div class="line">SEPARATOR_VECTOR</div>
+<div class="line">SEP_VALUES</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="line"><a href="#id1"><span class="problematic" id="id2">**</span></a>Notes:</div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Avoid use of reserved separators from list of file if existing</div>
+<div class="line-block">
+<div class="line">E.g.: list of files separated with commas</div>
+<div class="line-block">
+<div class="line">file1,file2 -&gt; file1:file2</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+</div>
+</div>
+<div class="line"><strong>Example:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">&gt;&gt;&gt; serial_str=serialize_config()</div>
+<div class="line">&gt;&gt;&gt; print(serial_str)</div>
+<div class="line-block">
+<div class="line">VF-0.vt,polarizations/L:R:L:R,station/At,channels/0:0:1:1;VF-1.vt,polarizations/L:R:L:R,station/At,channels/0:0:1:1</div>
+</div>
+</div>
+</div>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">lib_ini_files module</a><ul>
+<li><a class="reference internal" href="#notes">Notes</a></li>
+<li><a class="reference internal" href="#regarding-initialization-files">Regarding initialization files</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="lib_ini_exper.html" title="previous chapter">lib_ini_exper module</a></li>
+      <li>Next: <a href="lib_mapredcorr.html" title="next chapter">lib_mapredcorr module</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/lib_ini_files.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Antonio Vazquez Alvarez, Victor Pankratius, and Pedro Elosegui.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/lib_ini_files.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

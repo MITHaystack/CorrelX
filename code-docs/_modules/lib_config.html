@@ -1,0 +1,1085 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>lib_config &#8212; CorrelX 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for lib_config</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># &lt;nbformat&gt;3.0&lt;/nbformat&gt;</span>
+
+<span class="c1"># &lt;codecell&gt;</span>
+
+<span class="c1">#!/usr/bin/env python</span>
+<span class="c1">#</span>
+<span class="c1">#The MIT CorrelX Correlator</span>
+<span class="c1">#</span>
+<span class="c1">#https://github.com/MITHaystack/CorrelX</span>
+<span class="c1">#Contact: correlX@haystack.mit.edu</span>
+<span class="c1">#Project leads: Victor Pankratius, Pedro Elosegui Project developer: A.J. Vazquez Alvarez</span>
+<span class="c1">#</span>
+<span class="c1">#Copyright 2017 MIT Haystack Observatory</span>
+<span class="c1">#</span>
+<span class="c1">#Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the &quot;Software&quot;), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1">#The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</span>
+<span class="c1">#</span>
+<span class="c1">#THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#------------------------------</span>
+<span class="c1">#------------------------------</span>
+<span class="c1">#Project: CorrelX.</span>
+<span class="c1">#File: lib_config.py.</span>
+<span class="c1">#Author: A.J. Vazquez Alvarez (ajvazquez@haystack.mit.edu)</span>
+<span class="c1">#Description: </span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Management of CorrelX configuration files.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="c1">#History:</span>
+<span class="c1">#initial version: 2016.10 ajva</span>
+<span class="c1">#MIT Haystack Observatory</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+
+<span class="kn">import</span> <span class="nn">imp</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">import</span> <span class="nn">const_config</span>
+<span class="n">imp</span><span class="o">.</span><span class="n">reload</span><span class="p">(</span><span class="n">const_config</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">const_config</span> <span class="k">import</span> <span class="o">*</span>
+
+<span class="kn">import</span> <span class="nn">const_hadoop</span>
+<span class="n">imp</span><span class="o">.</span><span class="n">reload</span><span class="p">(</span><span class="n">const_hadoop</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">const_hadoop</span> <span class="k">import</span> <span class="o">*</span>
+
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">configparser</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">ConfigParser</span> <span class="k">as</span> <span class="nn">configparser</span>
+    
+
+    
+    
+    
+<div class="viewcode-block" id="get_log_file"><a class="viewcode-back" href="../lib_config.html#lib_config.get_log_file">[docs]</a><span class="k">def</span> <span class="nf">get_log_file</span><span class="p">(</span><span class="n">config_file</span><span class="p">,</span><span class="n">suffix</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span><span class="n">output_log_folder</span><span class="o">=</span><span class="s2">&quot;e&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get logging files.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     config_file : str</span>
+<span class="sd">         path to CorrelX configuration file.</span>
+<span class="sd">     suffix : str</span>
+<span class="sd">         suffix (with timestamp) to be added to log filename.</span>
+<span class="sd">     output_log_folder : str</span>
+<span class="sd">         suffix to be added to log file path.</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     file_log : handler to file</span>
+<span class="sd">         handler to log file.</span>
+<span class="sd">     temp_log : str</span>
+<span class="sd">         path to temporary (buffer) file for system calls.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">config</span> <span class="o">=</span> <span class="n">configparser</span><span class="o">.</span><span class="n">ConfigParser</span><span class="p">()</span>
+    <span class="n">config</span><span class="o">.</span><span class="n">optionxform</span> <span class="o">=</span> <span class="nb">str</span>
+    <span class="n">config</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">config_file</span><span class="p">)</span>
+    
+    <span class="n">temp_log</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">C_CONF_FILES</span><span class="p">,</span><span class="n">C_CONF_FILES_TMP_LOG</span><span class="p">)</span>
+    <span class="n">temp_log</span><span class="o">+=</span><span class="n">suffix</span>
+    <span class="n">file_log_input</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">C_CONF_GEN</span><span class="p">,</span><span class="n">C_CONF_GEN_LOG_FILE</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">file_log_input</span><span class="o">==</span><span class="s2">&quot;sys.stdout&quot;</span><span class="p">:</span>
+        <span class="n">file_log</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;mkdir -p &quot;</span><span class="o">+</span><span class="n">output_log_folder</span><span class="p">)</span>
+        <span class="n">file_log_input</span><span class="o">=</span><span class="n">output_log_folder</span><span class="o">+</span><span class="s2">&quot;/log_&quot;</span><span class="o">+</span><span class="n">suffix</span><span class="o">+</span><span class="s2">&quot;_ext&quot;</span>
+        <span class="n">file_log</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_log_input</span><span class="p">,</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+        
+    <span class="k">return</span><span class="p">([</span><span class="n">file_log</span><span class="p">,</span><span class="n">temp_log</span><span class="p">])</span></div>
+
+
+
+
+<div class="viewcode-block" id="get_nodes_file"><a class="viewcode-back" href="../lib_config.html#lib_config.get_nodes_file">[docs]</a><span class="k">def</span> <span class="nf">get_nodes_file</span><span class="p">(</span><span class="n">config_file</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get name of file with list of nodes (from config file).</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     config_file : str</span>
+<span class="sd">         path to CorrelX configuration file.</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     file_read_nodes : str</span>
+<span class="sd">         path to hosts file.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">configparser</span><span class="o">.</span><span class="n">ConfigParser</span><span class="p">()</span>
+    <span class="n">config</span><span class="o">.</span><span class="n">optionxform</span> <span class="o">=</span> <span class="nb">str</span>
+    <span class="n">config</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">config_file</span><span class="p">)</span>
+    <span class="n">file_read_nodes</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">C_CONF_GEN</span><span class="p">,</span><span class="n">C_CONF_GEN_HOSTS</span><span class="p">)</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">file_read_nodes</span><span class="p">)</span></div>
+    
+    
+
+<div class="viewcode-block" id="get_config_mod_for_this_master"><a class="viewcode-back" href="../lib_config.html#lib_config.get_config_mod_for_this_master">[docs]</a><span class="k">def</span> <span class="nf">get_config_mod_for_this_master</span><span class="p">(</span><span class="n">config_file</span><span class="p">,</span><span class="n">config_suffix</span><span class="p">,</span><span class="n">master_node</span><span class="p">,</span><span class="n">script_arg_zero</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Overwrite all instances of &quot;localhost&quot; in configuration file with master node name </span>
+<span class="sd">     into new configuration file (original configuration file is used as a template), </span>
+<span class="sd">     &quot;~&quot; with home folder for the current user, &quot;localuser&quot; with the current user,</span>
+<span class="sd">     and &quot;localpath&quot; with the path of the script_arg_zero (mapred_cx.py).</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     config_file : str</span>
+<span class="sd">         path to CorrelX configuration file.</span>
+<span class="sd">     config_suffix : str</span>
+<span class="sd">         suffix to be added to resulting configuration file.</span>
+<span class="sd">     master_node : str</span>
+<span class="sd">         master node name.</span>
+<span class="sd">     script_arg_zero : str</span>
+<span class="sd">         path given for the main script (mapred_cx.py).</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     new_config_file : str</span>
+<span class="sd">         configuration file plus suffix.</span>
+<span class="sd">     </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    |</span>
+<span class="sd">    | **TO DO:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  Move new configuration file into folder with logs for this job.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">new_config_file</span> <span class="o">=</span> <span class="n">config_file</span> <span class="o">+</span> <span class="n">config_suffix</span>
+    <span class="n">abs_local_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">script_arg_zero</span><span class="p">))</span>
+    <span class="n">abs_local_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">abs_local_path</span><span class="o">+</span><span class="n">C_CONF_RELATIVE_PATH_LOCALPATH</span><span class="p">)</span>
+
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;sed -e &#39;s/&quot;</span><span class="o">+</span><span class="n">C_CONF_RES_LOCALHOST</span><span class="o">+</span><span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">master_node</span> <span class="o">+</span> <span class="s2">&quot;/&#39; &quot;</span> <span class="o">+</span> <span class="n">config_file</span> <span class="o">+</span><span class="s2">&quot; &gt; &quot;</span> <span class="o">+</span> <span class="n">new_config_file</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;sed -i </span><span class="se">\&quot;</span><span class="s2">s@~@$HOME@g</span><span class="se">\&quot;</span><span class="s2"> &quot;</span>  <span class="o">+</span> <span class="n">new_config_file</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;sed -i </span><span class="se">\&quot;</span><span class="s2">s@&quot;</span><span class="o">+</span><span class="n">C_CONF_RES_LOCALUSER</span><span class="o">+</span><span class="s2">&quot;@$USER@g</span><span class="se">\&quot;</span><span class="s2"> &quot;</span>  <span class="o">+</span> <span class="n">new_config_file</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;sed -i </span><span class="se">\&quot;</span><span class="s2">s@&quot;</span><span class="o">+</span><span class="n">C_CONF_RES_LOCALPATH</span><span class="o">+</span><span class="s2">&quot;@&quot;</span> <span class="o">+</span> <span class="n">abs_local_path</span> <span class="o">+</span> <span class="s2">&quot;@g</span><span class="se">\&quot;</span><span class="s2"> &quot;</span>  <span class="o">+</span> <span class="n">new_config_file</span><span class="p">)</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">new_config_file</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_configuration"><a class="viewcode-back" href="../lib_config.html#lib_config.get_configuration">[docs]</a><span class="k">def</span> <span class="nf">get_configuration</span><span class="p">(</span><span class="n">file_log</span><span class="p">,</span><span class="n">config_file</span><span class="p">,</span><span class="n">timestamp_str</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Read parameters from configuration file &quot;configh.conf&quot;.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     file_log : handler to file</span>
+<span class="sd">         handler to log file.</span>
+<span class="sd">     config_file : str</span>
+<span class="sd">         path to CorrelX configuration file.</span>
+<span class="sd">     timestamp_str : str</span>
+<span class="sd">         suffix to be added to temporary data folder (hwere media will be split).</span>
+<span class="sd">     v : int</span>
+<span class="sd">         verbose if 1.</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     MAPPER : str</span>
+<span class="sd">         Python mapper (.py).</span>
+<span class="sd">     REDUCER : str</span>
+<span class="sd">         Python reducer (.py).</span>
+<span class="sd">     DEPENDENCIES : str</span>
+<span class="sd">         Comma separated list of Python files required for mapper and reducer (1.py,2.py,etc).</span>
+<span class="sd">     PACKETS_PER_HDFS_BLOCK : int</span>
+<span class="sd">         Number of VDIF frames per file split.</span>
+<span class="sd">     CHECKSUM_SIZE : int</span>
+<span class="sd">         Number of bytes for checksum.</span>
+<span class="sd">     SRC_DIR : str</span>
+<span class="sd">         Folder with Python sources for mapper, reducer and dependencies.</span>
+<span class="sd">     APP_DIR : str</span>
+<span class="sd">         Folder to place mapper, reducer and dependencies in all nodes (in master-associated folder).</span>
+<span class="sd">     CONF_DIR : str</span>
+<span class="sd">         Base working folder for configuration files (to be updated later for this master).</span>
+<span class="sd">     TEMPLATES_CONF_DIR : str</span>
+<span class="sd">         Folder with templates for core-site.xml,yarn-site.xml,mapred-site.xml,hdfs-site.xml.</span>
+<span class="sd">     TEMPLATES_ENV_DIR : str</span>
+<span class="sd">         Folder with templates for hadoop-env.sh, etc.</span>
+<span class="sd">     HADOOP_DIR : str</span>
+<span class="sd">         Path to Hadoop home folder.</span>
+<span class="sd">     HADOOP_CONF_DIR : str</span>
+<span class="sd">         Path to Hadoop configuration folder (to be updated later for this master).</span>
+<span class="sd">     NODES : str</span>
+<span class="sd">         File to write list of nodes to host the cluster (one node per line).</span>
+<span class="sd">     MAPPERSH : str</span>
+<span class="sd">         File to write bash script for mapper (call to python script with all arguments).</span>
+<span class="sd">     REDUCERSH : str</span>
+<span class="sd">         File to write bash script for reducer (call to python script with all arguments).</span>
+<span class="sd">     JOBSH : str</span>
+<span class="sd">         File to write bash script for job request for Hadoop (call to python script with all arguments).</span>
+<span class="sd">     PYTHON_X : str</span>
+<span class="sd">         Path to Python executable.</span>
+<span class="sd">     USERNAME_MACHINES : str</span>
+<span class="sd">         Username for ssh into the cluster machines.</span>
+<span class="sd">     MAX_SLAVES : int</span>
+<span class="sd">         Maximum number of worker nodes (-1 no maximum).</span>
+<span class="sd">     SLAVES : str</span>
+<span class="sd">         Filename for Hadoop slaves file.</span>
+<span class="sd">     MASTERS : str            Filename for Hadoop masters file.</span>
+<span class="sd">     MASTER_IS_SLAVE : bool</span>
+<span class="sd">         Boolean, if 1 master is also launching a nodemanager (doing mapreduce).</span>
+<span class="sd">     HADOOP_TEMP_DIR : str</span>
+<span class="sd">         Folder for Hadoop temporary folders.</span>
+<span class="sd">     DATA_DIR : str</span>
+<span class="sd">         Path with media input files.</span>
+<span class="sd">     DATA_DIR_TMP : str</span>
+<span class="sd">         Path to folder to place splits of input file before moving them to the distributed filesystem.</span>
+<span class="sd">     HDFS_DATA_DIR : str</span>
+<span class="sd">         Path in the HDFS distributed filesystem to move input splits.</span>
+<span class="sd">     HADOOP_START_DELAY : str</span>
+<span class="sd">         Number of seconds to wait after every interaction with Hadoop during the cluster initialization.</span>
+<span class="sd">     HADOOP_STOP_DELAY : str</span>
+<span class="sd">         Number of seconds to wait after every interaction with Hadoop during the cluster termination.</span>
+<span class="sd">     PREFIX_OUTPUT : str</span>
+<span class="sd">         Prefix for output file.</span>
+<span class="sd">     HADOOP_TEXT_DELIMITER : str</span>
+<span class="sd">         Text delimiter for input splits (lib_mapredcorr.run_mapreduce_sh).</span>
+<span class="sd">     OUTPUT_DIR : str</span>
+<span class="sd">         Folder in local filesystem to place output file.</span>
+<span class="sd">     OUTPUT_SYM : str</span>
+<span class="sd">         Folder within experiment configuration folders to place symbolic link to output file.</span>
+<span class="sd">     RUN_PIPELINE : bool</span>
+<span class="sd">         Boolean, if 1 will run in pipeline mode.</span>
+<span class="sd">     RUN_HADOOP : bool</span>
+<span class="sd">         Boolean, if 1 will run Hadoop.</span>
+<span class="sd">     MAX_CPU_VCORES : int</span>
+<span class="sd">         Maximum number of virtual CPU cores.</span>
+<span class="sd">     HDFS_REPLICATION : int</span>
+<span class="sd">         Number of copies of each input split in HDFS.</span>
+<span class="sd">     OVER_SLURM : bool</span>
+<span class="sd">         Boolean, 1 to run in a cluster where the local filesystem is NFS (or synchronized among all nodes).</span>
+<span class="sd">     HDFS_COPY_DELAY : int</span>
+<span class="sd">         Number of seconds to wait after every interaction with Hadoop during file distribution to HDFS.</span>
+<span class="sd">     FFT_AT_MAPPER : bool</span>
+<span class="sd">         Boolean, if 0 FFT is done at reducer (default).</span>
+<span class="sd">     INI_FOLDER : str</span>
+<span class="sd">         Folder with experiment .ini files.</span>
+<span class="sd">     INI_STATIONS : str</span>
+<span class="sd">         Stations ini file name.</span>
+<span class="sd">     INI_SOURCES : str</span>
+<span class="sd">         Sources ini file name.</span>
+<span class="sd">     INI_DELAY_MODEL : str</span>
+<span class="sd">         Delay model ini file name.</span>
+<span class="sd">     INI_DELAYS : str</span>
+<span class="sd">         Delay polynomials ini file name.</span>
+<span class="sd">     INI_MEDIA : str</span>
+<span class="sd">         Media ini file name.</span>
+<span class="sd">     INI_CORRELATION : str</span>
+<span class="sd">         Correlation ini file name.</span>
+<span class="sd">     INTERNAL_LOG_MAPPER</span>
+<span class="sd">         [remove] currently default 0.</span>
+<span class="sd">     INTERNAL_LOG_REDUCER</span>
+<span class="sd">         [remove] currenlty default 0.</span>
+<span class="sd">     ADJUST_MAPPERS : float</span>
+<span class="sd">         Force number of mappers computed automatically to be multiplied by this number.</span>
+<span class="sd">     ADJUST_REDUCERS : float</span>
+<span class="sd">         Force number of reducers computed automatically to be multiplied by this number.</span>
+<span class="sd">     FFTS_PER_CHUNK</span>
+<span class="sd">        [Remove] Number of DFT windows per mapper output, -1 by default (whole frame)</span>
+<span class="sd">     TEXT_MODE : bool</span>
+<span class="sd">        True by default.</span>
+<span class="sd">     USE_NOHASH_PARTITIONER : bool</span>
+<span class="sd">        True to use NoHash partitioner.</span>
+<span class="sd">     USE_LUSTRE_PLUGIN : bool</span>
+<span class="sd">        True to use Lustre plugin for Hadoop.</span>
+<span class="sd">     LUSTRE_USER_DIR : str</span>
+<span class="sd">        Absolute path for the Lustre working path (used in mapreduce job).</span>
+<span class="sd">     LUSTRE_PREFIX : str</span>
+<span class="sd">        Path in Lustre to preceed HDFS_DATA_DIR if using Lustre.</span>
+<span class="sd">     ONE_BASELINE_PER_TASK : int</span>
+<span class="sd">        0 by default (if 1, old implementation allowed scaling with one baseline per task in the reducers).</span>
+<span class="sd">     MIN_MAPPER_CHUNK</span>
+<span class="sd">        [Remove] Chunk constraints for mapper.</span>
+<span class="sd">     MAX_MAPPER_CHUNK</span>
+<span class="sd">        [Remove] Chunk constraints for mapper.</span>
+<span class="sd">     TASK_SCALING_STATIONS: int</span>
+<span class="sd">        0 by default (if 1, old implementation allowed linear scaling per task in the reducers).</span>
+<span class="sd">     SORT_OUTPUT : bool</span>
+<span class="sd">        If 1 will sort lines in output file.</span>
+<span class="sd">     BM_AVOID_COPY : bool</span>
+<span class="sd">        If 1 will not split and copy input files if this has already been done previously (for benchmarking).</span>
+<span class="sd">     BM_DELETE_OUTPUT : bool</span>
+<span class="sd">        If 1 will not retrieve output file from distributed filesystem (for benchmarking).</span>
+<span class="sd">     TIMEOUT_STOP : int</span>
+<span class="sd">        Number of seconds to  wait before terminating nodes during cluster stop routine.</span>
+<span class="sd">     SINGLE_PRECISION : bool</span>
+<span class="sd">        If 1 computations will be done in single precision.</span>
+<span class="sd">     PROFILE_MAP: int</span>
+<span class="sd">        | if 1 will generate call graphs with timing information for mapper (requires Python Call Graph package),</span>
+<span class="sd">        | if 2 will use cProfile.</span>
+<span class="sd">     PROFILE_RED : int</span>
+<span class="sd">        | if 1 will generate call graphs with timing information for reducer (requires Python Call Graph package),</span>
+<span class="sd">        | if 2 will use cProfile.</span>
+<span class="sd">    </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    |</span>
+<span class="sd">    | **Configuration:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  All constants taken from const_config.py and const_hadoop.py.</span>
+<span class="sd">    |</span>
+<span class="sd">    |</span>
+<span class="sd">    | **TO DO:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  OVER_SLURM: explain better, and check assumptions.</span>
+<span class="sd">    |  Remove INTERNAL_LOG_MAPPER and INTERNAL_LOG_REDUCER.</span>
+<span class="sd">    |  Remove FFTS_PER_CHUNK,MIN_MAPPER_CHUNK and MAX_MAPPER_CHUNK.</span>
+<span class="sd">    |  Check that SINGLE_PRECISION is followed in mapper and reducer.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+   
+    <span class="c1">#config_file=&quot;configh.conf&quot;</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">configparser</span><span class="o">.</span><span class="n">ConfigParser</span><span class="p">()</span>
+    <span class="n">config</span><span class="o">.</span><span class="n">optionxform</span> <span class="o">=</span> <span class="nb">str</span>
+    <span class="n">config</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">config_file</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Reading configuration file...&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>    
+
+        
+    <span class="c1"># General</span>
+    <span class="n">RUN_PIPELINE</span> <span class="o">=</span>           <span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span> <span class="n">C_CONF_GEN</span><span class="p">,</span> <span class="n">C_CONF_GEN_RUN_PIPE</span><span class="p">)</span>  
+    <span class="n">SORT_OUTPUT</span> <span class="o">=</span>            <span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span> <span class="n">C_CONF_GEN</span><span class="p">,</span> <span class="n">C_CONF_GEN_SORT_OUTPUT</span><span class="p">)</span>
+    <span class="n">RUN_HADOOP</span> <span class="o">=</span>             <span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span> <span class="n">C_CONF_GEN</span><span class="p">,</span> <span class="n">C_CONF_GEN_RUN_HADOOP</span><span class="p">)</span> 
+    <span class="n">OVER_SLURM</span> <span class="o">=</span>             <span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span> <span class="n">C_CONF_GEN</span><span class="p">,</span> <span class="n">C_CONF_GEN_OVER_SLURM</span><span class="p">)</span> 
+    <span class="n">USE_NOHASH_PARTITIONER</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span><span class="n">C_CONF_GEN</span><span class="p">,</span> <span class="n">C_CONF_GEN_USE_NOHASH</span><span class="p">)</span>
+    <span class="n">USE_LUSTRE_PLUGIN</span> <span class="o">=</span>      <span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span> <span class="n">C_CONF_GEN</span><span class="p">,</span> <span class="n">C_CONF_GEN_USE_LUSTRE</span><span class="p">)</span>
+    <span class="n">LUSTRE_USER_DIR</span> <span class="o">=</span>        <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>        <span class="n">C_CONF_GEN</span><span class="p">,</span> <span class="n">C_CONF_GEN_LUSTRE_USER_FOLDER</span><span class="p">)</span>
+    <span class="n">LUSTRE_PREFIX</span> <span class="o">=</span>          <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>        <span class="n">C_CONF_GEN</span><span class="p">,</span> <span class="n">C_CONF_GEN_LUSTRE_PREFIX</span><span class="p">)</span>     
+    <span class="n">INTERNAL_LOG_MAPPER</span> <span class="o">=</span>    <span class="mi">0</span>                                                                <span class="c1"># TO DO: remove</span>
+    <span class="n">INTERNAL_LOG_REDUCER</span> <span class="o">=</span>   <span class="mi">0</span>                                                                <span class="c1"># TO DO: remove</span>
+        
+        
+        
+    <span class="c1"># Benchmarking</span>
+    <span class="n">BM_AVOID_COPY</span> <span class="o">=</span>     <span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span> <span class="n">C_CONF_BENCHMARKING</span><span class="p">,</span> <span class="n">C_CONF_BENCHMARKING_AVOID_COPY</span><span class="p">)</span>
+    <span class="n">BM_DELETE_OUTPUT</span> <span class="o">=</span>  <span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span> <span class="n">C_CONF_BENCHMARKING</span><span class="p">,</span> <span class="n">C_CONF_BENCHMARKING_DELETE_OUTPUT</span><span class="p">)</span>
+
+    
+    
+    <span class="c1"># Profiling</span>
+    <span class="n">PROFILE_MAP</span> <span class="o">=</span>       <span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span> <span class="n">C_CONF_PROFILING</span><span class="p">,</span> <span class="n">C_CONF_PROFILING_MAP</span><span class="p">)</span>
+    <span class="n">PROFILE_RED</span> <span class="o">=</span>       <span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span> <span class="n">C_CONF_PROFILING</span><span class="p">,</span> <span class="n">C_CONF_PROFILING_RED</span><span class="p">)</span>
+    <span class="n">use_pycallgraph</span> <span class="o">=</span>   <span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span> <span class="n">C_CONF_PROFILING</span><span class="p">,</span> <span class="n">C_CONF_PROFILING_PYCALLGRAPH</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="n">use_pycallgraph</span><span class="p">):</span>
+        <span class="n">PROFILE_MAP</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="nb">int</span><span class="p">(</span><span class="n">PROFILE_MAP</span><span class="p">)</span>
+        <span class="n">PROFILE_RED</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="nb">int</span><span class="p">(</span><span class="n">PROFILE_RED</span><span class="p">)</span>
+    
+    
+    <span class="c1"># Files</span>
+    <span class="n">MAPPER</span> <span class="o">=</span>             <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>       <span class="n">C_CONF_FILES</span><span class="p">,</span> <span class="n">C_CONF_FILES_MAP</span><span class="p">)</span>
+    <span class="n">REDUCER</span> <span class="o">=</span>            <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>       <span class="n">C_CONF_FILES</span><span class="p">,</span> <span class="n">C_CONF_FILES_RED</span><span class="p">)</span>
+    <span class="n">DEPENDENCIES</span> <span class="o">=</span>       <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>       <span class="n">C_CONF_FILES</span><span class="p">,</span> <span class="n">C_CONF_FILES_DEP</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+    <span class="n">MAPPERSH</span> <span class="o">=</span>           <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>       <span class="n">C_CONF_FILES</span><span class="p">,</span> <span class="n">C_CONF_FILES_MAP_BASH</span><span class="p">)</span>
+    <span class="n">REDUCERSH</span> <span class="o">=</span>          <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>       <span class="n">C_CONF_FILES</span><span class="p">,</span> <span class="n">C_CONF_FILES_RED_BASH</span><span class="p">)</span>
+    <span class="n">JOBSH</span> <span class="o">=</span>              <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>       <span class="n">C_CONF_FILES</span><span class="p">,</span> <span class="n">C_CONF_FILES_JOB_BASH</span><span class="p">)</span>
+    <span class="n">PYTHON_X</span> <span class="o">=</span>           <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>       <span class="n">C_CONF_FILES</span><span class="p">,</span> <span class="n">C_CONF_FILES_PYTHON</span><span class="p">)</span>
+    <span class="n">NODES</span> <span class="o">=</span>              <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>       <span class="n">C_CONF_FILES</span><span class="p">,</span> <span class="n">C_CONF_FILES_NODES</span><span class="p">)</span>
+    <span class="n">SRC_DIR</span> <span class="o">=</span>            <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>       <span class="n">C_CONF_FILES</span><span class="p">,</span> <span class="n">C_CONF_FILES_SRC_DIR</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">SRC_DIR</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">!=</span><span class="s2">&quot;/&quot;</span><span class="p">:</span>
+        <span class="n">SRC_DIR</span><span class="o">+=</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+    <span class="n">APP_DIR</span> <span class="o">=</span>            <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>       <span class="n">C_CONF_FILES</span><span class="p">,</span> <span class="n">C_CONF_FILES_APP_DIR</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">APP_DIR</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">!=</span><span class="s2">&quot;/&quot;</span><span class="p">:</span>
+        <span class="n">APP_DIR</span><span class="o">+=</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+    <span class="n">CONF_DIR</span> <span class="o">=</span>           <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>       <span class="n">C_CONF_FILES</span><span class="p">,</span> <span class="n">C_CONF_FILES_CONF_DIR</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">CONF_DIR</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">!=</span><span class="s2">&quot;/&quot;</span><span class="p">:</span>
+        <span class="n">CONF_DIR</span><span class="o">+=</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+    <span class="n">TEMPLATES_CONF_DIR</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>       <span class="n">C_CONF_FILES</span><span class="p">,</span> <span class="n">C_CONF_FILES_CONF_TEMPLATES</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">TEMPLATES_CONF_DIR</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">!=</span><span class="s2">&quot;/&quot;</span><span class="p">:</span>
+        <span class="n">TEMPLATES_CONF_DIR</span><span class="o">+=</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+    <span class="n">TEMPLATES_ENV_DIR</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>       <span class="n">C_CONF_FILES</span><span class="p">,</span> <span class="n">C_CONF_FILES_ENV_TEMPLATES</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">TEMPLATES_ENV_DIR</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">!=</span><span class="s2">&quot;/&quot;</span><span class="p">:</span>
+        <span class="n">TEMPLATES_ENV_DIR</span><span class="o">+=</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+    <span class="n">HADOOP_DIR</span> <span class="o">=</span>         <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>       <span class="n">C_CONF_FILES</span><span class="p">,</span> <span class="n">C_CONF_FILES_HADOOP_DIR</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">HADOOP_DIR</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">!=</span><span class="s2">&quot;/&quot;</span><span class="p">:</span>
+        <span class="n">HADOOP_DIR</span><span class="o">+=</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+    <span class="n">HADOOP_CONF_DIR</span> <span class="o">=</span> <span class="n">HADOOP_DIR</span><span class="o">+</span><span class="n">HADOOP_REL_ETC</span>                                   <span class="c1"># (!) This is overriten later at get_conf_out_dirs()</span>
+    <span class="n">HADOOP_TEMP_DIR</span> <span class="o">=</span>    <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>       <span class="n">C_CONF_FILES</span><span class="p">,</span> <span class="n">C_CONF_FILES_TMP_DIR</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">HADOOP_TEMP_DIR</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">!=</span><span class="s2">&quot;/&quot;</span><span class="p">:</span>
+        <span class="n">HADOOP_TEMP_DIR</span><span class="o">+=</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+    <span class="n">DATA_DIR_TMP</span> <span class="o">=</span>       <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>       <span class="n">C_CONF_FILES</span><span class="p">,</span> <span class="n">C_CONF_FILES_TMP_DATA_DIR</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">DATA_DIR_TMP</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">!=</span><span class="s2">&quot;/&quot;</span><span class="p">:</span>
+        <span class="n">DATA_DIR_TMP</span><span class="o">+=</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+    <span class="n">OUTPUT_DIR</span> <span class="o">=</span>         <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>       <span class="n">C_CONF_FILES</span><span class="p">,</span> <span class="n">C_CONF_FILES_OUT_DIR</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">OUTPUT_DIR</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">!=</span><span class="s2">&quot;/&quot;</span><span class="p">:</span>
+        <span class="n">OUTPUT_DIR</span><span class="o">+=</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>  
+    <span class="n">USERNAME_MACHINES</span> <span class="o">=</span>  <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>       <span class="n">C_CONF_FILES</span><span class="p">,</span> <span class="n">C_CONF_FILES_USERNAME_MACHINES</span><span class="p">)</span>
+    <span class="n">PREFIX_OUTPUT</span> <span class="o">=</span>      <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>       <span class="n">C_CONF_FILES</span><span class="p">,</span> <span class="n">C_CONF_FILES_PREFIX_OUTPUT</span><span class="p">)</span>
+    
+    
+    
+    <span class="c1"># HDFS</span>
+    <span class="n">HDFS_DATA_DIR</span> <span class="o">=</span>          <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>    <span class="n">C_CONF_HDFS</span><span class="p">,</span> <span class="n">C_CONF_HDFS_INPUT_DATA_DIR</span><span class="p">)</span>
+    <span class="n">HDFS_DATA_DIR_SUFFIX</span> <span class="o">=</span>   <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>    <span class="n">C_CONF_HDFS</span><span class="p">,</span> <span class="n">C_CONF_HDFS_DIR_SUFFIX</span><span class="p">)</span>
+    <span class="n">HDFS_DATA_DIR</span><span class="o">+=</span><span class="n">HDFS_DATA_DIR_SUFFIX</span>
+    <span class="k">if</span> <span class="n">HDFS_DATA_DIR</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">!=</span><span class="s2">&quot;/&quot;</span><span class="p">:</span>
+        <span class="n">HDFS_DATA_DIR</span><span class="o">+=</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+    <span class="n">PACKETS_PER_HDFS_BLOCK</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">getint</span><span class="p">(</span> <span class="n">C_CONF_HDFS</span><span class="p">,</span> <span class="n">C_CONF_HDFS_PACKETS_PER_BLOCK</span><span class="p">)</span>
+    <span class="n">CHECKSUM_SIZE</span> <span class="o">=</span>          <span class="n">config</span><span class="o">.</span><span class="n">getint</span><span class="p">(</span> <span class="n">C_CONF_HDFS</span><span class="p">,</span> <span class="n">C_CONF_HDFS_CHECKSUM_SIZE</span><span class="p">)</span> <span class="c1"># Has to divide the block size (which is a multiple of 32)</span>
+    <span class="c1"># PACKET SIZE is generated with &quot;generate_vdif&quot;, next cell.    </span>
+    
+    
+    
+    <span class="c1"># Slaves</span>
+    <span class="n">SLAVES</span> <span class="o">=</span>                 <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>    <span class="n">C_CONF_HSLAVES</span><span class="p">,</span> <span class="n">C_CONF_H_ALL_CONFIG_FILE</span><span class="p">)</span>
+    <span class="n">MAX_SLAVES</span> <span class="o">=</span>             <span class="n">config</span><span class="o">.</span><span class="n">getint</span><span class="p">(</span> <span class="n">C_CONF_HSLAVES</span><span class="p">,</span> <span class="n">C_CONF_HSLAVES_MAX_SLAVES</span><span class="p">)</span>
+    
+    
+    
+    <span class="c1"># Masters</span>
+    <span class="n">MASTERS</span> <span class="o">=</span>           <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>         <span class="n">C_CONF_HMASTERS</span><span class="p">,</span> <span class="n">C_CONF_H_ALL_CONFIG_FILE</span><span class="p">)</span>
+    <span class="n">MASTER_IS_SLAVE</span> <span class="o">=</span>   <span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span>  <span class="n">C_CONF_HMASTERS</span><span class="p">,</span> <span class="n">C_CONF_HMASTERS_MASTER_IS_SLAVE</span><span class="p">)</span>
+
+
+
+    <span class="c1"># Hadoop-other</span>
+    <span class="n">HADOOP_START_DELAY</span> <span class="o">=</span>     <span class="n">config</span><span class="o">.</span><span class="n">getint</span><span class="p">(</span>     <span class="n">C_CONF_OTHER</span><span class="p">,</span> <span class="n">C_CONF_OTHER_START_DELAY</span><span class="p">)</span>
+    <span class="n">HADOOP_STOP_DELAY</span> <span class="o">=</span>      <span class="n">config</span><span class="o">.</span><span class="n">getint</span><span class="p">(</span>     <span class="n">C_CONF_OTHER</span><span class="p">,</span> <span class="n">C_CONF_OTHER_STOP_DELAY</span><span class="p">)</span>
+    <span class="n">HDFS_COPY_DELAY</span> <span class="o">=</span>        <span class="n">config</span><span class="o">.</span><span class="n">getint</span><span class="p">(</span>     <span class="n">C_CONF_OTHER</span><span class="p">,</span> <span class="n">C_CONF_OTHER_COPY_DELAY</span><span class="p">)</span>
+    <span class="n">TEXT_MODE</span> <span class="o">=</span>              <span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span> <span class="n">C_CONF_OTHER</span><span class="p">,</span> <span class="n">C_CONF_OTHER_TEXT_MODE</span><span class="p">)</span>
+    <span class="n">HADOOP_TEXT_DELIMITER</span> <span class="o">=</span>  <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>        <span class="n">C_CONF_OTHER</span><span class="p">,</span> <span class="n">C_CONF_OTHER_TEXT_DELIMITER</span><span class="p">)</span>
+    <span class="n">MAX_CPU_VCORES</span> <span class="o">=</span>         <span class="n">config</span><span class="o">.</span><span class="n">getint</span><span class="p">(</span>     <span class="n">C_CONF_OTHER</span><span class="p">,</span> <span class="n">C_CONF_OTHER_MAX_CPU_VCORES</span><span class="p">)</span>
+    <span class="n">FFT_AT_MAPPER</span> <span class="o">=</span>          <span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span> <span class="n">C_CONF_OTHER</span><span class="p">,</span> <span class="n">C_CONF_OTHER_FFT_MAP</span><span class="p">)</span>
+    <span class="n">ADJUST_MAPPERS</span> <span class="o">=</span>         <span class="n">config</span><span class="o">.</span><span class="n">getfloat</span><span class="p">(</span>   <span class="n">C_CONF_OTHER</span><span class="p">,</span> <span class="n">C_CONF_OTHER_ADJ_MAP</span><span class="p">)</span>
+    <span class="n">ADJUST_REDUCERS</span> <span class="o">=</span>        <span class="n">config</span><span class="o">.</span><span class="n">getfloat</span><span class="p">(</span>   <span class="n">C_CONF_OTHER</span><span class="p">,</span> <span class="n">C_CONF_OTHER_ADJ_RED</span><span class="p">)</span>
+    <span class="n">ONE_BASELINE_PER_TASK</span> <span class="o">=</span>  <span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span> <span class="n">C_CONF_OTHER</span><span class="p">,</span> <span class="n">C_CONF_OTHER_ONE_BASELINE</span><span class="p">)</span>
+    <span class="n">TASK_SCALING_STATIONS</span> <span class="o">=</span>  <span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span> <span class="n">C_CONF_OTHER</span><span class="p">,</span> <span class="n">C_CONF_OTHER_SCALING_STATIONS</span><span class="p">)</span>
+    <span class="n">TIMEOUT_STOP</span> <span class="o">=</span>           <span class="n">config</span><span class="o">.</span><span class="n">getint</span><span class="p">(</span>     <span class="n">C_CONF_OTHER</span><span class="p">,</span> <span class="n">C_CONF_OTHER_TIMEOUT_STOP_NODES</span><span class="p">)</span>
+    <span class="n">SINGLE_PRECISION</span> <span class="o">=</span>       <span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span> <span class="n">C_CONF_OTHER</span><span class="p">,</span> <span class="n">C_CONF_OTHER_SINGLE_PRECISION</span><span class="p">)</span>
+    <span class="n">FFTS_PER_CHUNK</span> <span class="o">=</span>         <span class="o">-</span><span class="mi">1</span>                                                                <span class="c1"># TO DO: remove</span>
+    <span class="n">MIN_MAPPER_CHUNK</span> <span class="o">=</span>       <span class="o">-</span><span class="mi">1</span>                                                                <span class="c1"># TO DO: remove</span>
+    <span class="n">MAX_MAPPER_CHUNK</span> <span class="o">=</span>       <span class="o">-</span><span class="mi">1</span>                                                                <span class="c1"># TO DO: remove</span>
+    
+    
+    
+    <span class="c1"># Experiment</span>
+    <span class="n">INI_FOLDER</span> <span class="o">=</span>                         <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>   <span class="n">C_CONF_EXP</span><span class="p">,</span> <span class="n">C_CONF_EXP_FOLDER</span><span class="p">)</span>
+    <span class="n">INI_STATIONS</span> <span class="o">=</span> <span class="n">INI_FOLDER</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span>    <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>   <span class="n">C_CONF_EXP</span><span class="p">,</span> <span class="n">C_CONF_EXP_STATIONS</span><span class="p">)</span>
+    <span class="n">INI_SOURCES</span> <span class="o">=</span> <span class="n">INI_FOLDER</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span>     <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>   <span class="n">C_CONF_EXP</span><span class="p">,</span> <span class="n">C_CONF_EXP_SOURCES</span><span class="p">)</span>
+    <span class="n">INI_DELAYS</span> <span class="o">=</span> <span class="n">INI_FOLDER</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span>      <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>   <span class="n">C_CONF_EXP</span><span class="p">,</span> <span class="n">C_CONF_EXP_DELAYS</span><span class="p">)</span>
+    <span class="n">INI_DELAY_MODEL</span> <span class="o">=</span> <span class="n">INI_FOLDER</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>   <span class="n">C_CONF_EXP</span><span class="p">,</span> <span class="n">C_CONF_EXP_DELAY_MODEL</span><span class="p">)</span>
+    <span class="n">INI_MEDIA</span> <span class="o">=</span> <span class="n">INI_FOLDER</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span>       <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>   <span class="n">C_CONF_EXP</span><span class="p">,</span> <span class="n">C_CONF_EXP_MEDIA</span><span class="p">)</span>
+    <span class="n">INI_CORRELATION</span> <span class="o">=</span> <span class="n">INI_FOLDER</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>   <span class="n">C_CONF_EXP</span><span class="p">,</span> <span class="n">C_CONF_EXP_CORRELATION</span><span class="p">)</span>
+    <span class="n">DATA_DIR</span> <span class="o">=</span> <span class="n">INI_FOLDER</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span>        <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>   <span class="n">C_CONF_EXP</span><span class="p">,</span> <span class="n">C_CONF_EXP_MEDIA_SUB</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span>
+    <span class="n">OUT_DIR_PREFIX</span> <span class="o">=</span>                     <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>   <span class="n">C_CONF_EXP</span><span class="p">,</span> <span class="n">C_CONF_EXP_MEDIA_SUB_PREFIX</span><span class="p">)</span>
+    
+     
+     
+    <span class="c1">#TO DO: vcores value is forced from MAX_CPU_VCORES... maybe it has to be taken out from the configuration file section... fix this.</span>
+    
+    <span class="n">HDFS_REPLICATION</span> <span class="o">=</span>                   <span class="n">config</span><span class="o">.</span><span class="n">getint</span><span class="p">(</span> <span class="n">C_CONF_H_HDFS</span><span class="p">,</span> <span class="n">C_H_HDFS_REPLICATION</span><span class="p">)</span>
+
+    <span class="c1">##AUTO_STATIONS = config.getint(&quot;Correlation&quot;,&#39;Corr. same station&#39;)</span>
+    <span class="c1">##AUTO_THREADS = config.getint(&quot;Correlation&quot;,&#39;Corr. same thread&#39;)</span>
+    
+    <span class="n">OUTPUT_SYM</span><span class="o">=</span><span class="n">INI_FOLDER</span><span class="o">+</span><span class="s2">&quot;/&quot;</span><span class="o">+</span><span class="n">OUT_DIR_PREFIX</span><span class="o">+</span><span class="s2">&quot;_&quot;</span><span class="o">+</span><span class="n">timestamp_str</span><span class="o">+</span><span class="s2">&quot;/&quot;</span>
+
+
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="c1">#if SAMPLES_PER_PACKET&lt;FFT_SIZE:</span>
+        <span class="c1">#    print(&quot; (!) The packet has fewer samples than the size of the FFT&quot;,file=file_log)</span>
+   
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; FFT at mapper:</span><span class="se">\t\t\t</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">FFT_AT_MAPPER</span><span class="p">)),</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Hadoop delays: [initialization = &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">HADOOP_START_DELAY</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; s], [termination = &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">HADOOP_STOP_DELAY</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; s], [HDFS = &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">HDFS_COPY_DELAY</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; s]&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">MAX_SLAVES</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Iterating: NODES (max=&quot;</span> <span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">MAX_SLAVES</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Single run max. number of available nodes&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">OVER_SLURM</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; ---&gt; SLURM - Configured for running on SLURM&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; ---&gt; VBox - Configured for running on VBox&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+    
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Temp dir overriden (default: /tmp)&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+    
+    <span class="k">return</span><span class="p">([</span><span class="n">MAPPER</span><span class="p">,</span> <span class="n">REDUCER</span><span class="p">,</span> <span class="n">DEPENDENCIES</span><span class="p">,</span> <span class="n">PACKETS_PER_HDFS_BLOCK</span><span class="p">,</span><span class="n">CHECKSUM_SIZE</span><span class="p">,</span>\
+            <span class="n">SRC_DIR</span><span class="p">,</span><span class="n">APP_DIR</span><span class="p">,</span> <span class="n">CONF_DIR</span><span class="p">,</span> <span class="n">TEMPLATES_CONF_DIR</span><span class="p">,</span> <span class="n">TEMPLATES_ENV_DIR</span><span class="p">,</span> <span class="n">HADOOP_DIR</span><span class="p">,</span><span class="n">HADOOP_CONF_DIR</span><span class="p">,</span><span class="n">NODES</span><span class="p">,</span>
+            <span class="n">MAPPERSH</span><span class="p">,</span><span class="n">REDUCERSH</span><span class="p">,</span><span class="n">JOBSH</span><span class="p">,</span><span class="n">PYTHON_X</span><span class="p">,</span>\
+            <span class="n">USERNAME_MACHINES</span><span class="p">,</span><span class="n">MAX_SLAVES</span><span class="p">,</span><span class="n">SLAVES</span><span class="p">,</span><span class="n">MASTERS</span><span class="p">,</span><span class="n">MASTER_IS_SLAVE</span><span class="p">,</span><span class="n">HADOOP_TEMP_DIR</span><span class="p">,</span><span class="n">DATA_DIR</span><span class="p">,</span><span class="n">DATA_DIR_TMP</span><span class="p">,</span><span class="n">HDFS_DATA_DIR</span><span class="p">,</span><span class="n">HADOOP_START_DELAY</span><span class="p">,</span><span class="n">HADOOP_STOP_DELAY</span><span class="p">,</span>\
+            <span class="n">PREFIX_OUTPUT</span><span class="p">,</span><span class="n">HADOOP_TEXT_DELIMITER</span><span class="p">,</span><span class="n">OUTPUT_DIR</span><span class="p">,</span><span class="n">OUTPUT_SYM</span><span class="p">,</span><span class="n">RUN_PIPELINE</span><span class="p">,</span><span class="n">RUN_HADOOP</span><span class="p">,</span><span class="n">MAX_CPU_VCORES</span><span class="p">,</span>\
+            <span class="n">HDFS_REPLICATION</span><span class="p">,</span><span class="n">OVER_SLURM</span><span class="p">,</span><span class="n">HDFS_COPY_DELAY</span><span class="p">,</span>\
+            <span class="n">FFT_AT_MAPPER</span><span class="p">,</span><span class="n">INI_FOLDER</span><span class="p">,</span>\
+            <span class="n">INI_STATIONS</span><span class="p">,</span> <span class="n">INI_SOURCES</span><span class="p">,</span> <span class="n">INI_DELAY_MODEL</span><span class="p">,</span> <span class="n">INI_DELAYS</span><span class="p">,</span> <span class="n">INI_MEDIA</span><span class="p">,</span> <span class="n">INI_CORRELATION</span><span class="p">,</span>\
+            <span class="n">INTERNAL_LOG_MAPPER</span><span class="p">,</span><span class="n">INTERNAL_LOG_REDUCER</span><span class="p">,</span><span class="n">ADJUST_MAPPERS</span><span class="p">,</span><span class="n">ADJUST_REDUCERS</span><span class="p">,</span><span class="n">FFTS_PER_CHUNK</span><span class="p">,</span><span class="n">TEXT_MODE</span><span class="p">,</span>\
+            <span class="n">USE_NOHASH_PARTITIONER</span><span class="p">,</span><span class="n">USE_LUSTRE_PLUGIN</span><span class="p">,</span><span class="n">LUSTRE_USER_DIR</span><span class="p">,</span><span class="n">LUSTRE_PREFIX</span><span class="p">,</span><span class="n">ONE_BASELINE_PER_TASK</span><span class="p">,</span>\
+            <span class="n">MIN_MAPPER_CHUNK</span><span class="p">,</span><span class="n">MAX_MAPPER_CHUNK</span><span class="p">,</span><span class="n">TASK_SCALING_STATIONS</span><span class="p">,</span><span class="n">SORT_OUTPUT</span><span class="p">,</span><span class="n">BM_AVOID_COPY</span><span class="p">,</span>\
+            <span class="n">BM_DELETE_OUTPUT</span><span class="p">,</span><span class="n">TIMEOUT_STOP</span><span class="p">,</span><span class="n">SINGLE_PRECISION</span><span class="p">,</span><span class="n">PROFILE_MAP</span><span class="p">,</span><span class="n">PROFILE_RED</span><span class="p">])</span></div>
+    
+
+
+<div class="viewcode-block" id="update_config_param"><a class="viewcode-back" href="../lib_config.html#lib_config.update_config_param">[docs]</a><span class="k">def</span> <span class="nf">update_config_param</span><span class="p">(</span><span class="n">source_file</span><span class="p">,</span><span class="n">pairs</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Updates a list of pairs [parameter,value] in a configuration file. Should be valid to any .ini file, but this is </span>
+<span class="sd">     used to override the configuration on the CorrelX configuration file.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     source_file : str</span>
+<span class="sd">         configuration file (.ini).</span>
+<span class="sd">     pairs : list</span>
+<span class="sd">         list of [parameter,value].</span>
+<span class="sd">     v : int</span>
+<span class="sd">         verbose if 1.</span>
+<span class="sd">     file_log : file handler</span>
+<span class="sd">         handler for log file.</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     N/A</span>
+<span class="sd">     </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    |</span>
+<span class="sd">    | **TO DO:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  Currently parameters that are not found are not added, this should be reported.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Overriding configuration file!&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span> 
+    <span class="n">destination_file</span> <span class="o">=</span> <span class="n">source_file</span>
+
+    <span class="n">isamec</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">copy_again</span><span class="o">=</span><span class="mi">1</span>
+    <span class="n">destination_file</span><span class="o">+=</span><span class="s2">&quot;.tmp&quot;</span>
+    <span class="n">isamec</span> <span class="o">=</span> <span class="s2">&quot; mv &quot;</span> <span class="o">+</span> <span class="n">destination_file</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">source_file</span>
+        
+
+    <span class="n">command</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">iteration</span><span class="o">=</span><span class="mi">0</span>
+
+    <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">pairs</span><span class="p">:</span>
+        <span class="n">iteration</span><span class="o">+=</span><span class="mi">1</span>
+        <span class="k">if</span> <span class="n">iteration</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+            <span class="c1">#command+=&quot;sed -e &#39;s/&quot; + pair[0] + &quot;.*/&quot; + pair[0] + &quot;\\t\\t&quot; + pair[1] + &quot;/g&#39; &quot; + source_file</span>
+            <span class="n">command</span><span class="o">+=</span><span class="s2">&quot;sed -e &#39;s;&quot;</span> <span class="o">+</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;.*;&quot;</span> <span class="o">+</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\\</span><span class="s2">t</span><span class="se">\\</span><span class="s2">t&quot;</span> <span class="o">+</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;;g&#39; &quot;</span> <span class="o">+</span> <span class="n">source_file</span>
+        <span class="k">if</span> <span class="n">iteration</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+            <span class="c1">#command+=&quot;|sed -e &#39;s/&quot; + pair[0] + &quot;.*/&quot; + pair[0] + &quot;\\t\\t&quot; + pair[1] + &quot;/g&#39; &quot; </span>
+            <span class="n">command</span><span class="o">+=</span><span class="s2">&quot;|sed -e &#39;s;&quot;</span> <span class="o">+</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;.*;&quot;</span> <span class="o">+</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\\</span><span class="s2">t</span><span class="se">\\</span><span class="s2">t&quot;</span> <span class="o">+</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;;g&#39; &quot;</span> 
+
+    <span class="n">command</span><span class="o">+=</span> <span class="s2">&quot;&gt; &quot;</span> <span class="o">+</span> <span class="n">destination_file</span> 
+
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">isamec</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">pairs</span><span class="p">:</span> <span class="c1">#[1:]:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  &quot;</span> <span class="o">+</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">49</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span> 
+            
+    <span class="c1"># Now check if any parameter was not found, and thus was not updated</span>
+    <span class="c1"># Checks lowercase!</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">source_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">pairs</span><span class="p">:</span>
+            <span class="n">count</span><span class="o">=</span><span class="mi">1</span>
+            <span class="k">if</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">lines</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                <span class="n">count</span><span class="o">=</span><span class="mi">0</span>
+            <span class="k">if</span> <span class="n">count</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  (!) Parameter not found: &quot;</span> <span class="o">+</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">49</span><span class="p">),</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span> </div>
+                    
+                    
+                    
+<div class="viewcode-block" id="override_configuration_parameters"><a class="viewcode-back" href="../lib_config.html#lib_config.override_configuration_parameters">[docs]</a><span class="k">def</span> <span class="nf">override_configuration_parameters</span><span class="p">(</span><span class="n">forced_configuration_string</span><span class="p">,</span><span class="n">config_file</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function takes as input the string with the parameters to the main script and overrides the corresponding parameters</span>
+<span class="sd">    in the configuration files. This is to simplify batch testing.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     forced_configuration_string : str</span>
+<span class="sd">         Comma separated list of parameter0=value0,parameter1=value1,...</span>
+<span class="sd">     config_file : str</span>
+<span class="sd">         Path to CorrelX configuration file.</span>
+<span class="sd">     v : int</span>
+<span class="sd">         Verbose if 1.</span>
+<span class="sd">     file_log : file handler</span>
+<span class="sd">         Handler for log file.</span>
+<span class="sd">    </span>
+<span class="sd">    Output:</span>
+<span class="sd">    -------</span>
+<span class="sd">     N/A</span>
+<span class="sd">    </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    |</span>
+<span class="sd">    | **Assumptions:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  Assuming that C_H_MAPRED_RED_OPTS is higher than C_H_MAPRED_MAP_OPTS, so the first value is </span>
+<span class="sd">    |    taken for C_H_MAPRED_CHILD_OPTS.</span>
+<span class="sd">    |</span>
+<span class="sd">    |</span>
+<span class="sd">    | **Notes:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  For new parameters in configh.conf:</span>
+<span class="sd">    |  (1) Add constants for CLI in const_config.py.</span>
+<span class="sd">    |  (2) Check/add constants for hadoop configuration files in const_hadoop.py (if applicable).</span>
+<span class="sd">    |  (3) Add parameter reading in get_configuration().</span>
+<span class="sd">    |  (4) Add option in if-structure below.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Override configuration parameters</span>
+    <span class="c1"># e.g.: -f stations=3,slowstart=0.4,ppb=1</span>
+    <span class="n">read_configuration_pairs</span><span class="o">=</span><span class="p">[</span><span class="n">i</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">forced_configuration_string</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)]</span>
+    <span class="n">forced_configuration_pairs</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">unr_parameters</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">read_configuration_pairs</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pair</span><span class="p">)</span><span class="o">&lt;</span><span class="mi">2</span><span class="p">:</span>
+            <span class="n">unr_parameters</span><span class="o">+=</span><span class="p">[</span><span class="n">pair</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="p">[</span><span class="n">parameter</span><span class="p">,</span><span class="n">value</span><span class="p">]</span> <span class="o">=</span> <span class="n">pair</span>
+
+
+            <span class="k">if</span> <span class="n">parameter</span><span class="o">==</span><span class="n">C_ARG_PPB</span><span class="p">:</span>                                                             <span class="c1"># Num. VDIF frames per block</span>
+                <span class="n">forced_configuration_pairs</span><span class="o">+=</span><span class="p">[[</span><span class="n">C_CONF_HDFS_PACKETS_PER_BLOCK</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">,</span><span class="n">value</span><span class="p">]]</span>
+            
+            <span class="k">elif</span> <span class="n">parameter</span><span class="o">==</span><span class="n">C_ARG_SLOWSTART</span><span class="p">:</span>                                                     <span class="c1"># Mapreduce slowstart</span>
+                <span class="n">forced_configuration_pairs</span><span class="o">+=</span><span class="p">[[</span><span class="n">C_H_MAPRED_SLOWSTART</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">,</span><span class="n">value</span><span class="p">]]</span>
+            
+            <span class="k">elif</span> <span class="n">parameter</span><span class="o">==</span><span class="n">C_ARG_REPLICATION</span><span class="p">:</span>                                                   <span class="c1"># HDFS replication</span>
+                <span class="n">forced_configuration_pairs</span><span class="o">+=</span><span class="p">[[</span><span class="n">C_H_HDFS_REPLICATION</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">,</span><span class="n">value</span><span class="p">]]</span> 
+            
+            <span class="k">elif</span> <span class="n">parameter</span><span class="o">==</span><span class="n">C_ARG_FFTM</span><span class="p">:</span>                                                          <span class="c1"># FFT at mapper</span>
+                <span class="n">forced_configuration_pairs</span><span class="o">+=</span><span class="p">[[</span><span class="n">C_CONF_OTHER_FFT_MAP</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">,</span><span class="n">value</span><span class="p">]]</span>
+            
+            <span class="k">elif</span> <span class="n">parameter</span><span class="o">==</span><span class="n">C_ARG_FFTR</span><span class="p">:</span>                                                          <span class="c1"># FFT at reducer</span>
+                <span class="n">forced_configuration_pairs</span><span class="o">+=</span><span class="p">[[</span><span class="n">C_CONF_OTHER_FFT_MAP</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="ow">not</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="n">value</span><span class="p">))))]]</span>
+                       
+            <span class="k">elif</span> <span class="n">parameter</span><span class="o">==</span><span class="n">C_ARG_ADJM</span><span class="p">:</span>                                                          <span class="c1"># Factor to multiply number of mappers   </span>
+                <span class="n">forced_configuration_pairs</span><span class="o">+=</span><span class="p">[[</span><span class="n">C_CONF_OTHER_ADJ_MAP</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">,</span><span class="n">value</span><span class="p">]]</span> 
+            
+            <span class="k">elif</span> <span class="n">parameter</span><span class="o">==</span><span class="n">C_ARG_ADJR</span><span class="p">:</span>                                                          <span class="c1"># Factor to multiply number of reducers</span>
+                <span class="n">forced_configuration_pairs</span><span class="o">+=</span><span class="p">[[</span><span class="n">C_CONF_OTHER_ADJ_RED</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">,</span><span class="n">value</span><span class="p">]]</span>
+            
+            <span class="k">elif</span> <span class="n">parameter</span><span class="o">==</span><span class="n">C_ARG_VCORES</span><span class="p">:</span>                                                        <span class="c1"># Number of cores per node</span>
+                <span class="n">forced_configuration_pairs</span><span class="o">+=</span><span class="p">[[</span><span class="n">C_H_YARN_MAX_VCORES</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">,</span><span class="n">value</span><span class="p">]]</span>
+                <span class="n">forced_configuration_pairs</span><span class="o">+=</span><span class="p">[[</span><span class="n">C_H_YARN_RES_VCORES</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">,</span><span class="n">value</span><span class="p">]]</span>
+                <span class="n">forced_configuration_pairs</span><span class="o">+=</span><span class="p">[[</span><span class="n">C_CONF_OTHER_MAX_CPU_VCORES</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">,</span><span class="n">value</span><span class="p">]]</span>
+            
+            <span class="k">elif</span> <span class="n">parameter</span><span class="o">==</span><span class="n">C_ARG_VCORESPERMAP</span><span class="p">:</span>                                                  <span class="c1"># Number of cores per map task</span>
+                <span class="n">forced_configuration_pairs</span><span class="o">+=</span><span class="p">[[</span><span class="n">C_H_MAPRED_VCORES_MAP</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">,</span><span class="n">value</span><span class="p">]]</span>
+            
+            <span class="k">elif</span> <span class="n">parameter</span><span class="o">==</span><span class="n">C_ARG_VCORESPERRED</span><span class="p">:</span>                                                  <span class="c1"># Number of cores per reduce task</span>
+                <span class="n">forced_configuration_pairs</span><span class="o">+=</span><span class="p">[[</span><span class="n">C_H_MAPRED_VCORES_RED</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">,</span><span class="n">value</span><span class="p">]]</span>
+            
+            <span class="k">elif</span> <span class="n">parameter</span><span class="o">==</span><span class="n">C_ARG_MAPSPERNODE</span><span class="p">:</span>                                                   <span class="c1"># Max. maps per node</span>
+                <span class="n">forced_configuration_pairs</span><span class="o">+=</span><span class="p">[[</span><span class="n">C_H_MAPRED_MAP_MAX</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">,</span><span class="n">value</span><span class="p">]]</span>
+            
+            <span class="k">elif</span> <span class="n">parameter</span><span class="o">==</span><span class="n">C_ARG_REDUCESPERNODE</span><span class="p">:</span>                                                <span class="c1"># Max. reduces per node</span>
+                <span class="n">forced_configuration_pairs</span><span class="o">+=</span><span class="p">[[</span><span class="n">C_H_MAPRED_RED_MAX</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">,</span><span class="n">value</span><span class="p">]]</span>
+            
+            <span class="k">elif</span> <span class="n">parameter</span><span class="o">==</span><span class="n">C_ARG_NODEMEM</span><span class="p">:</span>                                                       <span class="c1"># Memory per node (maps+reduces)</span>
+                <span class="n">forced_configuration_pairs</span><span class="o">+=</span><span class="p">[[</span><span class="n">C_H_YARN_MAX_MEM_MB</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">,</span><span class="n">value</span><span class="p">]]</span>  
+                <span class="n">forced_configuration_pairs</span><span class="o">+=</span><span class="p">[[</span><span class="n">C_H_YARN_RES_MEM_MB</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">,</span><span class="n">value</span><span class="p">]]</span>  
+            
+            <span class="k">elif</span> <span class="n">parameter</span><span class="o">==</span><span class="n">C_ARG_CONTAINERMEM_MAP</span><span class="p">:</span>                                              <span class="c1"># Memory per container (mapper)</span>
+                <span class="n">forced_configuration_pairs</span><span class="o">+=</span><span class="p">[[</span><span class="n">C_H_YARN_MAP_MB</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">,</span><span class="n">value</span><span class="p">]]</span>
+            
+            <span class="k">elif</span> <span class="n">parameter</span><span class="o">==</span><span class="n">C_ARG_CONTAINERMEM_RED</span><span class="p">:</span>                                              <span class="c1"># Memory per container (reducer)</span>
+                <span class="n">forced_configuration_pairs</span><span class="o">+=</span><span class="p">[[</span><span class="n">C_H_YARN_RED_MB</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">,</span><span class="n">value</span><span class="p">]]</span>
+            
+            <span class="k">elif</span> <span class="n">parameter</span><span class="o">==</span><span class="n">C_ARG_CONTAINERMEM_AM</span><span class="p">:</span>                                               <span class="c1"># Memory per container (app manager)</span>
+                <span class="n">forced_configuration_pairs</span><span class="o">+=</span><span class="p">[[</span><span class="n">C_H_YARN_AM_RES_MB</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">,</span><span class="n">value</span><span class="p">]]</span>
+            
+            <span class="k">elif</span> <span class="n">parameter</span><span class="o">==</span><span class="n">C_ARG_CONTAINERHEAP_MAP</span><span class="p">:</span>                                             <span class="c1"># Memory heap per container (mapper)  </span>
+                <span class="c1">#forced_configuration_pairs+=[[C_H_MAPRED_MAP_OPTS+&quot;:&quot;,    &quot;-Xms&quot;+value+&quot;m -Xmx&quot;+value+&quot;m&quot;]] # init</span>
+                <span class="n">forced_configuration_pairs</span><span class="o">+=</span><span class="p">[[</span><span class="n">C_H_MAPRED_MAP_OPTS</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="s2">&quot;-Xmx&quot;</span><span class="o">+</span><span class="n">value</span><span class="o">+</span><span class="s2">&quot;m&quot;</span><span class="p">]]</span>                    <span class="c1"># no init</span>
+                
+            <span class="k">elif</span> <span class="n">parameter</span><span class="o">==</span><span class="n">C_ARG_CONTAINERHEAP_RED</span><span class="p">:</span>                                             <span class="c1"># Memory heap per container (mapper)  </span>
+                <span class="c1">#forced_configuration_pairs+=[[C_H_MAPRED_RED_OPTS+&quot;:&quot;,    &quot;-Xms&quot;+value+&quot;m -Xmx&quot;+value+&quot;m&quot;]] # init</span>
+                <span class="c1">#forced_configuration_pairs+=[[C_H_MAPRED_CHILD_OPTS+&quot;:&quot;, &quot;-Xms&quot;+value+&quot;m -Xmx&quot;+value+&quot;m&quot;]] # init</span>
+                <span class="n">forced_configuration_pairs</span><span class="o">+=</span><span class="p">[[</span><span class="n">C_H_MAPRED_RED_OPTS</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="s2">&quot;-Xmx&quot;</span><span class="o">+</span><span class="n">value</span><span class="o">+</span><span class="s2">&quot;m&quot;</span><span class="p">]]</span>                    <span class="c1"># no init</span>
+                <span class="n">forced_configuration_pairs</span><span class="o">+=</span><span class="p">[[</span><span class="n">C_H_MAPRED_CHILD_OPTS</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="s2">&quot;-Xmx&quot;</span><span class="o">+</span><span class="n">value</span><span class="o">+</span><span class="s2">&quot;m&quot;</span><span class="p">]]</span>                 <span class="c1"># no init</span>
+            
+            <span class="k">elif</span> <span class="n">parameter</span><span class="o">==</span><span class="n">C_ARG_CONTAINERHEAP_AM</span><span class="p">:</span>                                             <span class="c1"># Memory heap per container (mapper)  </span>
+                <span class="c1">#forced_configuration_pairs+=[[C_H_MAPRED_AM_OPTS+&quot;:&quot;, &quot;-Xms&quot;+value+&quot;m -Xmx&quot;+value+&quot;m&quot;]] # init</span>
+                <span class="n">forced_configuration_pairs</span><span class="o">+=</span><span class="p">[[</span><span class="n">C_H_MAPRED_AM_OPTS</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="s2">&quot;-Xmx&quot;</span><span class="o">+</span><span class="n">value</span><span class="o">+</span><span class="s2">&quot;m&quot;</span><span class="p">]]</span>                    <span class="c1"># no init</span>
+
+
+                
+                
+                <span class="n">forced_configuration_pairs</span><span class="o">+=</span><span class="p">[[</span><span class="n">C_H_MAPRED_MAP_OPTS</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="s2">&quot;-Xmx&quot;</span><span class="o">+</span><span class="n">value</span><span class="o">+</span><span class="s2">&quot;m&quot;</span><span class="p">]]</span>                   <span class="c1"># no init</span>
+                <span class="n">forced_configuration_pairs</span><span class="o">+=</span><span class="p">[[</span><span class="n">C_H_MAPRED_RED_OPTS</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="s2">&quot;-Xmx&quot;</span><span class="o">+</span><span class="n">value</span><span class="o">+</span><span class="s2">&quot;m&quot;</span><span class="p">]]</span>                   <span class="c1"># no init</span>
+
+            <span class="k">elif</span> <span class="n">parameter</span><span class="o">==</span><span class="n">C_ARG_SORTMEM</span><span class="p">:</span>                                                       <span class="c1"># Sort memory (after map)</span>
+                <span class="n">forced_configuration_pairs</span><span class="o">+=</span><span class="p">[[</span><span class="n">C_H_MAPRED_SORT_MB</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">,</span><span class="n">value</span><span class="p">]]</span>
+            
+            <span class="k">elif</span> <span class="n">parameter</span><span class="o">==</span><span class="n">C_ARG_BLOCKSIZE</span><span class="p">:</span>                                                     <span class="c1"># HDFS block size</span>
+                <span class="n">forced_configuration_pairs</span><span class="o">+=</span><span class="p">[[</span><span class="n">C_H_HDFS_BLOCKSIZE</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">,</span><span class="n">value</span><span class="p">]]</span>
+            
+            <span class="k">elif</span> <span class="n">parameter</span><span class="o">==</span><span class="n">C_ARG_MASTERWORKS</span><span class="p">:</span>                                                   <span class="c1"># Master node is also slave</span>
+                <span class="n">forced_configuration_pairs</span><span class="o">+=</span><span class="p">[[</span><span class="n">C_CONF_HMASTERS_MASTER_IS_SLAVE</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">,</span><span class="n">value</span><span class="p">]]</span>
+            
+            <span class="k">elif</span> <span class="n">parameter</span><span class="o">==</span><span class="n">C_ARG_TASKSPERJVM</span><span class="p">:</span>                                                   <span class="c1"># Tasks before restaring JVM</span>
+                <span class="n">forced_configuration_pairs</span><span class="o">+=</span><span class="p">[[</span><span class="n">C_H_MAPRED_JVM_NUMTASKS</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">,</span><span class="n">value</span><span class="p">]]</span>
+            
+            <span class="k">elif</span> <span class="n">parameter</span><span class="o">==</span><span class="n">C_ARG_AVOIDCOPY</span><span class="p">:</span>                                                     <span class="c1"># Do not re-copy input files</span>
+                <span class="n">forced_configuration_pairs</span><span class="o">+=</span><span class="p">[[</span><span class="n">C_CONF_BENCHMARKING_AVOID_COPY</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">,</span><span class="n">value</span><span class="p">]]</span>
+            
+            <span class="k">elif</span> <span class="n">parameter</span><span class="o">==</span><span class="n">C_ARG_DELETEOUTPUT</span><span class="p">:</span>                                                  <span class="c1"># Delete output file (for benchmarking)</span>
+                <span class="n">forced_configuration_pairs</span><span class="o">+=</span><span class="p">[[</span><span class="n">C_CONF_BENCHMARKING_DELETE_OUTPUT</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">,</span><span class="n">value</span><span class="p">]]</span>
+            
+            <span class="k">elif</span> <span class="n">parameter</span><span class="o">==</span><span class="n">C_ARG_SCALEST</span><span class="p">:</span>                                                       <span class="c1"># Linear scaling stations</span>
+                <span class="n">forced_configuration_pairs</span><span class="o">+=</span><span class="p">[[</span><span class="n">C_CONF_OTHER_SCALING_STATIONS</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">,</span><span class="n">value</span><span class="p">]]</span>
+            
+            <span class="k">elif</span> <span class="n">parameter</span><span class="o">==</span><span class="n">C_ARG_MEDIASUFFIX</span><span class="p">:</span>                                                   <span class="c1"># Media suffix folder</span>
+                <span class="n">forced_configuration_pairs</span><span class="o">+=</span><span class="p">[[</span><span class="n">C_CONF_HDFS_DIR_SUFFIX</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">,</span><span class="n">value</span><span class="p">]]</span>
+            
+            <span class="k">elif</span> <span class="n">parameter</span><span class="o">==</span><span class="n">C_ARG_SINGLEPRECISION</span><span class="p">:</span>                                               <span class="c1"># Single precision in computations</span>
+                <span class="n">forced_configuration_pairs</span><span class="o">+=</span><span class="p">[[</span><span class="n">C_CONF_OTHER_SINGLE_PRECISION</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">,</span><span class="n">value</span><span class="p">]]</span>
+            
+            <span class="c1">#elif parameter==C_ARG_DATA:                                                          # Data directory</span>
+            <span class="c1">#    list_value=value.split(&quot;/&quot;)</span>
+            <span class="c1">#    value=&#39;\/&#39;.join(map(str, list_value))</span>
+            <span class="c1">#    forced_configuration_pairs+=[[&quot;Data directory:&quot;,value]]</span>
+            
+            <span class="k">elif</span> <span class="n">parameter</span><span class="o">==</span><span class="n">C_ARG_EXPER</span><span class="p">:</span>                                                          <span class="c1"># Experiment folder</span>
+                <span class="n">forced_configuration_pairs</span><span class="o">+=</span><span class="p">[[</span><span class="n">C_CONF_EXP_FOLDER</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">,</span><span class="n">value</span><span class="p">]]</span>
+                
+            <span class="k">elif</span> <span class="n">parameter</span><span class="o">==</span><span class="n">C_ARG_OUT</span><span class="p">:</span>                                                            <span class="c1"># Output folder</span>
+                <span class="n">forced_configuration_pairs</span><span class="o">+=</span><span class="p">[[</span><span class="n">C_CONF_FILES_OUT_DIR</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">,</span><span class="n">value</span><span class="p">]]</span>
+            
+            <span class="k">elif</span> <span class="n">parameter</span><span class="o">==</span><span class="n">C_ARG_APP</span><span class="p">:</span>                                                            <span class="c1"># Application folder</span>
+                <span class="n">forced_configuration_pairs</span><span class="o">+=</span><span class="p">[[</span><span class="n">C_CONF_FILES_APP_DIR</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">,</span><span class="n">value</span><span class="p">]]</span>
+               
+            <span class="k">elif</span> <span class="n">parameter</span><span class="o">==</span><span class="n">C_ARG_SERIAL</span><span class="p">:</span>                                                         <span class="c1"># Run pipeline mode</span>
+                <span class="n">forced_configuration_pairs</span><span class="o">+=</span><span class="p">[[</span><span class="n">C_CONF_GEN_RUN_PIPE</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">,</span><span class="n">value</span><span class="p">]]</span>
+            
+            <span class="k">elif</span> <span class="n">parameter</span><span class="o">==</span><span class="n">C_ARG_PARALLEL</span><span class="p">:</span>                                                       <span class="c1"># Run Hadoop</span>
+                <span class="n">forced_configuration_pairs</span><span class="o">+=</span><span class="p">[[</span><span class="n">C_CONF_GEN_RUN_HADOOP</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">,</span><span class="n">value</span><span class="p">]]</span>
+            
+            <span class="k">elif</span> <span class="n">parameter</span><span class="o">==</span><span class="n">C_ARG_NM_LOC_PORT</span><span class="p">:</span>                                                    <span class="c1"># Nodemanager ports</span>
+                <span class="n">forced_configuration_pairs</span><span class="o">+=</span><span class="p">[[</span><span class="n">C_H_YARN_NM_LOCALIZER_ADDRESS</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">,</span><span class="n">HOSTNAME_HADOOP</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="o">+</span><span class="n">value</span><span class="p">]]</span>
+            <span class="k">elif</span> <span class="n">parameter</span><span class="o">==</span><span class="n">C_ARG_NM_WEB_PORT</span><span class="p">:</span>                                                    
+                <span class="n">forced_configuration_pairs</span><span class="o">+=</span><span class="p">[[</span><span class="n">C_H_YARN_NM_WEBAPP_ADDRESS</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">,</span><span class="n">HOSTNAME_HADOOP</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="o">+</span><span class="n">value</span><span class="p">]]</span>
+            <span class="k">elif</span> <span class="n">parameter</span><span class="o">==</span><span class="n">C_ARG_SHUFFLE_PORT</span><span class="p">:</span>                                                    
+                <span class="n">forced_configuration_pairs</span><span class="o">+=</span><span class="p">[[</span><span class="n">C_H_MAPRED_SHUFFLE_PORT</span><span class="o">+</span><span class="s2">&quot;:&quot;</span><span class="p">,</span><span class="n">value</span><span class="p">]]</span>
+            
+            
+            <span class="k">else</span><span class="p">:</span>                                                                                 <span class="c1"># Unknown parameter, simply report it</span>
+                <span class="n">unr_parameters</span><span class="o">+=</span><span class="p">[</span><span class="n">parameter</span><span class="p">]</span>
+                
+    <span class="n">update_config_param</span><span class="p">(</span><span class="n">source_file</span><span class="o">=</span><span class="n">config_file</span><span class="p">,</span><span class="n">pairs</span><span class="o">=</span><span class="n">forced_configuration_pairs</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">unr_parameters</span><span class="o">!=</span><span class="p">[]:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> Unrecognized parameters:&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">unr_parameters</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  &quot;</span><span class="o">+</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span><span class="n">i</span><span class="p">)),</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span></div>
+
+
+
+
+<div class="viewcode-block" id="get_list_configuration_files"><a class="viewcode-back" href="../lib_config.html#lib_config.get_list_configuration_files">[docs]</a><span class="k">def</span> <span class="nf">get_list_configuration_files</span><span class="p">(</span><span class="n">config_file</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get list of Hadoop configuration files.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     config_file : str</span>
+<span class="sd">         Path to CorrelX configuration file.</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     list_configurations : list</span>
+<span class="sd">         List of sections from configuration file associated to lists in &quot;pairs_config&quot; below.</span>
+<span class="sd">     pairs_config : list</span>
+<span class="sd">         List of pairs [[param0,value0],[param1,value1]...]...,[[...]...,[...]]] to update</span>
+<span class="sd">                                 Hadoop config files later.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">configparser</span><span class="o">.</span><span class="n">ConfigParser</span><span class="p">()</span>
+    <span class="n">config</span><span class="o">.</span><span class="n">optionxform</span> <span class="o">=</span> <span class="nb">str</span>
+    <span class="n">config</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">config_file</span><span class="p">)</span>
+    
+    <span class="n">list_configurations</span><span class="o">=</span><span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">sections</span><span class="p">()</span> <span class="k">if</span> <span class="p">(</span><span class="n">C_CONF_PREH</span> <span class="ow">in</span> <span class="n">i</span><span class="p">)</span><span class="ow">and</span><span class="p">(</span><span class="n">C_CONF_SUF_SLAVES</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">i</span><span class="p">)</span><span class="ow">and</span><span class="p">(</span><span class="n">C_CONF_SUF_OTHER</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">i</span><span class="p">)]</span>
+    
+    <span class="n">pairs_config</span> <span class="o">=</span> <span class="p">[[</span><span class="nb">list</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">items</span><span class="p">(</span><span class="n">i</span><span class="p">)]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">list_configurations</span>  <span class="p">]</span>
+
+    
+    <span class="k">return</span><span class="p">([</span><span class="n">list_configurations</span><span class="p">,</span><span class="n">pairs_config</span><span class="p">])</span></div>
+
+
+
+        
+    
+<div class="viewcode-block" id="is_this_node_master"><a class="viewcode-back" href="../lib_config.html#lib_config.is_this_node_master">[docs]</a><span class="k">def</span> <span class="nf">is_this_node_master</span><span class="p">(</span><span class="n">master</span><span class="p">,</span><span class="n">temp_log</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Devised in case the script was run in parallel at many nodes.</span>
+<span class="sd">    Currenlty simply used to enforce that only one node is running as master.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     master : str</span>
+<span class="sd">         master node name.</span>
+<span class="sd">     temp_log : str</span>
+<span class="sd">         path to temporary file for system calls (buffer).</span>
+<span class="sd">     v : int</span>
+<span class="sd">         verbose if 1.</span>
+<span class="sd">     file_log : file handler</span>
+<span class="sd">         handler for log file.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     this_is_master : int</span>
+<span class="sd">         1 if current node is the master, 0 otherwise.</span>
+<span class="sd">     my_name : str</span>
+<span class="sd">         current node name.</span>
+<span class="sd">     my_ip : str</span>
+<span class="sd">         current node IP address.</span>
+<span class="sd">    </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    |</span>
+<span class="sd">    | **TO DO:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  Simplify this.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;hostname &gt; &quot;</span> <span class="o">+</span> <span class="n">temp_log</span><span class="p">)</span> 
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;hostname -I &gt;&gt; &quot;</span> <span class="o">+</span> <span class="n">temp_log</span><span class="p">)</span> 
+    <span class="n">this_is_master</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">local_info</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">thiss</span><span class="o">=</span><span class="s2">&quot; not &quot;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">temp_log</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f_tmp</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f_tmp</span><span class="p">:</span>
+            <span class="n">local_info</span> <span class="o">+=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">master</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                <span class="n">this_is_master</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="n">thiss</span><span class="o">=</span><span class="s2">&quot; &quot;</span>
+    
+    <span class="n">my_name</span> <span class="o">=</span> <span class="n">local_info</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">my_ip</span> <span class="o">=</span> <span class="n">local_info</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Checking if this node is master:&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>   
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Node &quot;</span> <span class="o">+</span> <span class="n">my_name</span> <span class="o">+</span> <span class="s2">&quot; (&quot;</span> <span class="o">+</span> <span class="n">my_ip</span> <span class="o">+</span> <span class="s2">&quot;) is&quot;</span> <span class="o">+</span> <span class="n">thiss</span> <span class="o">+</span> <span class="s2">&quot;master&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+    
+    <span class="k">return</span><span class="p">([</span><span class="n">this_is_master</span><span class="p">,</span><span class="n">my_name</span><span class="p">,</span><span class="n">my_ip</span><span class="p">])</span></div>
+
+
+
+
+<div class="viewcode-block" id="overwrite_nodes_file"><a class="viewcode-back" href="../lib_config.html#lib_config.overwrite_nodes_file">[docs]</a><span class="k">def</span> <span class="nf">overwrite_nodes_file</span><span class="p">(</span><span class="n">nodes_list</span><span class="p">,</span><span class="n">nodes_file</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Overwrite nodes file (in case less nodes are requested than are available).</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     nodes_list : list of str</span>
+<span class="sd">         names of the nodes in the allocation.</span>
+<span class="sd">     nodes_file : str</span>
+<span class="sd">         path to nodes file.</span>
+<span class="sd">     v : int</span>
+<span class="sd">         verbose if 1.</span>
+<span class="sd">     file_log : file handler</span>
+<span class="sd">         handler for log file.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Creating nodes file:&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>   
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">nodes_file</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">nodes_file</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">nodes_list</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">f</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  &quot;</span> <span class="o">+</span> <span class="n">i</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Nodes file overwritten!&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>      </div>
+
+
+
+<div class="viewcode-block" id="create_directories"><a class="viewcode-back" href="../lib_config.html#lib_config.create_directories">[docs]</a><span class="k">def</span> <span class="nf">create_directories</span><span class="p">(</span><span class="n">directories</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create directories from a list of str with their paths.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Creating directories:&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>    
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">directories</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;mkdir -p &quot;</span> <span class="o">+</span> <span class="n">i</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">+</span><span class="n">i</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>    </div>
+            
+            
+
+<div class="viewcode-block" id="get_conf_out_dirs"><a class="viewcode-back" href="../lib_config.html#lib_config.get_conf_out_dirs">[docs]</a><span class="k">def</span> <span class="nf">get_conf_out_dirs</span><span class="p">(</span><span class="n">master_name</span><span class="p">,</span><span class="n">hadoop_dir</span><span class="p">,</span><span class="n">app_dir</span><span class="p">,</span><span class="n">conf_dir</span><span class="p">,</span><span class="n">suffix_conf</span><span class="p">,</span><span class="n">output_dir</span><span class="p">,</span><span class="n">suffix_out</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get paths for configuration and output folders.</span>
+<span class="sd">    App and Conf directories are modified with master&#39;s name.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     master_name : str</span>
+<span class="sd">         master node hostname.</span>
+<span class="sd">     hadoop_dir : str</span>
+<span class="sd">         hadoop base folder.</span>
+<span class="sd">     app_dir : str</span>
+<span class="sd">         base app folder.</span>
+<span class="sd">     conf_dir : str</span>
+<span class="sd">         base configuration folder.</span>
+<span class="sd">     suffix_conf : str</span>
+<span class="sd">         suffix for configuration folder.</span>
+<span class="sd">     output_dir : str</span>
+<span class="sd">         base output folder.</span>
+<span class="sd">     suffix_out : str</span>
+<span class="sd">         suffix for output folder (only the string after the last &quot;/&quot; is taken).</span>
+<span class="sd">     v : int</span>
+<span class="sd">         verbose if 1.</span>
+<span class="sd">     file_log : file handler</span>
+<span class="sd">         handler for log file.</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     app_dir : str</span>
+<span class="sd">         path to app folder (modified for this master).</span>
+<span class="sd">     conf_dir : str</span>
+<span class="sd">         path to configuration folder (for modified config file and bash scripts).</span>
+<span class="sd">     hadoop_conf_dir : str</span>
+<span class="sd">         path to hadoop configuration folder for master node.</span>
+<span class="sd">     hadoop_default_conf_dir : str</span>
+<span class="sd">         path to hadoop default configuration folder (to be used at slaves nodes).</span>
+<span class="sd">     output_dir : str</span>
+<span class="sd">         path in local filesystem for output file.</span>
+<span class="sd">     </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">     Having a different folder associated to the master node allows to run multiple deployments in the same cluster if</span>
+<span class="sd">      the local filesystem is NFS.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="s2">&quot;/&quot;</span> <span class="ow">in</span> <span class="n">suffix_out</span><span class="p">:</span>
+        <span class="n">suffix_out</span><span class="o">=</span><span class="n">suffix_out</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    
+    <span class="n">conf_dir</span><span class="o">+=</span><span class="n">master_name</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span>                                        <span class="c1"># Create conf dir for each node (still shared...)</span>
+    <span class="n">app_dir</span><span class="o">+=</span><span class="n">master_name</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span>                                         <span class="c1"># Create app dir for each node (still shared...)</span>
+    <span class="n">hadoop_conf_dir</span> <span class="o">=</span> <span class="n">conf_dir</span> <span class="o">+</span> <span class="s2">&quot;etc_hadoop_&quot;</span> <span class="o">+</span> <span class="n">suffix_conf</span> <span class="o">+</span><span class="s2">&quot;/&quot;</span>      <span class="c1"># Hadoop conf dir for this host</span>
+    <span class="n">output_dir</span> <span class="o">=</span> <span class="n">output_dir</span> <span class="o">+</span> <span class="n">suffix_out</span> <span class="o">+</span><span class="s2">&quot;/&quot;</span>                          <span class="c1"># Create more folders for different experiments</span>
+
+    <span class="n">create_directories</span><span class="p">(</span><span class="n">directories</span><span class="o">=</span><span class="p">[</span><span class="n">conf_dir</span><span class="p">,</span><span class="n">hadoop_conf_dir</span><span class="p">,</span><span class="n">output_dir</span><span class="p">],</span><span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+
+    <span class="c1"># This is for slaves, for distributing files</span>
+    <span class="n">hadoop_default_conf_dir</span> <span class="o">=</span> <span class="n">hadoop_dir</span><span class="o">+</span><span class="n">HADOOP_REL_ETC</span>
+    
+    
+    <span class="k">return</span><span class="p">([</span><span class="n">app_dir</span><span class="p">,</span><span class="n">conf_dir</span><span class="p">,</span><span class="n">hadoop_conf_dir</span><span class="p">,</span><span class="n">hadoop_default_conf_dir</span><span class="p">,</span><span class="n">output_dir</span><span class="p">])</span></div>
+
+
+
+<div class="viewcode-block" id="reduce_list_nodes"><a class="viewcode-back" href="../lib_config.html#lib_config.reduce_list_nodes">[docs]</a><span class="k">def</span> <span class="nf">reduce_list_nodes</span><span class="p">(</span><span class="n">num_slaves</span><span class="p">,</span><span class="n">nodes_list</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reduce list of nodes given a maximum number of nodes.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     num_slaves : int</span>
+<span class="sd">         maximum number of slaves (-1 for no maximum).</span>
+<span class="sd">     nodes_list : list of str</span>
+<span class="sd">         names of nodes.</span>
+<span class="sd">     </span>
+<span class="sd">    Output:</span>
+<span class="sd">    -------</span>
+<span class="sd">     num_slaves:  number of nodes in updated list.</span>
+<span class="sd">     nodes_list:  updated nodes_list.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">if</span> <span class="n">num_slaves</span><span class="o">&gt;</span><span class="mi">0</span> <span class="ow">and</span> <span class="n">num_slaves</span><span class="o">&lt;</span><span class="nb">len</span><span class="p">(</span><span class="n">nodes_list</span><span class="p">):</span>
+        <span class="n">nodes_list</span><span class="o">=</span><span class="n">nodes_list</span><span class="p">[:</span><span class="n">num_slaves</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Forcing number of nodes: &quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">24</span><span class="p">)</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">num_slaves</span><span class="p">),</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span> 
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">num_slaves</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">nodes_list</span><span class="p">)</span>
+    
+    <span class="k">return</span><span class="p">([</span><span class="n">num_slaves</span><span class="p">,</span><span class="n">nodes_list</span><span class="p">])</span></div>
+
+
+
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Antonio Vazquez Alvarez, Victor Pankratius, and Pedro Elosegui.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

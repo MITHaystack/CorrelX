@@ -1,0 +1,191 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>mapred_cx module &#8212; CorrelX 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="msvf module" href="msvf.html" />
+    <link rel="prev" title="lib_vdif module" href="lib_vdif.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-mapred_cx">
+<span id="mapred-cx-module"></span><h1>mapred_cx module<a class="headerlink" href="#module-mapred_cx" title="Permalink to this headline">¶</a></h1>
+<p>Main script to run the CorrelX correlator.</p>
+<div class="section" id="parameters">
+<h2>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h2>
+<div class="line-block">
+<div class="line">[-c configuration_file] (optional): configuration file with the configuration for the correlation.</div>
+<div class="line">[-s log_output_folder] (optional): folder for logs.</div>
+<div class="line">[-f forced_parameters] (optional): comma sepparated assignments for overriding parameters (for test batching).</div>
+<div class="line">[&#8211;help-parameters] (optional): show a list of all parameters available to override the configuration file.</div>
+</div>
+</div>
+<div class="section" id="returns">
+<h2>Returns<a class="headerlink" href="#returns" title="Permalink to this headline">¶</a></h2>
+<div class="line-block">
+<div class="line">Correlation results: &#8220;Output directory&#8221; in configuration file. </div>
+<div class="line-block">
+<div class="line">Symbolic link to output file added to experiment folder.</div>
+</div>
+<div class="line">Log files:           Folder specified in -s option.</div>
+</div>
+</div>
+<div class="section" id="notes">
+<h2>Notes<a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h2>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Example:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">python mapred_cx -n 10.0.2.4 -c basic_files_conf/configh.conf -s exp3 -f exper=/home/hduser/basic_files_data/ini_files_eht_two,fftr=1</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">More detailed documentation.</div>
+</div>
+</div>
+<dl class="function">
+<dt id="mapred_cx.print_execution_times">
+<code class="descclassname">mapred_cx.</code><code class="descname">print_execution_times</code><span class="sig-paren">(</span><em>exec_times</em>, <em>io_times</em>, <em>bypass_print=0</em>, <em>v=1</em>, <em>file_log=&lt;_io.TextIOWrapper name='&lt;stdout&gt;' mode='w' encoding='UTF-8'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mapred_cx.html#print_execution_times"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mapred_cx.print_execution_times" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print execution times.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>exec_times <span class="classifier-delimiter">:</span> <span class="classifier">list of [str_id , num_slaves, num_vcores, hadoop_t_s,hadoop_t_e,hadoop_d] elements where:</span></dt>
+<dd><div class="first last line-block">
+<div class="line">str_id:       string with identifier for this run (&#8220;pipeline&#8221; or &#8220;hadoop*&#8221;).</div>
+<div class="line">num_slaves:   number of worker nodes (requested).</div>
+<div class="line">num_vcores:   number of virtual CPU cores per node.</div>
+<div class="line">hadoop_t_s:   timing start time in seconds.</div>
+<div class="line">hadoop_t_e:   timing end time in seconds.</div>
+<div class="line">hadoop_d:     timing duration in seconds.</div>
+</div>
+</dd>
+<dt>io_times <span class="classifier-delimiter">:</span> <span class="classifier">same format as exect times (but str_id changes for &#8220;put&#8221; [local -&gt; distributed filesystem], </span></dt>
+<dd>&#8220;get&#8221; [distributed filesystem -&gt; local], &#8220;sort&#8221; [output sort].</dd>
+<dt>bypass_print</dt>
+<dd>currently used to indicate that profiling is used.</dd>
+<dt>v</dt>
+<dd>verbose if 1.</dd>
+<dt>file_log</dt>
+<dd>handler to log file.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div>None</div></blockquote>
+<blockquote>
+<div><p>Devised to show speedup initially, but now running single iteration by default.
+Note that the number of nodes is as requested, not the actual number of healthy nodes.</p>
+<p>(!) Note that the execution times are increased when profiling mapper and/or reducer (!).</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="mapred_cx.print_header">
+<code class="descclassname">mapred_cx.</code><code class="descname">print_header</code><span class="sig-paren">(</span><em>header='Header'</em>, <em>v=0</em>, <em>file_log=&lt;_io.TextIOWrapper name='&lt;stdout&gt;' mode='w' encoding='UTF-8'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mapred_cx.html#print_header"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mapred_cx.print_header" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print header in logging file.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">mapred_cx module</a><ul>
+<li><a class="reference internal" href="#parameters">Parameters</a></li>
+<li><a class="reference internal" href="#returns">Returns</a></li>
+<li><a class="reference internal" href="#notes">Notes</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="lib_vdif.html" title="previous chapter">lib_vdif module</a></li>
+      <li>Next: <a href="msvf.html" title="next chapter">msvf module</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/mapred_cx.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Antonio Vazquez Alvarez, Victor Pankratius, and Pedro Elosegui.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/mapred_cx.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

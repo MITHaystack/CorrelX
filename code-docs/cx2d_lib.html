@@ -1,0 +1,1396 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>cx2d_lib module &#8212; CorrelX 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="lib_acc_comp module" href="lib_acc_comp.html" />
+    <link rel="prev" title="convert_im_cx module" href="convert_im_cx.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-cx2d_lib">
+<span id="cx2d-lib-module"></span><h1>cx2d_lib module<a class="headerlink" href="#module-cx2d_lib" title="Permalink to this headline">¶</a></h1>
+<p>Module with basic functions to convert output from CorrelX/CX to DiFX/SWIN+PCAL.</p>
+<blockquote>
+<div>The objective of this library is to connect the CorrelX processing chain with:
+| <a href="#id1"><span class="problematic" id="id2">*</span></a>vex2difx+calcif2 (input): for generating the configuration files.
+| <a href="#id3"><span class="problematic" id="id4">*</span></a>difx2mark4 (output): for generating a mark4 fileset that can be processed with fourfit.</div></blockquote>
+<div class="section" id="conventions-correlx">
+<h2>Conventions CorrelX<a class="headerlink" href="#conventions-correlx" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><dl class="docutils">
+<dt>Make sure that the same file const_mapred.py used for the correlation is imported here, since the fields in the header are</dt>
+<dd>accesed using the constants const_mapred.INDEX_*.</dd>
+</dl>
+</div></blockquote>
+</div>
+<div class="section" id="conventions-difx">
+<h2>Conventions DiFX<a class="headerlink" href="#conventions-difx" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div>Conventions are as defined in:
+|  DiFX/SWIN [DIFX_*]: CSIRO - <a class="reference external" href="http://www.atnf.csiro.au/vlbi/dokuwiki/doku.php/difx/files#the_swin_output_data_format">http://www.atnf.csiro.au/vlbi/dokuwiki/doku.php/difx/files#the_swin_output_data_format</a> (2016.01.12)
+|  DiFX/PCAL [PCAL_*]: [Br14] NRAO - A Guide to the DiFX Software Correlator (Version 2.2), Section 6.8.2. Pulse cal data files. (2014.06.23)
+|  DiFX/SWIN [<em>.im,</em>.input]: CSIRO - <a class="reference external" href="http://www.atnf.csiro.au/vlbi/dokuwiki/doku.php/difx/files">http://www.atnf.csiro.au/vlbi/dokuwiki/doku.php/difx/files</a> (2016.01.12)</div></blockquote>
+</div>
+<div class="section" id="sections-of-code">
+<h2>Sections of code<a class="headerlink" href="#sections-of-code" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><div class="line-block">
+<div class="line">CX output (read)</div>
+<div class="line">CX output (debug)</div>
+<div class="line">DiFX/SWIN (write)</div>
+<div class="line">DiFX/SWIN (read)</div>
+<div class="line">Processing zoombands: CX -&gt; CX_zoomed</div>
+<div class="line">Conversion CorrelX/CX -&gt; DiFX/SWIN</div>
+<div class="line">Conversion CorrelX/CX -&gt; DiFX/PCAL</div>
+<div class="line">Conversion CorrelX/CX -&gt; DiFX/SWIN+PCAL</div>
+<div class="line">DiFX/.im,.input parser tools</div>
+<div class="line">Conversion DiFX/.im -&gt; CorrelX/delay_model+sources</div>
+<div class="line">Conversion DiFX/.input -&gt; CorrelX/stations+correlation+media</div>
+</div>
+</div></blockquote>
+</div>
+<div class="section" id="limitations">
+<h2>(!) Limitations<a class="headerlink" href="#limitations" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><div class="line-block">
+<div class="line">Single source. source_index=0</div>
+<div class="line">Single configuration. configuration_index=0</div>
+<div class="line">Single phase_centre. phase_centre=0</div>
+<div class="line">Single pulsar_bin. pulsar_bin=0</div>
+<div class="line">Data weight is forced to be 1</div>
+<div class="line">u,v,w are forced to be 0</div>
+<div class="line">Averaging currently only implemented for zoom bands</div>
+<div class="line">Zoom bands currently implemented during postprocessing</div>
+</div>
+</div></blockquote>
+</div>
+<div class="section" id="notes">
+<h2>Notes<a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div>All constants are kept in this file due to strong dependence on external references.</div></blockquote>
+</div>
+<div class="section" id="to-do">
+<h2>TO DO<a class="headerlink" href="#to-do" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><div class="line-block">
+<div class="line">Create separate library and move there the CX output file processing functions.</div>
+<div class="line">Configuration conversion libraries: experimental, see limitations for input_to_media().</div>
+<div class="line">Print remainder and do checks for CX_IMPORT_CONST_MAPRED.</div>
+<div class="line">Remove back_compat option (replace by custom const_mapred import).</div>
+</div>
+</div></blockquote>
+<dl class="function">
+<dt id="cx2d_lib.append_pcal_records">
+<code class="descclassname">cx2d_lib.</code><code class="descname">append_pcal_records</code><span class="sig-paren">(</span><em>records</em>, <em>chan_freq_out_mega</em>, <em>pcal_freq_out_mega</em>, <em>pcal_ind</em>, <em>datac</em>, <em>n_bins</em>, <em>pol_char</em>, <em>conjugate_pcal_values</em>, <em>pcal_scaling</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#append_pcal_records"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.append_pcal_records" title="Permalink to this definition">¶</a></dt>
+<dd><p>Append a set of new phase calibration tone records for this band.
+Record is the &#8220;group of four numbers&#8221; in [Br14].</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>records <span class="classifier-delimiter">:</span> <span class="classifier">list of str</span></dt>
+<dd>records (previously generated for other bands for the same accumulation period.</dd>
+<dt>chan_freq_out_mod_mega <span class="classifier-delimiter">:</span> <span class="classifier">int or float</span></dt>
+<dd>frequency of the first phase calibration tone in this band[Mhz].</dd>
+<dt>pcal_freq_out_mega <span class="classifier-delimiter">:</span> <span class="classifier">int or float</span></dt>
+<dd>phase calibration tone frequency separation [Mhz].</dd>
+<dt>pcal_ind <span class="classifier-delimiter">:</span> <span class="classifier">list of ints</span></dt>
+<dd>positions with phase calibration indices.</dd>
+<dt>datac <span class="classifier-delimiter">:</span> <span class="classifier">complex 1D numpy array</span></dt>
+<dd>phase calibration results (DFT).</dd>
+<dt>n_bins <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of bins in the phase calibration DFT.</dd>
+<dt>pol_char <span class="classifier-delimiter">:</span> <span class="classifier">char</span></dt>
+<dd>polarization.</dd>
+<dt>conjugate_pcal_values <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>conjugate all valid results if 1.</dd>
+<dt>pcal_scaling <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>multiply all valid results by this value.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>records <span class="classifier-delimiter">:</span> <span class="classifier">list of str</span></dt>
+<dd>appended list of str including (the new elements are the records for this band).</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Check if N == n_bins and simplify code.</div>
+<div class="line">Add offset from configuration.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.compute_baseline_num_swin">
+<code class="descclassname">cx2d_lib.</code><code class="descname">compute_baseline_num_swin</code><span class="sig-paren">(</span><em>st0</em>, <em>st1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#compute_baseline_num_swin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.compute_baseline_num_swin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes two integers with IDs for stations are computes baselines number as 256*([st0]+1)+([st1]+1).</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>st0,st1 <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>values for station 0 and station 1 starting at zero.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>baseline_num <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>baseline number</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.compute_stations_num_swin">
+<code class="descclassname">cx2d_lib.</code><code class="descname">compute_stations_num_swin</code><span class="sig-paren">(</span><em>baseline_num</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#compute_stations_num_swin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.compute_stations_num_swin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns two integers with IDs for station based on SWIN header baseline number.
+See compute_baseline_num_swin().</p>
+<blockquote>
+<div>Values for st0 and st1 starting at zero.</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.convert_cx2d">
+<code class="descclassname">cx2d_lib.</code><code class="descname">convert_cx2d</code><span class="sig-paren">(</span><em>doutput_file</em>, <em>cxoutput_file</em>, <em>correlation_ini_file</em>, <em>media_ini_file</em>, <em>forced_pol_list=[]</em>, <em>only_half=0</em>, <em>duplicate=0</em>, <em>freq_ids=[]</em>, <em>v=1</em>, <em>back_compat=1</em>, <em>forced_accumulation_period=-1</em>, <em>divide_vis_by=1</em>, <em>conjugate_vis_values=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#convert_cx2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.convert_cx2d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert visibilities from an output file from CorrelX/CX to DiFX/SWIN format.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>doutput_file <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>output file name (will append <a href="#id5"><span class="problematic" id="id6">DIFX_</span></a>...) for new SWIN file.</dd>
+<dt>cxoutput_file <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to CX file to be converted</dd>
+<dt>correlation_ini_file <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to correlation.ini.</dd>
+<dt>media_ini_file <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to media.ini.</dd>
+<dt>forced_pol_list <span class="classifier-delimiter">:</span> <span class="classifier">list of str, optional</span></dt>
+<dd>used to override polarizations in ini file.</dd>
+<dt>only_half <span class="classifier-delimiter">:</span> <span class="classifier">optional</span></dt>
+<dd>see create_bytes_list_visibilities_swin().</dd>
+<dt>duplicate <span class="classifier-delimiter">:</span> <span class="classifier">optional</span></dt>
+<dd>see create_bytes_list_visibilities_swin().</dd>
+<dt>freq_ids <span class="classifier-delimiter">:</span> <span class="classifier">unused</span></dt>
+<dd>[remove]</dd>
+<dt>v <span class="classifier-delimiter">:</span> <span class="classifier">int, optional</span></dt>
+<dd>verbose if 1.</dd>
+<dt>back_compat <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>[remove] see notes.</dd>
+<dt>forced_accumulation_period <span class="classifier-delimiter">:</span> <span class="classifier">int, optional </span></dt>
+<dd>see create_bytes_list_visibilities_swin().</dd>
+<dt>divide_vis_by <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>see create_bytes_list_visibilities_swin().</dd>
+<dt>conjugate_vis_values <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>see create_bytes_list_visibilities_swin().</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>doutput_file <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to newly created SwIN output file.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line">CX accumulation periods referenced by start time, SWIN by middle time.</div>
+<div class="line">It is assumed that all the polarizations [0,1,2,...] (as many as used) are defined in the media.ini file.</div>
+<div class="line"><br /></div>
+<div class="line"><strong>(!) Limitations:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">See limitations on top of this file (forced values...).</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Remove freq_ids.</div>
+<div class="line">Remove back_compat and add version for CX file header instead.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.convert_cx2dpc">
+<code class="descclassname">cx2d_lib.</code><code class="descname">convert_cx2dpc</code><span class="sig-paren">(</span><em>inout_folder</em>, <em>file_in</em>, <em>file_out</em>, <em>correlation_ini_file</em>, <em>media_ini_file</em>, <em>stations_ini_file</em>, <em>v=0</em>, <em>only_half=0</em>, <em>duplicate=0</em>, <em>freq_ids=[]</em>, <em>back_compat=1</em>, <em>forced_accumulation_period=-1</em>, <em>divide_vis_by=1</em>, <em>forced_file_list=[]</em>, <em>pcal_scaling=0</em>, <em>conjugate_pcal_values=0</em>, <em>conjugate_vis_values=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#convert_cx2dpc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.convert_cx2dpc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Main routine to convert CorrelX/CX into DiFX/SWIN+PCAL.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>inout_folder <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to folder containing CX file, and where newly created SWIN+PCAL files will be placed.</dd>
+<dt>file_in <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>CX filename.</dd>
+<dt>file_out <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>filename for new SwIN file.</dd>
+<dt>correlation_ini_file <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to correlation.ini associated with CX file.</dd>
+<dt>media_ini_file <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to media.ini associated with CX file.</dd>
+</dl>
+<p>stations_ini_file:    path to stations.ini associated with CX file.</p>
+<p>See convert_cx2d() for the rest of the arguments.</p>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>pcal_file_list <span class="classifier-delimiter">:</span> <span class="classifier">list of str</span></dt>
+<dd>filenames for new PCAL files (None if error).</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.create_bytes_list_visibilities_swin">
+<code class="descclassname">cx2d_lib.</code><code class="descname">create_bytes_list_visibilities_swin</code><span class="sig-paren">(</span><em>data_complex_list</em>, <em>only_half=0</em>, <em>duplicate=0</em>, <em>divide_vis_by=1</em>, <em>conjugate_vis_values=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#create_bytes_list_visibilities_swin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.create_bytes_list_visibilities_swin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate binary representation for one set of visibilities.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>data_complex_list <span class="classifier-delimiter">:</span> <span class="classifier">1D numpy arrayof complex</span></dt>
+<dd>visibilities (components from 0 to N-1).</dd>
+<dt>only_half <span class="classifier-delimiter">:</span> <span class="classifier">optional,testing</span></dt>
+<dd>if 1 takes components [0,N/2-1], if 2 it takes [N/2,N-1].</dd>
+<dt>duplicate <span class="classifier-delimiter">:</span> <span class="classifier">optional,testing</span></dt>
+<dd>duplicate components [consider removing].</dd>
+<dt>divide_vis_by <span class="classifier-delimiter">:</span> <span class="classifier">optional,testing</span></dt>
+<dd>divide all coefficients by this value.</dd>
+<dt>conjugate_vis_values <span class="classifier-delimiter">:</span> <span class="classifier">optional,testing</span></dt>
+<dd>conjugate all visibilities.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>header_list <span class="classifier-delimiter">:</span> <span class="classifier">byte array</span></dt>
+<dd>visibilities ready to be written to a file.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Consider removing duplicate.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.create_header_swin">
+<code class="descclassname">cx2d_lib.</code><code class="descname">create_header_swin</code><span class="sig-paren">(</span><em>st0</em>, <em>st1</em>, <em>vis</em>, <em>chan</em>, <em>pol0</em>, <em>pol1</em>, <em>mjd</em>, <em>seconds_start</em>, <em>accumulation_period</em>, <em>polarization_chars_list</em>, <em>source_index=0</em>, <em>config_index=0</em>, <em>pulsar_bin=0</em>, <em>header_version=1</em>, <em>forced_weight=1.0</em>, <em>forced_u=0.0</em>, <em>forced_v=0.0</em>, <em>forced_w=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#create_header_swin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.create_header_swin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Byte representation for one header.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>st0 <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>first station in the baseline.</dd>
+<dt>st1 <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>second station in the baseline.</dd>
+<dt>vis <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>accumulation period id.</dd>
+<dt>chan <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>channel id.</dd>
+<dt>pol0 <span class="classifier-delimiter">:</span> <span class="classifier">char</span></dt>
+<dd>polarization id for st0.</dd>
+<dt>pol1 <span class="classifier-delimiter">:</span> <span class="classifier">char</span></dt>
+<dd>polarization id for st1.</dd>
+<dt>mjd <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>MJD for this accumulation period.</dd>
+<dt>seconds_start <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>seconds corresponding to the middle of the first accumulation period.</dd>
+<dt>accumulation_period <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>duration of the accumulation period in seconds.</dd>
+<dt>polarization_chars_list <span class="classifier-delimiter">:</span> <span class="classifier">list of str</span></dt>
+<dd>polarization characters to accessed by id (pol0 and pol1).</dd>
+<dt>source_index <span class="classifier-delimiter">:</span> <span class="classifier">int,optional</span></dt>
+<dd>See constants on top of this file.</dd>
+</dl>
+<p>config_index : int,optional
+pulsar_bin : int,optional
+header_version : int,optional
+forced_weight : float,optional
+forced_u : float,optional
+forced_v : float,optional
+forced_w : float,optional</p>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>header_list <span class="classifier-delimiter">:</span> <span class="classifier">byte array </span></dt>
+<dd>header ready to be written to a file.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line">Optional arguments are replaced by forced values.</div>
+<div class="line">Note that secnods start is not at the start of the first accumulation period but at the middle!</div>
+<div class="line">Values for st0,st1,vis,chan,pol0,pol1 starting at 0.</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Change input floats by double as applicable.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.create_symb_media">
+<code class="descclassname">cx2d_lib.</code><code class="descname">create_symb_media</code><span class="sig-paren">(</span><em>inout_folder</em>, <em>file_input_v</em>, <em>forced_files=''</em>, <em>symb_dir=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#create_symb_media"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.create_symb_media" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create symbolic links for media. This links are also part of the configuration.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>inout_folder <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to folder containing newly created ini files.</dd>
+<dt>file_input_v <span class="classifier-delimiter">:</span> <span class="classifier">list of str</span></dt>
+<dd>paths to media files.</dd>
+<dt>forced_files <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>comma separated list of paths to media files to override file paths from .input file.
+If &#8220;&#8221;, then the pahts from the .input file are used.</dd>
+<dt>symb_dir <span class="classifier-delimiter">:</span> <span class="classifier">str,optional</span></dt>
+<dd>path relative to inout_folder where links will be created.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>file_list <span class="classifier-delimiter">:</span> <span class="classifier">list of str</span></dt>
+<dd>filenames to be used in media.ini.</dd>
+<dt>files_str <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>comma separated list of filenames.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.cxpcal2d">
+<code class="descclassname">cx2d_lib.</code><code class="descname">cxpcal2d</code><span class="sig-paren">(</span><em>doutput_folder</em>, <em>cxoutput_file</em>, <em>correlation_ini_file</em>, <em>media_ini_file</em>, <em>stations_ini_file</em>, <em>forced_file_list=[]</em>, <em>pcal_scaling=0</em>, <em>conjugate_pcal_values=0</em>, <em>v=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#cxpcal2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.cxpcal2d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate phase calibration tone files (&#8220;pulse cal data files&#8221;) DiFX/SWIN from CorrelX/CX.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>doutput_folder <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to place new PCAL files.</dd>
+<dt>cxoutput_file <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to CX file to read.</dd>
+<dt>correlation_ini_file <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to correlation.ini.</dd>
+<dt>media_ini_file <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to media.ini.</dd>
+<dt>stations_ini_file <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to stations.ini.</dd>
+<dt>forced_file_list <span class="classifier-delimiter">:</span> <span class="classifier">optional,[testing]</span></dt>
+<dd>consider only these media files (consider all if []).</dd>
+<dt>pcal_scaling <span class="classifier-delimiter">:</span> <span class="classifier">float, optional</span></dt>
+<dd>if not 0, multiply all phase calibration tones by this value.</dd>
+<dt>conjugate_pcal_values <span class="classifier-delimiter">:</span> <span class="classifier">optional,[testing]</span></dt>
+<dd>conjugate phase calibration tone values.</dd>
+<dt>v <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>verbose if 1.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>name_file_list <span class="classifier-delimiter">:</span> <span class="classifier">list of str</span></dt>
+<dd>names of the newly created PCAL files (no path).</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">(!) This function needs to be simplified.</div>
+<div class="line">Assuming that number of channels and polarizations equals the max id plus one.</div>
+<div class="line">Phase calibration line string currently hardcoded (pc).</div>
+<div class="line">Untested for real data.</div>
+<div class="line">fs=2fs, check this, consider reading one frame of the media to determine if complex/real data.</div>
+<div class="line">LSB/USB.</div>
+<div class="line">Offset for pcal.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.get_char_from_header">
+<code class="descclassname">cx2d_lib.</code><code class="descname">get_char_from_header</code><span class="sig-paren">(</span><em>header</em>, <em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#get_char_from_header"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.get_char_from_header" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read char from a np.uint8 array (header) starting at position i.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.get_coeff">
+<code class="descclassname">cx2d_lib.</code><code class="descname">get_coeff</code><span class="sig-paren">(</span><em>line</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#get_coeff"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.get_coeff" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process station clock information from .input file.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.get_difx_filename">
+<code class="descclassname">cx2d_lib.</code><code class="descname">get_difx_filename</code><span class="sig-paren">(</span><em>mjd_start</em>, <em>seconds_start</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#get_difx_filename"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.get_difx_filename" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get filename for SWIN file.</p>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Add missing funcionality for filling DIFX_FILENAME_SUFFIX.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.get_double_from_header">
+<code class="descclassname">cx2d_lib.</code><code class="descname">get_double_from_header</code><span class="sig-paren">(</span><em>header</em>, <em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#get_double_from_header"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.get_double_from_header" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read double from a np.uint8 array (header) starting at position i.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.get_error_indicator">
+<code class="descclassname">cx2d_lib.</code><code class="descname">get_error_indicator</code><span class="sig-paren">(</span><em>file_vis_1</em>, <em>file_vis_2</em>, <em>force=0</em>, <em>path_src=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#get_error_indicator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.get_error_indicator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides the sum of the L2-norm between all pairs of visibilities.
+Use only for debugging comparing two CorrelX output files (e.g. testing changes).</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>file_vis_1 <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to the reference file with visibilities.</dd>
+<dt>file_vis_2 <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to the test file with visibilities.</dd>
+<dt>force <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>continue execution even if metadata differ.</dd>
+<dt>path_src <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to location of source file const_mapred.py.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div>None</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Assumptions / TO DO</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Currently assuming that then number of coefficients does not change for lines in the same file.</div>
+<div class="line">Currently no error checking if forcing execution (e.g. different number lines).</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.get_field_im">
+<code class="descclassname">cx2d_lib.</code><code class="descname">get_field_im</code><span class="sig-paren">(</span><em>line</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#get_field_im"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.get_field_im" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the value+units from a line of DiFX configuration file.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.get_float_from_header">
+<code class="descclassname">cx2d_lib.</code><code class="descname">get_float_from_header</code><span class="sig-paren">(</span><em>header</em>, <em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#get_float_from_header"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.get_float_from_header" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read float from a np.uint8 array (header) starting at position i.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.get_header_dm">
+<code class="descclassname">cx2d_lib.</code><code class="descname">get_header_dm</code><span class="sig-paren">(</span><em>mjd</em>, <em>seconds</em>, <em>interval</em>, <em>src</em>, <em>ant</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#get_header_dm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.get_header_dm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create header for delay_model.ini.</p>
+<p>TO DO: consider moving into lib_ini_files.py.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.get_id_param">
+<code class="descclassname">cx2d_lib.</code><code class="descname">get_id_param</code><span class="sig-paren">(</span><em>line</em>, <em>num</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#get_id_param"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.get_id_param" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the id that is in the parameter, in the position num.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.get_int_from_header">
+<code class="descclassname">cx2d_lib.</code><code class="descname">get_int_from_header</code><span class="sig-paren">(</span><em>header</em>, <em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#get_int_from_header"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.get_int_from_header" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read integer from a np.uint8 array (header) starting at position i.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.get_last_num">
+<code class="descclassname">cx2d_lib.</code><code class="descname">get_last_num</code><span class="sig-paren">(</span><em>line</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#get_last_num"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.get_last_num" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the id that is in the parameter, in the last position.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.get_lines_pcal_header">
+<code class="descclassname">cx2d_lib.</code><code class="descname">get_lines_pcal_header</code><span class="sig-paren">(</span><em>mjd_start_str</em>, <em>seconds_start_str</em>, <em>stations_name_str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#get_lines_pcal_header"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.get_lines_pcal_header" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get header lines for PCAL file.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>mjd_start_str <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>start MJD for this accumulation period.</dd>
+<dt>seconds_start_str: str</dt>
+<dd>start seconds for this accumulation period.</dd>
+<dt>station_name_str <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>name of the station.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>header_pcal_v <span class="classifier-delimiter">:</span> <span class="classifier">list of str</span></dt>
+<dd>lines for the PCAL file header.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.get_list_meta">
+<code class="descclassname">cx2d_lib.</code><code class="descname">get_list_meta</code><span class="sig-paren">(</span><em>const_file='const_mapred.py'</em>, <em>path_src=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#get_list_meta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.get_list_meta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get list with metadata fields from source file const_mapred.py.</p>
+<p>Use for debugging.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>const_file <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to const_mapred file.</dd>
+<dt>path_src <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to location of source file const_mapred.py.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>line_st_v <span class="classifier-delimiter">:</span> <span class="classifier">list of str</span></dt>
+<dd>all metadata fields (without <a href="#id7"><span class="problematic" id="id8">INDEX_</span></a>).</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div>Hardcoded values based on const_mapred.py, use only for debugging.</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.get_pcal_filename">
+<code class="descclassname">cx2d_lib.</code><code class="descname">get_pcal_filename</code><span class="sig-paren">(</span><em>mjd_start_str</em>, <em>seconds_start</em>, <em>station_name_str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#get_pcal_filename"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.get_pcal_filename" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get filename for PCAL file.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.get_pcal_line">
+<code class="descclassname">cx2d_lib.</code><code class="descname">get_pcal_line</code><span class="sig-paren">(</span><em>meta_pcal</em>, <em>records</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#get_pcal_line"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.get_pcal_line" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a line for the PCAL file.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>meta_pcal <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>metadata.</dd>
+<dt>records <span class="classifier-delimiter">:</span> <span class="classifier">list of str</span></dt>
+<dd>records.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.get_pcal_meta">
+<code class="descclassname">cx2d_lib.</code><code class="descname">get_pcal_meta</code><span class="sig-paren">(</span><em>mjd_start_str</em>, <em>seconds_start</em>, <em>acc_period</em>, <em>seconds_duration</em>, <em>station_name</em>, <em>st0</em>, <em>tot_channels</em>, <em>num_tones_pcal</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#get_pcal_meta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.get_pcal_meta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create metadata for PCAL record.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>mjd_start_str <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>start MJD for the scan.</dd>
+<dt>seconds_start <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>start seconds for the scan.</dd>
+<dt>acc_period <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>accumulation period id.</dd>
+<dt>seconds_duration <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>accumulation period duration</dd>
+<dt>station_name <span class="classifier-delimiter">:</span> <span class="classifier">two char</span></dt>
+<dd>station name.</dd>
+<dt>st0 <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>station id.</dd>
+<dt>tot_channels <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of channels or bands.</dd>
+<dt>num_tones_pcal <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of phase calibration tones per band.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>meta_pcal <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>metadata preceding the records for one accumulation period.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Check offset +seconds_duration/2.</div>
+<div class="line">st0 should be datastream id?</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.get_pcal_record_valid">
+<code class="descclassname">cx2d_lib.</code><code class="descname">get_pcal_record_valid</code><span class="sig-paren">(</span><em>pcal_value</em>, <em>tone_freq_mega</em>, <em>pol_char</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#get_pcal_record_valid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.get_pcal_record_valid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get record with valid result for phase calibration tone.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>pcal_value <span class="classifier-delimiter">:</span> <span class="classifier">complex</span></dt>
+<dd>phase calibration tone.</dd>
+<dt>tone_freq_mega: int or float</dt>
+<dd>pcal tone freq [MHz].</dd>
+<dt>pol_char <span class="classifier-delimiter">:</span> <span class="classifier">char</span></dt>
+<dd>polarization.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.get_pcal_tone_positions">
+<code class="descclassname">cx2d_lib.</code><code class="descname">get_pcal_tone_positions</code><span class="sig-paren">(</span><em>N</em>, <em>bw</em>, <em>chan_freq</em>, <em>pcal_freq</em>, <em>num_tones_pcal</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#get_pcal_tone_positions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.get_pcal_tone_positions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get positions of the phase calibration tones in the results.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>N <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of coefficients in the results (DFT of accumulated windows).</dd>
+<dt>bw <span class="classifier-delimiter">:</span> <span class="classifier">int or float</span></dt>
+<dd>bandwidth of the channel [Hz].</dd>
+<dt>chan_freq <span class="classifier-delimiter">:</span> <span class="classifier">int or float</span></dt>
+<dd>lower edge frequency of the channel [Hz].</dd>
+<dt>pcal_freq <span class="classifier-delimiter">:</span> <span class="classifier">int or float</span></dt>
+<dd>phase calibration tone frequency.</dd>
+</dl>
+<p>num_tones_pcal: number of phase calibration tones expected for this band.</p>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>pcal_ind_mod <span class="classifier-delimiter">:</span> <span class="classifier">list of int</span></dt>
+<dd>position for the coeffients containing the phase calibration tones.</dd>
+<dt>extreme_value <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>value used to indicate invalid index.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.get_pos_in_fft">
+<code class="descclassname">cx2d_lib.</code><code class="descname">get_pos_in_fft</code><span class="sig-paren">(</span><em>f</em>, <em>fz</em>, <em>fft_size</em>, <em>bw</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#get_pos_in_fft"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.get_pos_in_fft" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the coefficient corresponding to a certain frequency in the visibilities.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>f <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>lower edge frequency of the band.</dd>
+<dt>fz <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>frequency between f and f+bw (which associated coefficient is to be found).</dd>
+<dt>fft_size <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of coefficients of the visibilities.</dd>
+<dt>bw <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>bandwidth of the full band.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>output <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>position of the first coefficient.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">LSB/USB.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.get_src_ant_im">
+<code class="descclassname">cx2d_lib.</code><code class="descname">get_src_ant_im</code><span class="sig-paren">(</span><em>line</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#get_src_ant_im"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.get_src_ant_im" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get two str, one with source id and another with station id from the line in .im file.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.get_value_im">
+<code class="descclassname">cx2d_lib.</code><code class="descname">get_value_im</code><span class="sig-paren">(</span><em>line</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#get_value_im"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.get_value_im" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the value (no units) from a line of DiFX configuration file.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.get_vector_im">
+<code class="descclassname">cx2d_lib.</code><code class="descname">get_vector_im</code><span class="sig-paren">(</span><em>line</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#get_vector_im"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.get_vector_im" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of str with polynomial coefficients from line in .im file.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.get_zoom_list">
+<code class="descclassname">cx2d_lib.</code><code class="descname">get_zoom_list</code><span class="sig-paren">(</span><em>params_array_media</em>, <em>params_array_corr</em>, <em>v=0</em>, <em>average_channels=-1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#get_zoom_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.get_zoom_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the information required to process the zoom bands.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>params_array_media <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>list with media configuration (see lib_ini_files.py).</dd>
+<dt>params_array_corr <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>list with correlation configuration (see lib_ini_files.py).</dd>
+<dt>v <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>verbose if 1.</dd>
+<dt>average_channels <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of coefficients that are average into one (here only used for reporting).</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>z_list <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd><dl class="first last docutils">
+<dt>list of elements [band_id, first_sample_fft, last_sample_fft, new_band_id] where:</dt>
+<dd><div class="first last line-block">
+<div class="line">band_id:           id of the processed band.</div>
+<div class="line">first_sample_fft:  position of the first element of the zoom in the full fft.</div>
+<div class="line">last_sample_fft:   position of the last element of the zoom in the full fft.</div>
+<div class="line">new_band_id:       id of the newly created band (zoom).</div>
+</div>
+</dd>
+</dl>
+</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Assumptions:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">It is assumed that a channel has only one associated sideband (this is checked when computing the</div>
+<div class="line-block">
+<div class="line">limits of the band, if lower sideband the upper edge is given.</div>
+</div>
+<div class="line">It is assumed that zoom bands are always upper side band.</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">LSB/USB for zoom band definitions...</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.im_to_delay_model">
+<code class="descclassname">cx2d_lib.</code><code class="descname">im_to_delay_model</code><span class="sig-paren">(</span><em>inout_folder</em>, <em>file_in</em>, <em>file_out</em>, <em>filter_sources=[]</em>, <em>v=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#im_to_delay_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.im_to_delay_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert DiFX/.im into CorrelX/delay_model.ini.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>inout_folder <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to folder containing .im file, and where newly created delay_model.ini file will be placed.</dd>
+<dt>file_in <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>.im filename.</dd>
+<dt>file_out: str</dt>
+<dd>delay_model.ini filename.</dd>
+<dt>filter_sources: list of str</dt>
+<dd>source names. If not [], information for sources that are not in this list will be dismissed.</dd>
+<dt>v <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>verbose if 1.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div>None</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.im_to_sources">
+<code class="descclassname">cx2d_lib.</code><code class="descname">im_to_sources</code><span class="sig-paren">(</span><em>inout_folder</em>, <em>file_in</em>, <em>file_out</em>, <em>v=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#im_to_sources"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.im_to_sources" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert DiFX/.im into CorrelX/sources.ini.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>inout_folder <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to folder containing .im file, and where newly created sources.ini file will be placed.</dd>
+<dt>file_in <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>.im filename.</dd>
+<dt>file_out <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>sources.ini filename.</dd>
+<dt>v <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>verbose if 1.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div>None</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.input_to_correlation">
+<code class="descclassname">cx2d_lib.</code><code class="descname">input_to_correlation</code><span class="sig-paren">(</span><em>inout_folder</em>, <em>file_in</em>, <em>file_out</em>, <em>v=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#input_to_correlation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.input_to_correlation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert DiFX/.input into CorrelX/correlation.ini.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>inout_folder <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to folder containing .input file, and where newly created correlation.ini file will be placed.</dd>
+<dt>file_in <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>.input filename.</dd>
+<dt>file_out <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>correlation.ini filename.</dd>
+<dt>v <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>verbose if 1.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div>None</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Assumptions:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Assuming one data stream per station for computing the number of stations.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.input_to_media">
+<code class="descclassname">cx2d_lib.</code><code class="descname">input_to_media</code><span class="sig-paren">(</span><em>inout_folder</em>, <em>file_in</em>, <em>file_out</em>, <em>forced_files=''</em>, <em>v=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#input_to_media"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.input_to_media" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Convert DiFX/.input into CorrelX/media.ini, create symbolic links for media files</dt>
+<dd>and generate report with summary (for reporting/debugging).</dd>
+</dl>
+<blockquote>
+<div><dl class="docutils">
+<dt>inout_folder <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to folder containing .input file, and where newly created media.ini file will be placed.</dd>
+<dt>file_in <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>.input filename.</dd>
+<dt>file_out <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>media.ini filename.</dd>
+<dt>forced_files <span class="classifier-delimiter">:</span> <span class="classifier">str, required</span></dt>
+<dd>list of files to be used in the media files</dd>
+<dt>v <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>verbose if 1.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div>None</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Limitations:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Currently limited to sets of files with the same configuration (i.e. no missmatched bands).</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<div class="line"><strong>Assumptions:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">The function is strongly dependent on the current order of the fields in the .input file.</div>
+<div class="line">The zoom bands are expected to appear after the normal bands.</div>
+<div class="line">Assuming incremental id starting at 0 in input file.</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Read forced files from the .input file.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.input_to_stations">
+<code class="descclassname">cx2d_lib.</code><code class="descname">input_to_stations</code><span class="sig-paren">(</span><em>inout_folder</em>, <em>file_in</em>, <em>file_out</em>, <em>forced_stations=[]</em>, <em>v=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#input_to_stations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.input_to_stations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert DiFX/.input into CorrelX/stations.ini.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>inout_folder <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to folder containing .input file, and where newly created stations.ini file will be placed.</dd>
+<dt>file_in <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>.input filename.</dd>
+<dt>file_out <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>stations.ini filename.</dd>
+<dt>forced_files <span class="classifier-delimiter">:</span> <span class="classifier">list of str,optional</span></dt>
+<dd>list of str with station names (for overriding values from .input).</dd>
+<dt>v <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>verbose if 1.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div>None</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.plot_pcal_tones">
+<code class="descclassname">cx2d_lib.</code><code class="descname">plot_pcal_tones</code><span class="sig-paren">(</span><em>datac</em>, <em>pcal_ind</em>, <em>extreme_value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#plot_pcal_tones"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.plot_pcal_tones" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot phase calibration tones in red, overlaying the DFT with all results. Use for debugging.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>datac <span class="classifier-delimiter">:</span> <span class="classifier">numpy array of complex</span></dt>
+<dd>DFT with pcal results.</dd>
+<dt>pcal_ind <span class="classifier-delimiter">:</span> <span class="classifier">list of int</span></dt>
+<dd>positions of the phase calibration tones.</dd>
+<dt>extreme_value <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>value used to indicate invalid index.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.plot_vis_cx">
+<code class="descclassname">cx2d_lib.</code><code class="descname">plot_vis_cx</code><span class="sig-paren">(</span><em>file_input</em>, <em>title_figure</em>, <em>mode_in='px'</em>, <em>max_lines=-2</em>, <em>interval_start=0</em>, <em>interval_end=-1</em>, <em>filter_str=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#plot_vis_cx"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.plot_vis_cx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Basic function for plotting output, one plot per band.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>file_input <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to the visibilities file.</dd>
+<dt>title_figure <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>prefix for the title of the figures</dd>
+<dt>mode_in <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>prefix of cx file lines.</dd>
+<dt>max_lines <span class="classifier-delimiter">:</span> <span class="classifier">int,optional</span></dt>
+<dd>maximum number of lines to read.</dd>
+<dt>interval_start: int,optional</dt>
+<dd>first coefficient to plot.</dd>
+<dt>interval_end <span class="classifier-delimiter">:</span> <span class="classifier">int,optional</span></dt>
+<dd>last coefficient to plot.</dd>
+<dt>filter_str <span class="classifier-delimiter">:</span> <span class="classifier">str,optional</span></dt>
+<dd>filter lines with this string (for example only a certain baseline).</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div>N/A</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.process_zoom_band">
+<code class="descclassname">cx2d_lib.</code><code class="descname">process_zoom_band</code><span class="sig-paren">(</span><em>inout_folder</em>, <em>file_in</em>, <em>file_out</em>, <em>correlation_ini_file='correlation.ini'</em>, <em>media_ini_file='media.ini'</em>, <em>stations_ini_file='stations.ini'</em>, <em>v=1</em>, <em>average_channels=-1</em>, <em>filter_acc_periods=[]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#process_zoom_band"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.process_zoom_band" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a new CX file with the zoom bands from an existing CX file with results for the full band.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>inout_folder <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to folder containing CX file, and where newly created CX_zoom file will be placed.</dd>
+<dt>file_in <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>CX filename.</dd>
+<dt>file_out <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>filename for new CX file with zoom bands results.</dd>
+<dt>correlation_ini_file <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to correlation.ini.</dd>
+<dt>media_ini_file <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to media.ini.</dd>
+<dt>correlation_ini_file <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to correlation.ini.</dd>
+<dt>stations_ini_file <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to stations.ini.</dd>
+<dt>v <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>verbose if 1.</dd>
+<dt>average_channels <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of coefficients to average (-1 for no averaging).</dd>
+<dt>filter_acc_periods <span class="classifier-delimiter">:</span> <span class="classifier">list of int</span></dt>
+<dd>ids (starting at 0) for accumulation periods to process. Will process all if [].</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>fft_read <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of coefficients in the last visibilities read from the file.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Assumptions:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Assuming a regular configuration where all the stations have the same zoom bands (i.e.: missmatched bands not suppported).</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Migrate this functionality into lib_fx_stack.py so that missmatched band support can be provided.</div>
+<div class="line">&#8220;px&#8221; harcoded, move to const_mapred.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.read_bytes_from_file">
+<code class="descclassname">cx2d_lib.</code><code class="descname">read_bytes_from_file</code><span class="sig-paren">(</span><em>f</em>, <em>n_values</em>, <em>read_type='bytes'</em>, <em>v=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#read_bytes_from_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.read_bytes_from_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read groups of one or four bytes from a binary file.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>f <span class="classifier-delimiter">:</span> <span class="classifier">handlder to binary file (&#8216;rb&#8217;)</span></dt>
+<dd>binary file to read from.</dd>
+<dt>n_values <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of groups to read.</dd>
+<dt>read_type <span class="classifier-delimiter">:</span> <span class="classifier">{ &#8220;bytes&#8221; , &#8220;floats&#8221; }</span></dt>
+<dd>&#8220;bytes&#8221; to read unsigned integer 8 bits, &#8220;floats&#8221; to read unsigned integer 32 bits.</dd>
+<dt>v <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>verbose if 1.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>words_array <span class="classifier-delimiter">:</span> <span class="classifier">numpy array of unsigned int of 8 or 32 bits (as configured in read_type).</span></dt>
+<dd>read bytes.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Change notation for floats.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.read_cxoutput">
+<code class="descclassname">cx2d_lib.</code><code class="descname">read_cxoutput</code><span class="sig-paren">(</span><em>cxoutput_file</em>, <em>v=1</em>, <em>back_compat=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#read_cxoutput"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.read_cxoutput" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read cx output file into list.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>cxoutput_file <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to cx file.</dd>
+<dt>v <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>verbose if 1.</dd>
+<dt>back_compat <span class="classifier-delimiter">:</span> <span class="classifier">int,optional</span></dt>
+<dd>[default 0][remove]</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>list_output <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd><dl class="first last docutils">
+<dt>list of [st0,st1,vis,chan,pol0,pol1,diff_st] elements where:</dt>
+<dd><div class="first last line-block">
+<div class="line">st0:      first station in the baseline.</div>
+<div class="line">st1:      second station in the baseline.</div>
+<div class="line">vis:      accumulation period id.</div>
+<div class="line">chan:     channel id.</div>
+<div class="line">pol0:     polarization id for st0.</div>
+<div class="line">pol1:     polarization id for st1.</div>
+<div class="line">datac:    complex 1D np.array with visibilities.</div>
+<div class="line">diff_st:  field used for sorting.</div>
+</div>
+</dd>
+</dl>
+</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>TO DO</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Sorting convention based on sorting based on actual SWIN files. Check method and find proper reference.</div>
+<div class="line">Remove back_compat in libraries calling this function.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.read_doutput">
+<code class="descclassname">cx2d_lib.</code><code class="descname">read_doutput</code><span class="sig-paren">(</span><em>doutput_file</em>, <em>complex_vector_length</em>, <em>vis_limit=10</em>, <em>filter_bands=[]</em>, <em>filter_pols=[]</em>, <em>filter_seconds=[]</em>, <em>v=0</em>, <em>interval_start=0</em>, <em>interval_end=-1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#read_doutput"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.read_doutput" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot visibilities from a SWIN file.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>doutput_file <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to SWIN file.</dd>
+<dt>complex_vector_length <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of coefficients in the visibilities.</dd>
+<dt>vis_limit <span class="classifier-delimiter">:</span> <span class="classifier">int, optional</span></dt>
+<dd>number of visibilities to read (-1 for no limit).</dd>
+<dt>filter_bands <span class="classifier-delimiter">:</span> <span class="classifier">list of int, optional</span></dt>
+<dd>band ids to include ([] to include all). E.g.: [0,1]</dd>
+<dt>filter_pols <span class="classifier-delimiter">:</span> <span class="classifier">list of str, optional</span></dt>
+<dd>band ids to include ([] to include all). E.g.: [&#8220;LR&#8221;,&#8221;RL&#8221;]</dd>
+<dt>filter_seconds <span class="classifier-delimiter">:</span> <span class="classifier">list of ints, optional</span></dt>
+<dd>band ids to include ([] to include all). E.g.: [&#8220;0.16&#8221;,&#8221;0.48&#8221;]</dd>
+<dt>v <span class="classifier-delimiter">:</span> <span class="classifier">int, optional</span></dt>
+<dd>verbose if 1.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div>N/A</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Configuration:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Constant ENABLE_PLOTTING=1 to display plots.</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<div class="line"><strong>Notes:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Visbilities are displayed into two figures: magnitude and phase.</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Add checks for header.</div>
+<div class="line">Consider automating the computation of complex_vector_length.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.read_line_cx">
+<code class="descclassname">cx2d_lib.</code><code class="descname">read_line_cx</code><span class="sig-paren">(</span><em>line</em>, <em>fft_size=-1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#read_line_cx"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.read_line_cx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a line from a CX file (and check number of visibilities if required).</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>line <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>line from CX file.</dd>
+<dt>fft_size <span class="classifier-delimiter">:</span> <span class="classifier">int,optional</span></dt>
+<dd>number of coefficients in the visibilities (or pcal bins).</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>meta <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>line header.</dd>
+<dt>st0 <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>first station of the baseline.</dd>
+<dt>st1 <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>second station of the baseline.</dd>
+<dt>key <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>absolute key (see msvf.get_pair_str().key_value).</dd>
+<dt>vis <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>accumulation period.</dd>
+<dt>chan <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>band id.</dd>
+<dt>pol0 <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>polarization id for st0.</dd>
+<dt>pol1 <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>polariation id for st1.</dd>
+<dt>predata <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>metadata fields.</dd>
+<dt>datac <span class="classifier-delimiter">:</span> <span class="classifier">complex 1D np.array</span></dt>
+<dd>visibilities.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.replace_channel_in_key">
+<code class="descclassname">cx2d_lib.</code><code class="descname">replace_channel_in_key</code><span class="sig-paren">(</span><em>meta</em>, <em>new_band_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#replace_channel_in_key"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.replace_channel_in_key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Replace the band id in the CX header key.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>meta <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>CX line header.</dd>
+<dt>new_band_id <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>id for the new (zoom) band.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>new_meta <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>new CX line header.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Configuration:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">INDEX_KEY_CHANNEL: const_mapred.py (location of the channel id in the key (SF_SEP), to be replaced by new channel id [zoom])</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Create general funcionts to create and read key.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.show_line_cx">
+<code class="descclassname">cx2d_lib.</code><code class="descname">show_line_cx</code><span class="sig-paren">(</span><em>file_in</em>, <em>line_start</em>, <em>line_count</em>, <em>filter_line='px'</em>, <em>v=1</em>, <em>path_src=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#show_line_cx"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.show_line_cx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Display metadata fields and number of coefficients in the visibilities.</p>
+<p>Use for debugging.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>file_in <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to CX file.</dd>
+<dt>line_start <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>first line to read.</dd>
+<dt>line_count <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of lines to read (-1 for no limit).</dd>
+<dt>filter_line <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>pattern to filter lines (exact match at line start) to be displayed.</dd>
+<dt>v <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>verbose if 1.</dd>
+<dt>path_src <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to location of source file const_mapred.py.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>results <span class="classifier-delimiter">:</span> <span class="classifier">list of [str,list of float]</span></dt>
+<dd>keys and the associated visibilities.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.sort_str_list">
+<code class="descclassname">cx2d_lib.</code><code class="descname">sort_str_list</code><span class="sig-paren">(</span><em>list_in</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#sort_str_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.sort_str_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return sorted set of elements of a list.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.sort_swin_records">
+<code class="descclassname">cx2d_lib.</code><code class="descname">sort_swin_records</code><span class="sig-paren">(</span><em>output_list</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#sort_swin_records"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.sort_swin_records" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sort SWIN output records.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>output_list <span class="classifier-delimiter">:</span> <span class="classifier">list of [st0,st1,vis,chan,pol0,pol1,header,values_bytes,diff_st]</span></dt>
+<dd>see convert_cx2d.output_list.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Sorting is as follows:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">1. accumulation period</div>
+<div class="line">2. term based on stations ids (see read_cxoutput())</div>
+<div class="line">3. first station of the baseline</div>
+<div class="line">4. second station of the baseline</div>
+<div class="line">5. band</div>
+<div class="line">6. polarization for first station</div>
+<div class="line">7. polarization for second station</div>
+<div class="line"><br /></div>
+</div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">x[2] duplicated, remove second one </div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.split_line_correct_tab">
+<code class="descclassname">cx2d_lib.</code><code class="descname">split_line_correct_tab</code><span class="sig-paren">(</span><em>line</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#split_line_correct_tab"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.split_line_correct_tab" title="Permalink to this definition">¶</a></dt>
+<dd><p>Separate key and value in CX line.</p>
+<p>Update if changes to msvf.get_pair_str are done (key separator FIELD_SEP+KEY_SEP).</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.write_lines_to_f">
+<code class="descclassname">cx2d_lib.</code><code class="descname">write_lines_to_f</code><span class="sig-paren">(</span><em>lines_out</em>, <em>full_output_file</em>, <em>str_info='results'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#write_lines_to_f"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.write_lines_to_f" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write a list of strings into a file, one per line, and report.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cx2d_lib.write_pcal_file">
+<code class="descclassname">cx2d_lib.</code><code class="descname">write_pcal_file</code><span class="sig-paren">(</span><em>pcal_file</em>, <em>mjd_start_str</em>, <em>seconds_start</em>, <em>station_name_str</em>, <em>records_v</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cx2d_lib.html#write_pcal_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cx2d_lib.write_pcal_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write PCAL file.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>pcal_file <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to pcal file.</dd>
+<dt>mjd_start_str <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>start MJD.</dd>
+<dt>seconds_start <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>start seconds.</dd>
+<dt>station_name_str <span class="classifier-delimiter">:</span> <span class="classifier">two char.</span></dt>
+<dd>Two-character code for the station.</dd>
+<dt>records_v <span class="classifier-delimiter">:</span> <span class="classifier">list of str</span></dt>
+<dd>lines with pcal records.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">cx2d_lib module</a><ul>
+<li><a class="reference internal" href="#conventions-correlx">Conventions CorrelX</a></li>
+<li><a class="reference internal" href="#conventions-difx">Conventions DiFX</a></li>
+<li><a class="reference internal" href="#sections-of-code">Sections of code</a></li>
+<li><a class="reference internal" href="#limitations">(!) Limitations</a></li>
+<li><a class="reference internal" href="#notes">Notes</a></li>
+<li><a class="reference internal" href="#to-do">TO DO</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="convert_im_cx.html" title="previous chapter">convert_im_cx module</a></li>
+      <li>Next: <a href="lib_acc_comp.html" title="next chapter">lib_acc_comp module</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/cx2d_lib.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Antonio Vazquez Alvarez, Victor Pankratius, and Pedro Elosegui.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/cx2d_lib.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

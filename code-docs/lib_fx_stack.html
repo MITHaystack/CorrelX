@@ -1,0 +1,948 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>lib_fx_stack module &#8212; CorrelX 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="lib_hadoop_hdfs module" href="lib_hadoop_hdfs.html" />
+    <link rel="prev" title="lib_delay_model module" href="lib_delay_model.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-lib_fx_stack">
+<span id="lib-fx-stack-module"></span><h1>lib_fx_stack module<a class="headerlink" href="#module-lib_fx_stack" title="Permalink to this headline">¶</a></h1>
+<p>CorrelX FX correlation and samples-stack routines.</p>
+<dl class="function">
+<dt id="lib_fx_stack.compute_f_all">
+<code class="descclassname">lib_fx_stack.</code><code class="descname">compute_f_all</code><span class="sig-paren">(</span><em>F1</em>, <em>fft_size</em>, <em>windowing</em>, <em>dtype_complex</em>, <em>F_frac=[]</em>, <em>F_fs=[]</em>, <em>F_refs=[]</em>, <em>freq_channel=0</em>, <em>F_first_sample=[]</em>, <em>F_rates=[]</em>, <em>F_pcal_fix=[]</em>, <em>F_side=[]</em>, <em>F_ind=[]</em>, <em>F_lti=[]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_fx_stack.html#compute_f_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_fx_stack.compute_f_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute FFTs for all stations (all-baselines-per-task mode), and correct for fractional sample correction (linear phase).</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>F1</dt>
+<dd><dl class="first last docutils">
+<dt>list of stored samples (corresponding actually to F1_partial). Each element of the list is a numpy array</dt>
+<dd>with the complex samples in the time domain, with a number of samples that is a multiply of the FFT length.</dd>
+</dl>
+</dd>
+<dt>fft_size <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of coefficients in the FFT.</dd>
+<dt>windowing <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>shape of the window before FFT, currently &#8216;square&#8217; by default.</dd>
+</dl>
+<p>dtype_complex: type of data for initialization of the rotators.
+F_frac</p>
+<blockquote>
+<div>fractional and integer offsets applied at the mapper (acces via F_refs).</div></blockquote>
+<dl class="docutils">
+<dt>F_fs</dt>
+<dd>sampling frequency for each stream in F1.</dd>
+<dt>F_refs</dt>
+<dd>indices to acces F_frac etc based on F_ind, i.e. from stored to new.</dd>
+<dt>freq_channel</dt>
+<dd>sky frequency.</dd>
+<dt>F_first_sample</dt>
+<dd>first sample number (actually last sample number plus one, it has to be corrected by subtracting the number of samples in F1.</dd>
+<dt>F_rates</dt>
+<dd>delay information for each of the streams (access via F_refs).</dd>
+<dt>F_pcal_fix</dt>
+<dd><dl class="first last docutils">
+<dt>offset for pcal accumulation results (due to the initial offset applied in the mapper). Later the pcal</dt>
+<dd>signals will be realigned as if no delay was applied to them.</dd>
+</dl>
+</dd>
+<dt>F_side</dt>
+<dd>list of single side band side for each stream, &#8216;l&#8217; LSB or &#8216;u&#8217; USB (access via F_refs).</dd>
+<dt>F_ind</dt>
+<dd><dl class="first last docutils">
+<dt>list of station-polarization identifiers corresponding to the streams in F1 (this actually corresponds</dt>
+<dd>to F1_ind_partial.</dd>
+</dl>
+</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>F1_fft</dt>
+<dd>list of array of arrays with FFTs with rotations applied.</dd>
+<dt>None</dt>
+<dd>[unused] previously outputing the conjugate of F1_fft, removed for efficiency.</dd>
+<dt>F_adj_shift_partial_out</dt>
+<dd><dl class="first last docutils">
+<dt>[unused] previously used to keep track of the number of samples to </dt>
+<dd>add/drop due to fractional sample overflows, superseded for F_frac_over.</dd>
+</dl>
+</dd>
+<dt>F_adj_shift_pcal_out</dt>
+<dd><dl class="first last docutils">
+<dt>[unused] previously used to keep track of the number of samples to </dt>
+<dd>roll the phase calibration results prior to FFT them, superseded for F_pcal_fix_out.</dd>
+</dl>
+</dd>
+<dt>F_pcal_fix_out</dt>
+<dd>list with number of samples to roll the pcal streams prior to FFT them.</dd>
+<dt>F_first_sample_out</dt>
+<dd>first sample for each stream (actually last sample number plus one).</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Procedure:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">For each element in F1:</div>
+<div class="line-block">
+<div class="line">1. Create an array of arrays with the FFTs of the samples grouped into arrays of fft_size samples.</div>
+<div class="line">2. Create a frequency scale of fft_size (linear from 0 to (n-1)/n).</div>
+<div class="line">3a. If the computations have already been done for the same station, take the results.</div>
+<div class="line">3b. Otherwise:</div>
+<div class="line-block">
+<div class="line">Compute delay for the first sample, then fractional part of this delay, then scale frequency scale, then exponential.</div>
+<div class="line">Rotate the FFT using the previous rotator.</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+</div>
+</div>
+<div class="line"><strong>References:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">[Th04] p363</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Detail where in the FFT the fractional sample for the rotator is evaluated.</div>
+<div class="line"><br /></div>
+<div class="line">Check correction to phase in p363.   </div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_fx_stack.compute_fx_for_all">
+<code class="descclassname">lib_fx_stack.</code><code class="descname">compute_fx_for_all</code><span class="sig-paren">(</span><em>F1_partial</em>, <em>F_ind_partial</em>, <em>F1</em>, <em>fft_size</em>, <em>windowing</em>, <em>acc_mat</em>, <em>count_acc</em>, <em>normalize_after_compute=False</em>, <em>F_ind=None</em>, <em>last_F_ind=None</em>, <em>n_sp=0</em>, <em>failed_acc_count=0</em>, <em>dismissed_acc_count=0</em>, <em>scaling_pair='A.A'</em>, <em>dtype_complex=&lt;class 'complex'&gt;</em>, <em>acc_pcal=None</em>, <em>pre_pcal=None</em>, <em>n_bins_pcal=0</em>, <em>count_acc_pcal=0</em>, <em>phase_calibration=None</em>, <em>bypass_fx=0</em>, <em>F_delays=[]</em>, <em>F_rates=[]</em>, <em>F_fs=[]</em>, <em>freq_channel=0.0</em>, <em>F_first_sample=[]</em>, <em>F_first_sample_partial=[]</em>, <em>F_frac=[]</em>, <em>block_time=0.0</em>, <em>F_adj_shift_partial=[]</em>, <em>F_stack_shift=[]</em>, <em>F_adj_shift_pcal=[]</em>, <em>F_stack_shift_pcal=[]</em>, <em>F_pcal_fix=[]</em>, <em>F_side=[]</em>, <em>F_lti=[]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_fx_stack.html#compute_fx_for_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_fx_stack.compute_fx_for_all" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Fringe rotation, FFTs, fractional sample correction for all station-polarizations, and </dt>
+<dd>cross multiplication and accumulation for all baseline (all-baselines-per-task-mode)</dd>
+</dl>
+<blockquote>
+<div><dl class="docutils">
+<dt>F1_partial</dt>
+<dd>list of previously stored samples.</dd>
+<dt>F_ind_partial</dt>
+<dd>station-polarization identifiers for the elements of F1_partial.</dd>
+<dt>F1</dt>
+<dd>new samples.</dd>
+<dt>fft_size</dt>
+<dd>number of coefficients fo the FFT.</dd>
+<dt>windowing</dt>
+<dd>shape of window prior to FFT (square by default).</dd>
+<dt>acc_mat</dt>
+<dd>accumulation matrix with provisional results (see compute_x_all for acc_mat description).</dd>
+<dt>count_acc</dt>
+<dd>number of accumulations performed so far.</dd>
+<dt>normalize_after_compute</dt>
+<dd>whether or not to normalize the results (to be activated in the last call in the integration period).</dd>
+<dt>F_ind</dt>
+<dd>station-polarization identifiers for the elements of F1.</dd>
+<dt>last_F_ind</dt>
+<dd>saved value of F_ind in the previous iteration.</dd>
+<dt>n_sp</dt>
+<dd>number of station-polarizations.</dd>
+<dt>failed_acc_count</dt>
+<dd>counter with number of failed accumulations.</dd>
+<dt>dismissed_acc_count</dt>
+<dd>counter with number of dismissed accumulations.</dd>
+<dt>scaling_pair</dt>
+<dd>mode of operation: &#8220;A.A&#8221; for all-baselines-per-task (default).</dd>
+<dt>dtype_complex</dt>
+<dd>complex type used for initialization of numpy arrays.</dd>
+<dt>acc_pcal</dt>
+<dd>provisional results for accumulated phase calibration.</dd>
+<dt>pre_pcal</dt>
+<dd>stored samples to be used in accumulation of phase calibration.</dd>
+<dt>n_bins_pcal</dt>
+<dd>number of samples for the windows to be accumulated for the pcal signal.</dd>
+<dt>count_acc</dt>
+<dd>number of accumulations performed previously during this integration period.</dd>
+<dt>phase_calibration</dt>
+<dd>whether or not to extract phase calibration tones.</dd>
+<dt>bypass_fx</dt>
+<dd>if 1, it will not do computations for cross-multiplication and accumulation.</dd>
+<dt>F_delays</dt>
+<dd>[unused] absolute delays for each of the streams in F1.</dd>
+<dt>F_rates</dt>
+<dd>delay information for each of the streams in F1.</dd>
+<dt>F_fs</dt>
+<dd>sampling frequency for each of the streams in F1.</dd>
+<dt>freq_channel</dt>
+<dd>sky frequency.</dd>
+<dt>F_first_sample</dt>
+<dd>first sample for each of the streams in F1.</dd>
+<dt>F_first_sample_partial</dt>
+<dd>first sample for each of the streams in the stored samples.</dd>
+<dt>F_frac</dt>
+<dd>fractional and integer sample delay for each of the streams in F1.</dd>
+<dt>block_time</dt>
+<dd>time for the current accumulation period.</dd>
+<dt>F_adj_shift_partial</dt>
+<dd><dl class="first last docutils">
+<dt>[unused] previously used to keep track of the samples to add/drop due to fractional sample </dt>
+<dd>correction overflow (now using F_frac_over).</dd>
+</dl>
+</dd>
+<dt>F_stack_shift</dt>
+<dd><dl class="first last docutils">
+<dt>[unused] previously used to keep track of the samples added/droped due to fractional sample </dt>
+<dd>correction (now using F_frac_over).</dd>
+</dl>
+</dd>
+<dt>F_adj_shift_pcal</dt>
+<dd>[unused] previously used to keep track of the samples to roll in the pcal signal.</dd>
+<dt>F_stack_shift_pcal</dt>
+<dd>[unused] equivalent to F_stack_shift for pcal.</dd>
+<dt>F_pcal_fix</dt>
+<dd>number of samples to roll in the pcal accumuled signal.</dd>
+<dt>F_side</dt>
+<dd>single side band side corresponding to the streams in F1.</dd>
+<dt>F_lti</dt>
+<dd>list of last, total, invalid samples for each stream</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div>All output variables are udpated versions of those use as input, see procedure below for details.
+| acc_mat
+| count_acc
+| count_sub_acc
+| n_sp
+| last_F_ind
+| failed_acc_count
+| dismissed_acc_count
+| F1_partial
+| F_ind_partial
+| acc_pcal
+| pre_pcal
+| count_acc_pcal
+| F_first_sample_partial
+| F_adj_shift_partial
+| F_stack_shift
+| F_adj_shift_pcal
+| F_stack_shift_pcal
+| F_pcal_fix_out
+| F_lti</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Procedure:</strong></div>
+<div class="line"><br /></div>
+<div class="line">All-stations-per-tasks:</div>
+<div class="line-block">
+<div class="line">1. Concatenate samples (list of np arrays) for phase calibration computations.</div>
+<div class="line">2. Check for overflow in fractional sample correction in new samples.</div>
+<div class="line">3. Correct overflow in fractional sample correction (adding/dropping the required samples) in new samples.</div>
+<div class="line">4. Concatenate new samples into stored samples.</div>
+<div class="line">5. If possible separate the stored samples into two parts: the first part with a number of samples that is a multiple</div>
+<div class="line-block">
+<div class="line">of the fft size, and the remained in the second part.</div>
+</div>
+<div class="line">6.  Correct fringe rotation, FFT, correct fractional sample delay and cross-multiply, results go to accumulation matrix.</div>
+<div class="line">7. Leave unprocessed samples in F1_partial (stored samples).</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<div class="line"><strong>Conventions:</strong></div>
+<div class="line"><br /></div>
+<div class="line">failed accumulation: an accumulation is considered failed if the elements for the new samples do not match those stored.</div>
+<div class="line">dismissed accumulation: an accumulation is considered dismissed if it is not computed becaused there are not enough samples.</div>
+<div class="line">variables ending in <a href="#id1"><span class="problematic" id="id2">*</span></a>_partial correspond to stored samples.</div>
+<div class="line">F_refs is used to point to new samples when iterating through stored samples. Note that F1, F_frac, so e.g. </div>
+<div class="line-block">
+<div class="line">F_ind[F_refs[i]]==F_ind_partial[i] for i in range(F_ind_partial).</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<div class="line"><strong>Configuration for trade-off performance vs. memory requirements:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Use the variable COMPUTE_FOR_SUB_ACC_PERIOD in const_mapred.py to configure the number of times the new samples are simply</div>
+<div class="line-block">
+<div class="line">stored without further computation. E.g. if =100, computations will be by-passed 99 out 100 times before the end </div>
+<div class="line">of the integration period. This allows to take advantage of increased efficiency with long numpy arrays, and also</div>
+<div class="line">to avoid some repeated computations in fringe_rotation() and compute_f_all().</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="line"><strong>Limitations:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Curently number of bins for pcal has to be the same for all stations.</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Add support for different numbers of bins?</div>
+<div class="line">Check  if not(not_enough_data):, may be problematic with samples left out.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_fx_stack.compute_x_all">
+<code class="descclassname">lib_fx_stack.</code><code class="descname">compute_x_all</code><span class="sig-paren">(</span><em>F1_fft</em>, <em>F2_fft</em>, <em>count_acc</em>, <em>acc_mat</em>, <em>index_scaling_pair=-1</em>, <em>dtype_complex=&lt;class 'complex'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_fx_stack.html#compute_x_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_fx_stack.compute_x_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute multiply-accumulate for all baselines (all-baselines-per-task-mode)</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>F1_fft <span class="classifier-delimiter">:</span> <span class="classifier">list of np arrays of arrays </span></dt>
+<dd>FFTs (left term).</dd>
+<dt>F2_fft <span class="classifier-delimiter">:</span> <span class="classifier">list of np arrays of arrays with</span></dt>
+<dd>FFTs (right term)If None, then it will take the conjugate of F1_fft.</dd>
+<dt>count_acc</dt>
+<dd>number of accumulations performed previously during this integration period.</dd>
+<dt>acc_mat</dt>
+<dd>accumulation matrix with results accumulated during this integration period.</dd>
+<dt>index_scaling_pair</dt>
+<dd>-1 for all-baselines-per-task mode, positive integer for other modes.</dd>
+<dt>dtype_complex</dt>
+<dd>type to initialize accumulation matrix.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>acc_mat</dt>
+<dd><dl class="first last docutils">
+<dt>accumulation matrix with the new results accumulated (3D numpy array with one row (and one column)</dt>
+<dd><dl class="first last docutils">
+<dt>per station-polarization, and fft_size layers/pages with the results of the accumulation </dt>
+<dd>for each pair). Note that the first two dimensions of the matrix are upper triangular, 
+with the auto-correlations in the main diagonal.</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>count_acc</dt>
+<dd>total number of accumulation performed including those in this call.</dd>
+<dt>count_sub_acc</dt>
+<dd>number of accumulation performed only in this call.</dd>
+<dt>n_sp</dt>
+<dd>number of station-polarizations (that is also the number of rows/columns of the matrix.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Add counters for invalid data.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_fx_stack.cut_remainder_fft_size_multiple">
+<code class="descclassname">lib_fx_stack.</code><code class="descname">cut_remainder_fft_size_multiple</code><span class="sig-paren">(</span><em>F_partial</em>, <em>fft_size_multiple</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_fx_stack.html#cut_remainder_fft_size_multiple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_fx_stack.cut_remainder_fft_size_multiple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to migrate functionality from np arrays to list of arrays (for delay correction...).
+It divides an array into two, one of them with rows of length fft_size_multiple, the other with the remainder.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>F_partial <span class="classifier-delimiter">:</span> <span class="classifier">list of numpy arrays</span></dt>
+<dd>samples in the time domain, with no rotation applied yet, and wherein each of its elements may have a different length.</dd>
+<dt>fft_size_multiple <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>maximum integer multiple of fft_size that is lesser than the length of the shortest element of F_partial.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>F_partial_out</dt>
+<dd>F_partial (input) truncated to the ff_size_multiple first elements.</dd>
+<dt>F_partial_rem</dt>
+<dd>Remainder of removing F_partial_out from F_partial.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_fx_stack.fix_frac_over">
+<code class="descclassname">lib_fx_stack.</code><code class="descname">fix_frac_over</code><span class="sig-paren">(</span><em>F1</em>, <em>F_frac_over_ind</em>, <em>F_ind</em>, <em>F_first_sample</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_fx_stack.html#fix_frac_over"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_fx_stack.fix_frac_over" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add or drop samples for overflow in fractional sample correction based on info from get_frac_over_ind().</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>F1</dt>
+<dd>list of vectors with new data.</dd>
+<dt>F_frac_over</dt>
+<dd>structure obtained in get_frac_over_ind() with locations of samples to be added/dropped.</dd>
+<dt>F_ind</dt>
+<dd>list of stpols corresponding to F1 (only for logging).</dd>
+<dt>F_first_sample</dt>
+<dd>list of first sample number to F1 (only for logging).</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>F1</dt>
+<dd>modified list of vectors with new data.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_fx_stack.fringe_rotation">
+<code class="descclassname">lib_fx_stack.</code><code class="descname">fringe_rotation</code><span class="sig-paren">(</span><em>F1</em>, <em>F_first_sample</em>, <em>F_rates</em>, <em>freq_channel</em>, <em>F_fs</em>, <em>F_delays</em>, <em>F_refs</em>, <em>block_time</em>, <em>F_frac</em>, <em>F_adj_shift_partial</em>, <em>F_side</em>, <em>F_ind</em>, <em>F_lti</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_fx_stack.html#fringe_rotation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_fx_stack.fringe_rotation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fringe rotation correction (previously doppler_correction()).</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>F1 <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>list with stored samples to be processed, which number of samples is an integer multiple of the fft length.</dd>
+<dt>F1_first_sample <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>list with first sample (integer) corresponding to the samples in F1.</dd>
+<dt>F_rates <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd><dl class="first last docutils">
+<dt>list with the delay information for the latest data received. Note that if follows a different ordering as F1 here,</dt>
+<dd>and thus its elements has to be accessed through F_refs.</dd>
+</dl>
+</dd>
+<dt>freq_channel <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>sky frequency [Hz].</dd>
+<dt>F_fs <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>list with the sampling frequency corresponding to the samples in F1 (access through F_refs).</dd>
+<dt>F_delays</dt>
+<dd>[unused] absolute delays of the streams in F1 (access through F_refs).</dd>
+<dt>F_refs <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>list of indices for accessing F_rates, F_fs, etc (those filled in update_stored_samples()).</dd>
+<dt>block_time</dt>
+<dd>time corresponding to this accumulation period (unused).</dd>
+<dt>F_frac</dt>
+<dd>fractional and integer delay corresponding to F1 (access through F_refs).</dd>
+<dt>F_adj_shift_partial</dt>
+<dd><dl class="first last docutils">
+<dt>[unused] previously, list with information on added/dropped samples based on fractional sample correction</dt>
+<dd>overflows, currently unused.</dd>
+</dl>
+</dd>
+<dt>F_side <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>list with sideband for each of the streams in F1 (&#8216;l&#8217; for LSB, &#8216;u&#8217; for USB) (access through F_refs).</dd>
+<dt>F_ind <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>list of station identifiers in the format used in the key (e.g. 0.0, 0.1)</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>F1</dt>
+<dd>F1 (input) with applied rotations if required.</dd>
+<dt>F_first_sample</dt>
+<dd>list with updated first samples (added number of samples in each element of F1).</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Configuration for trade-off performance vs. precision:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">There are three main modes, configuration in const_performance.py:</div>
+<div class="line">FULL_TIMESCALE=0 -&gt; Min. precision, Max. performance: only a phase rotation is applied, based on the delay computed for</div>
+<div class="line-block">
+<div class="line">the first sample.</div>
+</div>
+<div class="line">FULL_TIMESCALE=1 (default) -&gt; Max. precision, Min. performance: a frequency shift is applied with a complete rotator, that is,</div>
+<div class="line-block">
+<div class="line">delays are computed for all the samples.</div>
+</div>
+<div class="line">FULL_TIMESCALE=2 -&gt; Trade-off solution: delay is computed for the first and last sample, and a linear interpolation is </div>
+<div class="line-block">
+<div class="line">done for obtaining the rest of delays. </div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="line"><strong>Approximations:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">For modes FULL_TIMESCALE 1 and 2, the time scale array is computed only once, assuming the same sampling frequency for </div>
+<div class="line-block">
+<div class="line">all the streams.</div>
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="line">The processing currently performed in a loop iterating over the streams in F1, that should be sorted. Given this, for each</div>
+<div class="line-block">
+<div class="line">stream, it is checked if the previous processed stream corresponded to the same station, and if so, the previous rotators</div>
+<div class="line">are used.</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<div class="line"><strong>Debugging:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Activate DEBUG_DELAYS for tabulated output of the delay computations.</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<div class="line"><strong>References:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">[Th04] p172-173</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">F_fs: assuming single sampling frequency</div>
+<div class="line">Bring configuration constants to configuration files.</div>
+<div class="line">Delete unused arguments.</div>
+<div class="line"><br /></div>
+<div class="line">Check if necessary to apply fractional offsets.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_fx_stack.fringe_rotation_work">
+<code class="descclassname">lib_fx_stack.</code><code class="descname">fringe_rotation_work</code><span class="sig-paren">(</span><em>clock_diff</em>, <em>poly_diff</em>, <em>seconds_ref_clock</em>, <em>delay_rate_ref</em>, <em>timescale</em>, <em>seconds_offset</em>, <em>n_samples</em>, <em>sideband</em>, <em>last_n_samples</em>, <em>str_st</em>, <em>last_str_st</em>, <em>data_type</em>, <em>last_data_type</em>, <em>first_iteration</em>, <em>freq_channel</em>, <em>fs</em>, <em>F1_i</em>, <em>nr</em>, <em>rotation</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_fx_stack.html#fringe_rotation_work"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_fx_stack.fringe_rotation_work" title="Permalink to this definition">¶</a></dt>
+<dd><p>Worker for fringe rotation, see fringe_rotation() for more details.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_fx_stack.fringe_rotation_wrap">
+<code class="descclassname">lib_fx_stack.</code><code class="descname">fringe_rotation_wrap</code><span class="sig-paren">(</span><em>args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_fx_stack.html#fringe_rotation_wrap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_fx_stack.fringe_rotation_wrap" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="lib_fx_stack.get_exp">
+<code class="descclassname">lib_fx_stack.</code><code class="descname">get_exp</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_fx_stack.html#get_exp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_fx_stack.get_exp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get exponential based on fractional part of input, see Output below for details.</p>
+<blockquote>
+<div>x : numpy array of float.</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>y <span class="classifier-delimiter">:</span> <span class="classifier">1D numpy array of complex</span></dt>
+<dd>complex rotation (exponential of 2*j*pi*fractional_part(x))</dd>
+<dt>nr <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
+<dd>do not rotate (1 if all elements in y are 1, 0 otherwise)</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Precision:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Integer part is removed to avoid problems with precision, rotation (j2pi).</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<div class="line"><strong>Approximations:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">-numpy.exp is not called in the trivial cases.</div>
+</div>
+<div class="line">-IMPORTANT!: For arrays of more than 1 element, if the first, second and last elements are equal to zero, then</div>
+<div class="line-block">
+<div class="line">all the elements are assumed to be zero too. Need to replace this by some check on the polynomial.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_fx_stack.get_frac_over_ind">
+<code class="descclassname">lib_fx_stack.</code><code class="descname">get_frac_over_ind</code><span class="sig-paren">(</span><em>F_first_sample</em>, <em>F1</em>, <em>F_rates</em>, <em>F_fs</em>, <em>F_ind</em>, <em>F_side</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_fx_stack.html#get_frac_over_ind"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_fx_stack.get_frac_over_ind" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get locations of samples to be added/dropped due to fractional bit shift.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>F_first_sample</dt>
+<dd>list with the first sample number for each vector of data.</dd>
+<dt>F1</dt>
+<dd>list of vectors with new data for each stpol (only lengths are read).</dd>
+<dt>F_rates</dt>
+<dd>model/clock delay information for computing delays.</dd>
+<dt>F_fs</dt>
+<dd>sampling frequency for each vector with new data.</dd>
+<dt>F_ind</dt>
+<dd>list with identifiers for stations (for logging).</dd>
+<dt>F_side</dt>
+<dd>list with sidebands</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>F_frac_over_ind</dt>
+<dd>list of [number_of_samples_to_be_added_or_dropped,[list_of_locations_for_these_changes]] for each element in F1.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Algorithm:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Compute integer+fractional sample delay at both extremes of the vector with data, then find intersection</div>
+<div class="line-block">
+<div class="line">with changes in fractional delay (given a fractional sample correction between 0 and 1, it checks for crossing at 0.5).</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="line"><strong>Debugging:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Activate DEBUG_FRAC_OVER for tabulated output of the fractional overflow corrections.</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Add support for multiple samples.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_fx_stack.get_rotator">
+<code class="descclassname">lib_fx_stack.</code><code class="descname">get_rotator</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_fx_stack.html#get_rotator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_fx_stack.get_rotator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a single complex rotator from a list of rotators.</p>
+<blockquote>
+<div>x : list of complex.</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>rotator</dt>
+<dd>product of the elements in x.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div>TO DO: consider removing, devised to apply many rotators, but no longer needed.</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_fx_stack.get_val_for_fringe_exp">
+<code class="descclassname">lib_fx_stack.</code><code class="descname">get_val_for_fringe_exp</code><span class="sig-paren">(</span><em>sideband</em>, <em>data_type</em>, <em>freq_channel</em>, <em>fs</em>, <em>r_recalc</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_fx_stack.html#get_val_for_fringe_exp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_fx_stack.get_val_for_fringe_exp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute vector &#8216;x&#8217; with values that will go into e^j(2.pi.x) to be used in fringe rotation.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>sideband <span class="classifier-delimiter">:</span> <span class="classifier">char {&#8216;L&#8217;,&#8217;U&#8217;}</span></dt>
+<dd>&#8216;L&#8217; for LSB, &#8216;U&#8217; for USB.</dd>
+<dt>datatype <span class="classifier-delimiter">:</span> <span class="classifier">char {&#8216;c&#8217;,&#8217;r&#8217;}</span></dt>
+<dd>&#8216;c&#8217; for complex samples, &#8216;r&#8217; for real samples.</dd>
+<dt>freq_channel <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>channel frequency [Hz] as in configuration file.</dd>
+<dt>fs <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>sampling frequency [Hz].</dd>
+<dt>r_recalc <span class="classifier-delimiter">:</span> <span class="classifier">1D np.array of float</span></dt>
+<dd>delay values.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>val <span class="classifier-delimiter">:</span> <span class="classifier">1D np.array of float</span></dt>
+<dd>results.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Configuration:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Enable USE_NE_FRINGE for using numexpr, and if so, configure THREADS_NE for multithreading.</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">This should be checked.</div>
+<div class="line">Case USB complex not tested yet.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_fx_stack.hstack_new_samples">
+<code class="descclassname">lib_fx_stack.</code><code class="descname">hstack_new_samples</code><span class="sig-paren">(</span><em>F1_partial</em>, <em>F_ind_partial</em>, <em>F_ind</em>, <em>F1</em>, <em>F_adj_shift_partial</em>, <em>F_stack_shift</em>, <em>F_lti_in</em>, <em>F_first_sample</em>, <em>mode_str=''</em>, <em>F_frac_over_ind=[]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_fx_stack.html#hstack_new_samples"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_fx_stack.hstack_new_samples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Concatenation of new samples with previously saved.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>F1_partial</dt>
+<dd>previously saved samples.</dd>
+<dt>F_ind_partial</dt>
+<dd>identifiers for each row of saved samples.</dd>
+<dt>F_ind</dt>
+<dd>identifiers for rows of new samples.</dd>
+<dt>F1</dt>
+<dd>new samples.</dd>
+<dt>F_adj_shift_partial</dt>
+<dd>[unused] previously used for keeping track of the number of samples to add/drop, superseded by F_frac_over.</dd>
+<dt>F_refs</dt>
+<dd>indices for F1 based on F1_partial, used for other lists obtained in update_stored_samples(): (F_delay,F_rates,etc).</dd>
+<dt>F_stack_shift</dt>
+<dd>[unused] previously used to keep track of added/dropped samples.</dd>
+<dt>F_lti</dt>
+<dd>list with last sample (l), total number of samples processed (t), invalid samples (i), and adjuted samples for each stream.</dd>
+<dt>F_adj_shift_partial</dt>
+<dd>number of samples that have to be adjusted</dd>
+<dt>F_first_sample</dt>
+<dd>list with first sample corresponding to the streams in F1.</dd>
+<dt>mode_str</dt>
+<dd>&#8220;f&#8221; for normal operation model, &#8220;pcal&#8221; for saving the samples for phase calibration.</dd>
+<dt>F_frac_over</dt>
+<dd><dl class="first last docutils">
+<dt>list with the number of positions of the samples added/dropped due to fractional sample correction overflow,</dt>
+<dd>see get_frac_over_ind() and fix_frac_over() for more details.</dd>
+</dl>
+</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>F1_partial_out</dt>
+<dd>F1_partial with samples from F1 added.</dd>
+<dt>F_ind_partial_out</dt>
+<dd>station-polarization identifiers for the streams in F1_partial_out (same format as in keys).</dd>
+<dt>F_refs_out</dt>
+<dd>indices to F_frac etc structures based on F1_partial.</dd>
+<dt>F_stack_shift_out</dt>
+<dd>[unused] previously used to keep track of added/dropped samples.</dd>
+<dt>F_lti_out</dt>
+<dd>F_lti updated.</dd>
+<dt>F1_out</dt>
+<dd>Emtpy list of arrays.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Procedure:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">If there are stored samples, iterate over list of stored samples:</div>
+<div class="line-block">
+<div class="line">1. [currently disabled] Add zero padding if first sample does not match the expected first sample number.</div>
+<div class="line">2. Concatenate new samples (accesed at F1 via F_ref) with stored samples.</div>
+</div>
+<div class="line">Otherwise initialize structures and store new samples.</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<div class="line"><strong>Approximations:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">-Zero-padding currently disabled, new samples are simply stored. This due to the need to debug yet the offsets in the </div>
+<div class="line-block">
+<div class="line">update of added/dropped samples from fix_frac_over(). Although these numbers are obtained in the mapper, there may</div>
+<div class="line">be invalid frames that thus leave a gap.</div>
+</div>
+<div class="line">-It is not checked if the first sample number is lesser than the last sample stored, but this should not be necessary.</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<div class="line"><strong>Debugging:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Activate DEBUG_HSTACK for tabulated output of the concatenations.</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Group repeated code, and create functions for managing F_lti.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_fx_stack.multiply_accumulate">
+<code class="descclassname">lib_fx_stack.</code><code class="descname">multiply_accumulate</code><span class="sig-paren">(</span><em>accu_prod</em>, <em>v1fft</em>, <em>v2fft</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_fx_stack.html#multiply_accumulate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_fx_stack.multiply_accumulate" title="Permalink to this definition">¶</a></dt>
+<dd><p>[Only used in one-baseline-per-task mode.]
+Multiply and accumulate two ffts (one for each station).</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_fx_stack.normalize_mat">
+<code class="descclassname">lib_fx_stack.</code><code class="descname">normalize_mat</code><span class="sig-paren">(</span><em>acc_mat</em>, <em>count_acc</em>, <em>using_autocorrs=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_fx_stack.html#normalize_mat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_fx_stack.normalize_mat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Normalice results in accumulation matrix.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>acc_mat</dt>
+<dd>accumulation matrix (see compute_x_all for the definition of the matrix).</dd>
+<dt>count_acc</dt>
+<dd>number of accumulations.</dd>
+<dt>using_autocorrs</dt>
+<dd>1 by default, normalization using auto-correlations.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>acc_mat_out</dt>
+<dd>normalized accumulation matrix.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Known issues:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Need to check scaling.</div>
+<div class="line"><br /></div>
+</div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Take into account valid samples!</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_fx_stack.shortest_row_F">
+<code class="descclassname">lib_fx_stack.</code><code class="descname">shortest_row_F</code><span class="sig-paren">(</span><em>F1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_fx_stack.html#shortest_row_F"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_fx_stack.shortest_row_F" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the minimum and maximum length of the elements of F1.</p>
+<blockquote>
+<div>F1 : list of numpy 1D arrays.</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>shortest_row</dt>
+<dd>length of the shortest element in F1.</dd>
+<dt>longest_row</dt>
+<dd>length of the longest element in F1.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_fx_stack.window_and_fft">
+<code class="descclassname">lib_fx_stack.</code><code class="descname">window_and_fft</code><span class="sig-paren">(</span><em>v1_dequant</em>, <em>fft_size</em>, <em>windowing</em>, <em>flatten_chunks=1</em>, <em>dtype_complex=&lt;class 'complex'&gt;</em>, <em>rfft_data_type='c'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_fx_stack.html#window_and_fft"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_fx_stack.window_and_fft" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply window and do FFT of set of samples, to be grouped into chunks of FFT size.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>v1_dequant</dt>
+<dd>numpy arrays with complex samples in the time domain (fringe rotation already applied to them).</dd>
+<dt>fft_size</dt>
+<dd>number of coefficients in the FFT.</dd>
+<dt>windowing</dt>
+<dd>shape of the window to be applied prior to FFT, square by default.</dd>
+<dt>flatten_chunks</dt>
+<dd>1 if one-baseline-per-task mode, otherwise all-baselines-per-task.</dd>
+<dt>dtype_complex</dt>
+<dd>complex type to be used in initialization of arrays.</dd>
+<dt>rfft_data_type</dt>
+<dd>[unused] initially devised to use rfft, currently not used.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>v1_fft</dt>
+<dd><dl class="first last docutils">
+<dt>numpy array of arrays, with as many rows as the ratio between number of samples and fft_size (forced to</dt>
+<dd>be integer), and as many columns of fft_size.</dd>
+</dl>
+</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Performance:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Using scipy fft, which yielded the highest performance on preliminary benchmarking with single thread reducer.</div>
+<div class="line">PyFFTW implemented, but needs to be tested and benchmarked.</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<div class="line"><a href="#id3"><span class="problematic" id="id4">**</span></a>TO DO: **</div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Add a more elegant implementation for windowing, and add more windows.</div>
+<div class="line">Currently no windowing by default, may need to migrate functionality from this to windowing modes.</div>
+</div>
+</div>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="lib_delay_model.html" title="previous chapter">lib_delay_model module</a></li>
+      <li>Next: <a href="lib_hadoop_hdfs.html" title="next chapter">lib_hadoop_hdfs module</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/lib_fx_stack.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Antonio Vazquez Alvarez, Victor Pankratius, and Pedro Elosegui.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/lib_fx_stack.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

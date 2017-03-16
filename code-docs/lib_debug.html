@@ -1,0 +1,171 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>lib_debug module &#8212; CorrelX 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="lib_delay_model module" href="lib_delay_model.html" />
+    <link rel="prev" title="lib_config module" href="lib_config.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-lib_debug">
+<span id="lib-debug-module"></span><h1>lib_debug module<a class="headerlink" href="#module-lib_debug" title="Permalink to this headline">¶</a></h1>
+<p>Routines for displaying debug information.</p>
+<dl class="function">
+<dt id="lib_debug.print_debug_m_align_header">
+<code class="descclassname">lib_debug.</code><code class="descname">print_debug_m_align_header</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_debug.html#print_debug_m_align_header"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_debug.print_debug_m_align_header" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="lib_debug.print_debug_m_align_last">
+<code class="descclassname">lib_debug.</code><code class="descname">print_debug_m_align_last</code><span class="sig-paren">(</span><em>tot_samples_v</em>, <em>seconds_v</em>, <em>offset_first_sample_iterator_v</em>, <em>offset_first_sample_signal_v</em>, <em>chunk_size_v</em>, <em>acc_v</em>, <em>do_sup_frame</em>, <em>sup_frame_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_debug.html#print_debug_m_align_last"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_debug.print_debug_m_align_last" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="lib_debug.print_debug_m_align_no_end">
+<code class="descclassname">lib_debug.</code><code class="descname">print_debug_m_align_no_end</code><span class="sig-paren">(</span><em>station_name</em>, <em>station_id</em>, <em>tot_samples_per_channel_and_frame</em>, <em>data_type</em>, <em>tot_samples_per_channel_and_frame_full</em>, <em>seconds_fr</em>, <em>frame_num</em>, <em>adjusted_frame_time</em>, <em>delay</em>, <em>actual_frame_time</em>, <em>rel_pos_frame</em>, <em>i_front</em>, <em>accu_block</em>, <em>frame_num_adjusted_neg</em>, <em>frame_num_adjusted</em>, <em>shift_int</em>, <em>adjusted_shift_inside_frame</em>, <em>fractional_sample_delay</em>, <em>process_frame</em>, <em>aligned_frame</em>, <em>count_print</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_debug.html#print_debug_m_align_no_end"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_debug.print_debug_m_align_no_end" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="lib_debug.print_debug_r_delays_d">
+<code class="descclassname">lib_debug.</code><code class="descname">print_debug_r_delays_d</code><span class="sig-paren">(</span><em>i</em>, <em>F_refs_row</em>, <em>F_ind_row</em>, <em>first_sample</em>, <em>n_samples</em>, <em>timescale</em>, <em>timescale_0</em>, <em>timescale_last</em>, <em>seconds_offset</em>, <em>first_delay</em>, <em>last_delay</em>, <em>rate_interval</em>, <em>fractional_sample_correction</em>, <em>diff_frac</em>, <em>computed</em>, <em>nr</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_debug.html#print_debug_r_delays_d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_debug.print_debug_r_delays_d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fringe rotation delay computation debugging information.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_debug.print_debug_r_delays_f">
+<code class="descclassname">lib_debug.</code><code class="descname">print_debug_r_delays_f</code><span class="sig-paren">(</span><em>stpol</em>, <em>F_refs_row</em>, <em>F_ind_row</em>, <em>fsr</em>, <em>num_samples</em>, <em>len_timescale</em>, <em>total_timescale_row</em>, <em>timescale_empty</em>, <em>total_seconds_offset</em>, <em>r_recalc_row</em>, <em>r_unused</em>, <em>a_unused</em>, <em>fractional_sample_correction</em>, <em>full_fractional_recalc_row</em>, <em>fractional_recalc_row</em>, <em>diff_frac</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_debug.html#print_debug_r_delays_f"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_debug.print_debug_r_delays_f" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fractional sample correction delay computation debugging information.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_debug.print_debug_r_delays_header">
+<code class="descclassname">lib_debug.</code><code class="descname">print_debug_r_delays_header</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_debug.html#print_debug_r_delays_header"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_debug.print_debug_r_delays_header" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="lib_debug.print_debug_r_frac_over_header">
+<code class="descclassname">lib_debug.</code><code class="descname">print_debug_r_frac_over_header</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_debug.html#print_debug_r_frac_over_header"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_debug.print_debug_r_frac_over_header" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="lib_debug.print_debug_r_hstack">
+<code class="descclassname">lib_debug.</code><code class="descname">print_debug_r_hstack</code><span class="sig-paren">(</span><em>mode_str</em>, <em>idx_p</em>, <em>F_ind_partial_row</em>, <em>F_ind_partial_out_row</em>, <em>i</em>, <em>F_ind_row_i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_debug.html#print_debug_r_hstack"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_debug.print_debug_r_hstack" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="lib_debug.print_debug_r_hstack_arrow">
+<code class="descclassname">lib_debug.</code><code class="descname">print_debug_r_hstack_arrow</code><span class="sig-paren">(</span><em>F1_partial</em>, <em>F1</em>, <em>F1_partial_out</em>, <em>F_lti_out</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_debug.html#print_debug_r_hstack_arrow"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_debug.print_debug_r_hstack_arrow" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="lib_debug.print_debug_r_hstack_header">
+<code class="descclassname">lib_debug.</code><code class="descname">print_debug_r_hstack_header</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_debug.html#print_debug_r_hstack_header"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_debug.print_debug_r_hstack_header" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="lib_debug.print_debug_r_hstack_separator">
+<code class="descclassname">lib_debug.</code><code class="descname">print_debug_r_hstack_separator</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_debug.html#print_debug_r_hstack_separator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_debug.print_debug_r_hstack_separator" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="lib_debug.print_key">
+<code class="descclassname">lib_debug.</code><code class="descname">print_key</code><span class="sig-paren">(</span><em>key_pair_accu</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_debug.html#print_key"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_debug.print_key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print key for the line processed for logging.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_debug.print_sup_frame">
+<code class="descclassname">lib_debug.</code><code class="descname">print_sup_frame</code><span class="sig-paren">(</span><em>sup_frame_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_debug.html#print_sup_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_debug.print_sup_frame" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="lib_config.html" title="previous chapter">lib_config module</a></li>
+      <li>Next: <a href="lib_delay_model.html" title="next chapter">lib_delay_model module</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/lib_debug.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Antonio Vazquez Alvarez, Victor Pankratius, and Pedro Elosegui.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/lib_debug.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,1118 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>lib_hadoop_hdfs &#8212; CorrelX 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for lib_hadoop_hdfs</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># &lt;nbformat&gt;3.0&lt;/nbformat&gt;</span>
+
+<span class="c1"># &lt;codecell&gt;</span>
+
+<span class="c1">#!/usr/bin/env python</span>
+<span class="c1">#</span>
+<span class="c1">#The MIT CorrelX Correlator</span>
+<span class="c1">#</span>
+<span class="c1">#https://github.com/MITHaystack/CorrelX</span>
+<span class="c1">#Contact: correlX@haystack.mit.edu</span>
+<span class="c1">#Project leads: Victor Pankratius, Pedro Elosegui Project developer: A.J. Vazquez Alvarez</span>
+<span class="c1">#</span>
+<span class="c1">#Copyright 2017 MIT Haystack Observatory</span>
+<span class="c1">#</span>
+<span class="c1">#Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the &quot;Software&quot;), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1">#The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</span>
+<span class="c1">#</span>
+<span class="c1">#THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#------------------------------</span>
+<span class="c1">#------------------------------</span>
+<span class="c1">#Project: CorrelX.</span>
+<span class="c1">#File: lib_hadoop_hdfs.py.</span>
+<span class="c1">#Author: A.J. Vazquez Alvarez (ajvazquez@haystack.mit.edu)</span>
+<span class="c1">#Description: </span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Functions for starting and stopping hadoop, and for sending files to HDFS (or copying files to Lustre).</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="c1">#History:</span>
+<span class="c1">#initial version: 2015.12 ajva</span>
+<span class="c1">#MIT Haystack Observatory</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">imp</span>
+<span class="kn">from</span> <span class="nn">lib_vdif</span> <span class="k">import</span> <span class="n">get_vdif_stats</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">import</span> <span class="nn">const_hadoop</span>
+<span class="n">imp</span><span class="o">.</span><span class="n">reload</span><span class="p">(</span><span class="n">const_hadoop</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">const_hadoop</span> <span class="k">import</span> <span class="o">*</span>
+
+
+
+
+<span class="c1">##################################################################</span>
+<span class="c1">#</span>
+<span class="c1">#                   Hadoop cluster start/stop</span>
+<span class="c1">#</span>
+<span class="c1">##################################################################</span>
+
+
+
+
+<div class="viewcode-block" id="cluster_start"><a class="viewcode-back" href="../lib_hadoop_hdfs.html#lib_hadoop_hdfs.cluster_start">[docs]</a><span class="k">def</span> <span class="nf">cluster_start</span><span class="p">(</span><span class="n">wait_time</span><span class="p">,</span><span class="n">hadoop_conf_dir</span><span class="p">,</span><span class="n">hadoop_dir</span><span class="p">,</span><span class="n">file_slaves</span><span class="p">,</span><span class="n">temp_dir</span><span class="p">,</span><span class="n">username</span><span class="p">,</span><span class="n">temp_log</span><span class="p">,</span><span class="n">single_node</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">use_lustre_plugin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>\
+             <span class="n">file_log</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Start hadoop. It returns the number of active nodes after initialization.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     wait_time : int</span>
+<span class="sd">         time [s] to wait after each command sent to Hadoop.</span>
+<span class="sd">     hadoop_conf_dir : str</span>
+<span class="sd">         Hadoop configuration folder path [hadoop_home/etc/hadoop].</span>
+<span class="sd">     hadoop_dir : str</span>
+<span class="sd">         Hadoop home folder path.</span>
+<span class="sd">     file_slaves : str</span>
+<span class="sd">         Path to Hadoop slaves file.</span>
+<span class="sd">     temp_dir : str</span>
+<span class="sd">         Path to temporary folder path</span>
+<span class="sd">     username : str</span>
+<span class="sd">         user name (to be used to login into slave nodes through ssh).</span>
+<span class="sd">     temp_log : str</span>
+<span class="sd">         Path to temporary log file.</span>
+<span class="sd">     single_node : int</span>
+<span class="sd">         If 1 will only delete temporary folders on current machine (master), if 0 on all (master and slaves)</span>
+<span class="sd">     use_lustre_plugin : int</span>
+<span class="sd">         1 for Lustre filesystem, 0 for HDFS.</span>
+<span class="sd">     v : int</span>
+<span class="sd">         1 for verbose.</span>
+<span class="sd">     file_log : str</span>
+<span class="sd">         Path to log file.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     int_t_nodes : int</span>
+<span class="sd">         (t_nodes) number of nodes up and running in the Hadoop cluster.</span>
+<span class="sd">    </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    |</span>
+<span class="sd">    | **Summary:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  1. Delete temporary files (otherwise there may be problems with previous process IDs...).</span>
+<span class="sd">    |  2. Format HDFS (in the future the hadoop service may be running continuously to avoid initialization for every correlation...).</span>
+<span class="sd">    |  3. Start HDFS.</span>
+<span class="sd">    |  4. Start YARN.</span>
+<span class="sd">    |  5. Check running processes.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1">#forced_temp_folder = &quot;/tmp&quot;</span>
+    <span class="c1">#temp_files =  forced_temp_folder + &quot;/*&quot; + username + &quot;*&quot;</span>
+    <span class="n">forced_temp_folder</span> <span class="o">=</span> <span class="n">temp_dir</span>
+    <span class="n">temp_files</span> <span class="o">=</span>  <span class="n">forced_temp_folder</span> <span class="o">+</span> <span class="s2">&quot;/*&quot;</span>
+    
+    <span class="n">command_delete_basic</span> <span class="o">=</span> <span class="s2">&quot;rm -Rf --verbose &quot;</span> <span class="o">+</span> <span class="n">temp_files</span> <span class="o">+</span> <span class="s2">&quot; &gt; &quot;</span> <span class="o">+</span> <span class="n">temp_log</span>
+    <span class="c1">#command_delete_owned = &quot;find /tmp/ -user &quot; + username + &quot; -exec rm -fr {} \;&quot;</span>
+        
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Starting Hadoop...&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>   
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> (!) Deleting temporary files (forced dir: &quot;</span> <span class="o">+</span> <span class="n">forced_temp_folder</span> <span class="o">+</span> <span class="s2">&quot; for user &quot;</span> <span class="o">+</span> <span class="n">username</span> <span class="o">+</span> <span class="s2">&quot;) &quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>   
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  Single node: &quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span><span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">single_node</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;yes&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;no&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+  
+
+    <span class="c1"># Delete temporary files and reformat HDFS</span>
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Deleting temporary files (on all nodes) and reformatting HDFS...&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">single_node</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">command_delete_basic</span><span class="p">)</span>
+        <span class="c1">#os.system(command_delete_owned)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;pdsh -d -R ssh -l &quot;</span> <span class="o">+</span> <span class="n">username</span> <span class="o">+</span> <span class="s2">&quot; -w `cat &quot;</span> <span class="o">+</span> \
+                <span class="n">hadoop_conf_dir</span> <span class="o">+</span> <span class="n">file_slaves</span> <span class="o">+</span> <span class="s2">&quot;|tr &#39;</span><span class="se">\n</span><span class="s2">&#39; &#39;,&#39;|rev|cut -c2-|rev` &quot;</span> <span class="o">+</span> 
+                <span class="n">command_delete_basic</span><span class="p">)</span>
+        <span class="c1">#os.system(&quot;pdsh -d -R ssh -l &quot; + username + &quot; -w ^&quot; + hadoop_conf_dir + file_slaves + &quot; &quot; + command_delete_owned)</span>
+
+        
+    <span class="c1"># Count number of removed files.</span>
+    <span class="n">count_nodes</span><span class="o">=</span><span class="mi">0</span>
+    <span class="n">filtered_list</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">list_nodes</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">hadoop_conf_dir</span> <span class="o">+</span> <span class="n">file_slaves</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f_nodes</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f_nodes</span><span class="p">:</span>
+            <span class="n">list_nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+            <span class="n">count_nodes</span><span class="o">+=</span><span class="mi">1</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">temp_log</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f_tmp</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f_tmp</span><span class="p">:</span>
+            <span class="p">[</span><span class="n">ip_s</span><span class="p">,</span><span class="n">file_s</span><span class="p">]</span><span class="o">=</span><span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;removed&quot;</span><span class="p">)</span>
+            <span class="n">filtered_list</span><span class="o">+=</span><span class="p">[</span><span class="n">ip_s</span><span class="p">]</span>
+        <span class="n">reduced_list</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">filtered_list</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">reduced_list</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  &quot;</span> <span class="o">+</span> <span class="n">i</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">18</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; removed files: &quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">32</span><span class="p">)</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">filtered_list</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">i</span><span class="p">)),</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+    
+    
+    <span class="c1"># Format HDFS</span>
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Reformatting HDFS...&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">hadoop_dir</span> <span class="o">+</span> <span class="s2">&quot;bin/hdfs --config &quot;</span><span class="o">+</span><span class="n">hadoop_conf_dir</span><span class="o">+</span><span class="s2">&quot; namenode -format -force&quot;</span><span class="p">)</span>
+    <span class="c1">#os.system(hadoop_dir + &quot;bin/hdfs dfsadmin -safemode leave&quot;)</span>
+
+    <span class="c1"># Wait for initialization</span>
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Waiting for Hadoop initialization (1) (&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">wait_time</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot; s)...&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>   
+        <span class="n">file_log</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">wait_time</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">wait_time</span><span class="p">)</span>
+    
+    <span class="c1"># Start HDFS</span>
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Starting HDFS...&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="n">use_lustre_plugin</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">hadoop_dir</span> <span class="o">+</span> <span class="s2">&quot;sbin/start-dfs.sh --config &quot;</span><span class="o">+</span><span class="n">hadoop_conf_dir</span><span class="p">)</span> <span class="c1"># + new_inter)</span>
+    
+    <span class="c1"># Wait for initialization</span>
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Waiting for Hadoop initialization (2) (&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">wait_time</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot; s)...&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>   
+        <span class="n">file_log</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">wait_time</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">wait_time</span><span class="p">)</span>
+
+    <span class="c1"># Start YARN</span>
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Starting YARN...&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">hadoop_dir</span> <span class="o">+</span> <span class="s2">&quot;sbin/start-yarn.sh --config &quot;</span><span class="o">+</span><span class="n">hadoop_conf_dir</span><span class="p">)</span> <span class="c1"># + new_inter)</span>
+
+    <span class="c1"># Check open ports</span>
+    <span class="c1">#os.system(&quot;netstat -nlp|grep java&quot; + plus_out)</span>
+    <span class="c1">#show_file(file_out)</span>
+    
+    
+    <span class="c1"># Wait for initialization</span>
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Waiting for Hadoop initialization (3) (&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">wait_time</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot; s)...&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>   
+        <span class="n">file_log</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">wait_time</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">wait_time</span><span class="p">)</span>
+
+    
+    <span class="c1"># Start History server</span>
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Starting History server...&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;mkdir -p &quot;</span> <span class="o">+</span> <span class="n">temp_dir</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span><span class="o">+</span><span class="n">HADOOP_DIR_DONE_INTER</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;mkdir -p &quot;</span> <span class="o">+</span> <span class="n">temp_dir</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span><span class="o">+</span><span class="n">HADOOP_DIR_DONE</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">use_lustre_plugin</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">hadoop_dir</span> <span class="o">+</span> <span class="s2">&quot;sbin/mr-jobhistory-daemon.sh --config &quot;</span><span class="o">+</span><span class="n">hadoop_conf_dir</span><span class="o">+</span><span class="s2">&quot; start historyserver&quot;</span><span class="p">)</span> <span class="c1"># + new_inter)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">hadoop_dir</span> <span class="o">+</span> <span class="s2">&quot;sbin/mr-jobhistory-daemon.sh --config &quot;</span><span class="o">+</span><span class="n">hadoop_conf_dir</span> <span class="o">+</span>\
+             <span class="s2">&quot; start historyserver -D &quot;</span><span class="o">+</span><span class="n">C_H_INLINE_LUSTRE_FS_ABS_PARAM</span><span class="o">+</span><span class="s2">&quot;=&quot;</span><span class="o">+</span><span class="n">C_H_INLINE_LUSTRE_FS_ABS_VAL</span><span class="p">)</span> <span class="c1"># + new_inter)</span>
+
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Waiting for Hadoop initialization (and 4) (&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">wait_time</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot; s)...&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+        <span class="n">file_log</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">wait_time</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">wait_time</span><span class="p">)</span>
+    
+    <span class="c1"># Check running processes  </span>
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;jps&quot;</span> <span class="o">+</span> <span class="s2">&quot; &gt; &quot;</span> <span class="o">+</span> <span class="n">temp_log</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Launched processes:&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>   
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">temp_log</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f_log</span><span class="p">:</span>
+             <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f_log</span><span class="p">:</span>
+                 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  &quot;</span><span class="o">+</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; List of nodes:&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>   
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">hadoop_dir</span> <span class="o">+</span> <span class="s2">&quot;bin/yarn --config &quot;</span><span class="o">+</span> <span class="n">hadoop_conf_dir</span> <span class="o">+</span><span class="s2">&quot; node -list &gt; &quot;</span> <span class="o">+</span> <span class="n">temp_log</span><span class="p">)</span><span class="c1">#temp_dir + ) # + plus_out)</span>
+    
+    <span class="n">t_nodes</span><span class="o">=</span><span class="mi">0</span>
+    
+    <span class="k">for</span> <span class="n">iter_refresh</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">temp_log</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f_tmp</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f_tmp</span><span class="p">:</span>
+                
+                <span class="k">if</span> <span class="s2">&quot;RUNNING&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">list_nodes</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                            <span class="n">list_nodes</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                
+                <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   &quot;</span><span class="o">+</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span><span class="n">end</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+                <span class="k">if</span> <span class="s2">&quot;Nodes:&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                    <span class="p">[</span><span class="n">stotal</span><span class="p">,</span><span class="n">t_nodes</span><span class="p">]</span><span class="o">=</span><span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
+            
+        <span class="k">if</span> <span class="p">(</span><span class="n">iter_refresh</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span><span class="ow">and</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">t_nodes</span><span class="p">)</span><span class="o">&gt;</span><span class="n">count_nodes</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;    Too many nodes initiated!&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Nodes off: &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">list_nodes</span><span class="p">),</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+                <span class="c1">#os.system(hadoop_dir + &quot;bin/hadoop dfsadmin -refreshNodes&quot;)</span>
+    <span class="k">return</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">t_nodes</span><span class="p">))</span> <span class="c1">#number of nodes active</span></div>
+
+
+
+
+<div class="viewcode-block" id="cluster_stop"><a class="viewcode-back" href="../lib_hadoop_hdfs.html#lib_hadoop_hdfs.cluster_stop">[docs]</a><span class="k">def</span> <span class="nf">cluster_stop</span><span class="p">(</span><span class="n">wait_time</span><span class="p">,</span><span class="n">hadoop_dir</span><span class="p">,</span><span class="n">hadoop_conf_dir</span><span class="p">,</span><span class="n">temp_log</span><span class="p">,</span><span class="n">timeout</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Stop hadoop. </span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     wait_time : int</span>
+<span class="sd">         Time [s] to wait after each command sent to Hadoop.</span>
+<span class="sd">     hadoop_dir : str</span>
+<span class="sd">         Hadoop home folder path.</span>
+<span class="sd">     hadoop_conf_dir : str</span>
+<span class="sd">         Hadoop configuration folder path [hadoop_home/etc/hadoop].</span>
+<span class="sd">     temp_log : str</span>
+<span class="sd">         Path to temporary log file.</span>
+<span class="sd">     timeout : int</span>
+<span class="sd">         If &gt;0 will terminate Hadoop stop command after &quot;timeout&quot; seconds.</span>
+<span class="sd">     v : int</span>
+<span class="sd">         1 for verbose.</span>
+<span class="sd">     file_log : str</span>
+<span class="sd">         Path to log file.</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     N/A</span>
+<span class="sd">    </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    |</span>
+<span class="sd">    | **Summary:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  -Stop YARN.</span>
+<span class="sd">    |  -Stop DFS.</span>
+<span class="sd">    |  -Wait &quot;wait_time&quot; seconds for termination.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">use_lustre_plugin</span> <span class="o">=</span> <span class="mi">0</span>
+        
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Stopping Hadoop...&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>   
+
+    
+     <span class="c1"># Stop YARN</span>
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Stopping YARN...&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>   
+    <span class="k">if</span> <span class="n">timeout</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">hadoop_dir</span> <span class="o">+</span> <span class="s2">&quot;sbin/stop-yarn.sh --config &quot;</span><span class="o">+</span><span class="n">hadoop_conf_dir</span><span class="p">)</span> <span class="c1"># + new_inter)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;timeout &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot; &quot;</span><span class="o">+</span><span class="n">hadoop_dir</span> <span class="o">+</span> <span class="s2">&quot;sbin/stop-yarn.sh --config &quot;</span><span class="o">+</span><span class="n">hadoop_conf_dir</span><span class="p">)</span> <span class="c1"># + new_inter)</span>
+
+
+    <span class="c1"># Stop DFS</span>
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Stopping DFS...&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>   
+        <span class="c1">#print(&quot; Stopping ALL...&quot;,file=file_log)   </span>
+    
+    <span class="k">if</span> <span class="n">use_lustre_plugin</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">hadoop_dir</span> <span class="o">+</span> <span class="s2">&quot;sbin/stop-dfs.sh --config &quot;</span><span class="o">+</span><span class="n">hadoop_conf_dir</span><span class="p">)</span> <span class="c1"># + new_inter)</span>
+    <span class="c1">#os.system(hadoop_dir + &quot;sbin/stop-all.sh&quot;)</span>
+    
+    
+    <span class="c1"># Stop history server</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">hadoop_dir</span> <span class="o">+</span> <span class="s2">&quot;sbin/mr-jobhistory-daemon.sh --config &quot;</span><span class="o">+</span><span class="n">hadoop_conf_dir</span><span class="o">+</span><span class="s2">&quot; stop historyserver&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># Wait for termination</span>
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Waiting for Hadoop termination (&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">wait_time</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot; s)...&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>   
+        <span class="c1">#file_log.flush()</span>
+    <span class="k">if</span> <span class="n">wait_time</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>    
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">wait_time</span><span class="p">)</span></div>
+        
+        
+        
+        
+        
+        
+
+<span class="c1">##################################################################</span>
+<span class="c1">#</span>
+<span class="c1">#          Move media files to distributed filesystem</span>
+<span class="c1">#</span>
+<span class="c1">##################################################################</span>
+
+
+
+<div class="viewcode-block" id="copy_files_to_hdfs"><a class="viewcode-back" href="../lib_hadoop_hdfs.html#lib_hadoop_hdfs.copy_files_to_hdfs">[docs]</a><span class="k">def</span> <span class="nf">copy_files_to_hdfs</span><span class="p">(</span><span class="n">replication</span><span class="p">,</span><span class="n">input_files</span><span class="p">,</span><span class="n">data_dir</span><span class="p">,</span><span class="n">data_dir_tmp</span><span class="p">,</span><span class="n">hadoop_dir</span><span class="p">,</span><span class="n">hadoop_conf_dir</span><span class="p">,</span><span class="n">hdfs_data_dir</span><span class="p">,</span>\
+                       <span class="n">packets_per_hdfs_block</span><span class="p">,</span><span class="n">temp_log</span><span class="p">,</span><span class="n">copy_delay</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">checksum_size</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span><span class="n">text_mode</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>\
+                       <span class="n">use_lustre_plugin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">lustre_prefix</span><span class="o">=</span><span class="s2">&quot;/nobackup1/ajva/hadoop&quot;</span><span class="p">,</span><span class="n">bm_avoid_copy</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">):</span>        
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Copy files from local directories to HDFS. It returns the elapsed time for moving the files (including the applied delay).</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     replication : int</span>
+<span class="sd">         Number of copies of the same file block in the HDFS system.</span>
+<span class="sd">     input_files : list of str</span>
+<span class="sd">         names of the files to be moved into HDFS/LustreFS.</span>
+<span class="sd">     data_dir : str</span>
+<span class="sd">         Path (in local filesystem) to the folder hosting the files to be moved into HDFS/LustreFS.</span>
+<span class="sd">     data_dir_tmp : str</span>
+<span class="sd">         Path (in local filesystem) to the folder for copy split input data before being moved into HDFS/LustreFS.</span>
+<span class="sd">     hadoop_dir : str</span>
+<span class="sd">         Hadoop home folder path (local filesystem).</span>
+<span class="sd">     hadoop_conf_dir : str</span>
+<span class="sd">         Hadoop configuration folder path (etc/hadoop).</span>
+<span class="sd">     hdfs_data_dir : str</span>
+<span class="sd">         Path (in HDFS/LustreFS), thus relative to &quot;lustre_prefix&quot;, to host input files.</span>
+<span class="sd">     packets_per_hdfs_block : int</span>
+<span class="sd">         Number of VDIF frames per file split.</span>
+<span class="sd">     temp_log : str</span>
+<span class="sd">         Path to temporary log file.</span>
+<span class="sd">     copy_delay : int</span>
+<span class="sd">         Time [s] to wait after each command sent to Hadoop.</span>
+<span class="sd">     checksum_size : int</span>
+<span class="sd">         Number of bytes for checksum (for each split) [this overrides automatic calculation].</span>
+<span class="sd">     text_mode : int</span>
+<span class="sd">         [default 1] If 1 use checksum_size to override value computed automatically.</span>
+<span class="sd">     use_lustre_plugin : int</span>
+<span class="sd">         If 1 use Lustre filesysm.</span>
+<span class="sd">     lustre_prefix : str</span>
+<span class="sd">         Path in Lustre to preceed &quot;hdfs_data_dir&quot; if using Lustre.</span>
+<span class="sd">     bm_avoid_copy : int</span>
+<span class="sd">        [default 0] If 1 it will not split input files if &quot;lustre_prefix&quot;+&quot;hdfs_data_dir&quot; has already the data</span>
+<span class="sd">                        for the file in &quot;input_files&quot; from a previous execution. See notes below.</span>
+<span class="sd">     v : int</span>
+<span class="sd">         1 for verbose.</span>
+<span class="sd">     file_log : str</span>
+<span class="sd">         Path to log file.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     put_t_s : float</span>
+<span class="sd">         timestamp with start time for loop copying files.</span>
+<span class="sd">     put_t_e : float</span>
+<span class="sd">         timestamp with stop time for loop copying files.</span>
+<span class="sd">     put_d : float</span>
+<span class="sd">         total execution time for loop copying files.</span>
+<span class="sd">    </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    |</span>
+<span class="sd">    | **Summary:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  -Delete existing files in HDFS (to avoid errors on existing files)</span>
+<span class="sd">    |  TODO: consider overwritting files.</span>
+<span class="sd">    |  -Wait for delay if applicable.</span>
+<span class="sd">    |  -Move files to HDFS (with specified block size)</span>
+<span class="sd">    |  2015.12.1. packet_size is read from the first frame of the file.</span>
+<span class="sd">    |</span>
+<span class="sd">    |</span>
+<span class="sd">    | **Notes:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  -Regarding filesystems:</span>
+<span class="sd">    |    HDFS: Path inside Hadoop distributed filesystem (accessible from Hadoop).</span>
+<span class="sd">    |    LustreFS: Path relative to Hadoop Lustre home folder (accessible from Hadoop).</span>
+<span class="sd">    |    Local filesystem: Path accesible from this command, it can be local, NFS, Lustre, etc.</span>
+<span class="sd">    |  </span>
+<span class="sd">    |  -Regarding &quot;bm_avoid_copy&quot;:</span>
+<span class="sd">    |    Always 0 by default.</span>
+<span class="sd">    |    After each execution, for each processed file there will be a folder in &quot;lustre_prefix&quot;+&quot;hdfs_data_dir&quot;+&quot;file_name&quot;+... with</span>
+<span class="sd">    |      the splits for that file. Setting this to 1 will avoid to re-split the file if it was already used previously. Use only </span>
+<span class="sd">    |      for repeated benchmarking.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="c1"># Split file manually into the size of the hdfs blocks</span>
+    <span class="c1"># Use 1 if processing input as text</span>
+    <span class="c1">#split_file_sequentially=0</span>
+    <span class="n">split_file_sequentially</span><span class="o">=</span><span class="n">text_mode</span>
+    
+    
+    
+
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Copying data files to HDFS...&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>   
+        <span class="nb">print</span><span class="p">(</span><span class="n">data_dir</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">input_files</span><span class="p">)</span>
+    
+    <span class="n">safe_status</span> <span class="o">=</span> <span class="s2">&quot;OFF&quot;</span>
+    <span class="k">if</span> <span class="n">use_lustre_plugin</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">hadoop_dir</span> <span class="o">+</span> <span class="s2">&quot;bin/hdfs --config &quot;</span><span class="o">+</span><span class="n">hadoop_conf_dir</span><span class="o">+</span><span class="s2">&quot; dfsadmin -report|grep Safe &gt; &quot;</span> <span class="o">+</span> <span class="n">temp_log</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">temp_log</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f_tmp</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f_tmp</span><span class="p">:</span>
+                <span class="n">safe_status</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+
+    <span class="k">if</span> <span class="n">safe_status</span> <span class="o">==</span> <span class="s2">&quot;OFF&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+            <span class="c1">#print(&quot;  Safe status:     &quot; + safe_status,file=file_log)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  Checking HDFS: OK&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1">#os.system(hadoop_dir+&quot;bin/hdfs dfsadmin -safemode leave&quot;)</span>
+        <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+            <span class="c1">#print(&quot; Forcing out of safe mode...&quot;,file=file_log)  </span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; ERROR!: Namenode is in safe mode!...&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>  
+            <span class="c1"># TODO: Propagate the error...</span>
+
+    <span class="n">dest_dir</span> <span class="o">=</span> <span class="n">hdfs_data_dir</span>
+    
+    
+
+
+    <span class="c1"># Delete all existing files in HDFS and create directory.</span>
+    <span class="k">if</span> <span class="n">use_lustre_plugin</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">hadoop_dir</span><span class="o">+</span><span class="s2">&quot;bin/hdfs --config &quot;</span><span class="o">+</span><span class="n">hadoop_conf_dir</span><span class="o">+</span><span class="s2">&quot; dfs -rm -r -f &quot;</span><span class="o">+</span> <span class="n">dest_dir</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">hadoop_dir</span><span class="o">+</span><span class="s2">&quot;bin/hdfs --config &quot;</span><span class="o">+</span><span class="n">hadoop_conf_dir</span><span class="o">+</span><span class="s2">&quot; dfs -mkdir &quot;</span> <span class="o">+</span> <span class="n">dest_dir</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">bm_avoid_copy</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;rm -r -f &quot;</span><span class="o">+</span><span class="n">lustre_prefix</span><span class="o">+</span> <span class="n">dest_dir</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;mkdir &quot;</span> <span class="o">+</span> <span class="n">lustre_prefix</span> <span class="o">+</span> <span class="n">dest_dir</span><span class="p">)</span>
+    
+    <span class="c1">#if v==1:</span>
+    <span class="c1">#    print(&quot; Forcing out of safe mode...&quot;,file=file_log)  </span>
+    <span class="c1">#os.system(hadoop_dir+&quot;bin/hdfs dfsadmin -safemode leave&quot;)</span>
+    
+    
+    <span class="k">if</span> <span class="n">copy_delay</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Waiting for HDFS interaction (&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">copy_delay</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; s)...&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span> 
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">copy_delay</span><span class="p">)</span>
+    
+    
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Will wait for &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">input_files</span><span class="p">))</span> <span class="o">+</span> <span class="s2">&quot; HDFS interaction(s) (&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">copy_delay</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; s)...&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span> 
+    
+    
+    
+    
+    <span class="k">if</span> <span class="n">split_file_sequentially</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+        <span class="n">put_t_s</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">input_files</span><span class="p">:</span>
+            <span class="n">vdif_stats</span><span class="o">=</span><span class="n">get_vdif_stats</span><span class="p">(</span><span class="n">data_dir</span><span class="o">+</span><span class="n">filename</span><span class="p">,</span><span class="n">packet_limit</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">offset_bytes</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">only_offset_once</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">packet_size</span><span class="o">=</span><span class="n">vdif_stats</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+        
+            <span class="c1">#blocksize = min(packet_size*packets_per_hdfs_block,os.path.getsize(data_dir+filename))</span>
+            <span class="n">blocksize</span> <span class="o">=</span> <span class="n">packet_size</span><span class="o">*</span><span class="n">packets_per_hdfs_block</span>
+            
+            <span class="n">command_hdfs</span><span class="o">=</span><span class="n">hadoop_dir</span> <span class="o">+</span> <span class="s2">&quot;bin/hdfs --config &quot;</span><span class="o">+</span><span class="n">hadoop_conf_dir</span><span class="o">+</span><span class="s2">&quot; dfs&quot;</span><span class="o">+</span>\
+                      <span class="s2">&quot; -D &quot;</span><span class="o">+</span><span class="n">C_H_HDFS_CHECKSUM</span><span class="o">+</span>    <span class="s2">&quot;=&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">checksum_size</span><span class="p">)</span><span class="o">+</span>\
+                      <span class="s2">&quot; -D &quot;</span><span class="o">+</span><span class="n">C_H_HDFS_BLOCKSIZE</span><span class="o">+</span>   <span class="s2">&quot;=&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">blocksize</span><span class="p">)</span><span class="o">+</span>\
+                      <span class="s2">&quot; -D &quot;</span><span class="o">+</span><span class="n">C_H_HDFS_REPLICATION</span><span class="o">+</span> <span class="s2">&quot;=&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">replication</span><span class="p">)</span><span class="o">+</span>\
+                      <span class="s2">&quot; -put -f &quot;</span> <span class="o">+</span> <span class="n">data_dir</span> <span class="o">+</span> <span class="n">filename</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">dest_dir</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">command_hdfs</span><span class="p">)</span>  
+            <span class="k">if</span> <span class="n">copy_delay</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">copy_delay</span><span class="p">)</span>
+        <span class="n">put_t_e</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">put_t_s</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">input_files</span><span class="p">:</span>
+            <span class="n">vdif_stats</span><span class="o">=</span><span class="n">get_vdif_stats</span><span class="p">(</span><span class="n">data_dir</span><span class="o">+</span><span class="n">filename</span><span class="p">,</span><span class="n">packet_limit</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">offset_bytes</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">only_offset_once</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">packet_size</span><span class="o">=</span><span class="n">vdif_stats</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+            <span class="n">checksum_size</span><span class="o">=</span><span class="n">packets_per_hdfs_block</span>
+    
+
+            <span class="n">blocksize</span> <span class="o">=</span> <span class="n">packet_size</span><span class="o">*</span><span class="n">packets_per_hdfs_block</span>
+            <span class="n">suffix_size</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getsize</span><span class="p">(</span><span class="n">data_dir</span><span class="o">+</span><span class="n">filename</span><span class="p">)</span><span class="o">//</span><span class="n">blocksize</span><span class="p">)))</span>     
+            <span class="n">command_hdfs</span><span class="o">=</span><span class="s2">&quot;No command executed&quot;</span>
+            <span class="n">send_tmp_folder</span> <span class="o">=</span> <span class="n">data_dir_tmp</span><span class="o">+</span><span class="n">filename</span><span class="o">+</span><span class="s2">&quot;_tmp_folder&quot;</span>
+
+            <span class="n">test_file_exists</span> <span class="o">=</span> <span class="n">lustre_prefix</span> <span class="o">+</span> <span class="n">dest_dir</span><span class="o">+</span><span class="s2">&quot;/0&quot;</span><span class="o">+</span><span class="s2">&quot;/&quot;</span><span class="o">+</span><span class="n">filename</span>
+            <span class="k">if</span> <span class="n">bm_avoid_copy</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">test_file_exists</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;(!!) Avoiding copy of file &quot;</span><span class="o">+</span><span class="n">filename</span><span class="o">+</span><span class="s2">&quot;, already found in &quot;</span><span class="o">+</span><span class="n">lustre_prefix</span> <span class="o">+</span> <span class="n">dest_dir</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+                    <span class="k">continue</span>
+                
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;rm -r &quot;</span><span class="o">+</span><span class="n">send_tmp_folder</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;mkdir -p &quot;</span><span class="o">+</span><span class="n">send_tmp_folder</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;split --bytes=&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">blocksize</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot; -d -a &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">suffix_size</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span><span class="n">data_dir</span><span class="o">+</span><span class="n">filename</span><span class="o">+</span><span class="s2">&quot; &quot;</span><span class="o">+</span><span class="n">send_tmp_folder</span><span class="o">+</span><span class="s2">&quot;/tmp_&quot;</span><span class="p">)</span>
+            
+            <span class="n">files_to_process</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">send_tmp_folder</span><span class="p">)</span>
+            <span class="n">num_iters</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">files_to_process</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Sending &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">num_iters</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot; block(s):&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span> 
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">+</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">files_to_process</span><span class="p">),</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span> 
+            
+
+            <span class="n">iteri</span><span class="o">=-</span><span class="mi">1</span>
+            
+            <span class="n">check_value</span><span class="o">=</span><span class="mi">0</span>
+            <span class="k">for</span> <span class="n">fi</span> <span class="ow">in</span> <span class="n">files_to_process</span><span class="p">:</span>
+                <span class="n">iteri</span><span class="o">+=</span><span class="mi">1</span>
+                
+                <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="n">iteri</span><span class="o">/</span><span class="n">num_iters</span><span class="p">)</span><span class="o">&gt;</span><span class="p">(</span><span class="n">check_value</span><span class="o">/</span><span class="mi">100</span><span class="p">):</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">check_value</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;%&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span> 
+                        <span class="n">check_value</span><span class="o">+=</span><span class="mi">10</span>
+                
+
+                <span class="k">if</span> <span class="n">use_lustre_plugin</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">hadoop_dir</span> <span class="o">+</span> <span class="s2">&quot;bin/hdfs --config &quot;</span><span class="o">+</span><span class="n">hadoop_conf_dir</span><span class="o">+</span><span class="s2">&quot; dfs -mkdir -p &quot;</span> <span class="o">+</span> <span class="n">dest_dir</span><span class="o">+</span><span class="s2">&quot;/&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">iteri</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">hadoop_dir</span> <span class="o">+</span> <span class="s2">&quot;bin/hdfs --config &quot;</span><span class="o">+</span><span class="n">hadoop_conf_dir</span><span class="o">+</span><span class="s2">&quot; dfs -ls &quot;</span> <span class="o">+</span> <span class="n">dest_dir</span> <span class="o">+</span> <span class="s2">&quot; &gt;&gt; &quot;</span> <span class="o">+</span> <span class="n">temp_log</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;mkdir &quot;</span><span class="o">+</span><span class="n">lustre_prefix</span><span class="o">+</span><span class="n">dest_dir</span><span class="o">+</span><span class="s2">&quot;/&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">iteri</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;/&quot;</span><span class="o">+</span><span class="s2">&quot; &amp;&gt; /dev/null&quot;</span><span class="p">)</span>
+                    
+                
+                <span class="k">if</span> <span class="n">use_lustre_plugin</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+                    <span class="n">command_hdfs</span><span class="o">=</span><span class="n">hadoop_dir</span> <span class="o">+</span> <span class="s2">&quot;bin/hdfs --config &quot;</span><span class="o">+</span><span class="n">hadoop_conf_dir</span><span class="o">+</span><span class="s2">&quot; dfs&quot;</span><span class="o">+</span>\
+                         <span class="s2">&quot; -D &quot;</span><span class="o">+</span><span class="n">C_H_HDFS_CHECKSUM</span><span class="o">+</span>    <span class="s2">&quot;=&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">checksum_size</span><span class="p">)</span><span class="o">+</span>\
+                         <span class="s2">&quot; -D &quot;</span><span class="o">+</span><span class="n">C_H_HDFS_BLOCKSIZE</span><span class="o">+</span>   <span class="s2">&quot;=&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">blocksize</span><span class="p">)</span><span class="o">+</span>\
+                         <span class="s2">&quot; -D &quot;</span><span class="o">+</span><span class="n">C_H_HDFS_REPLICATION</span><span class="o">+</span> <span class="s2">&quot;=&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">replication</span><span class="p">)</span><span class="o">+</span>\
+                         <span class="s2">&quot; -put -f &quot;</span> <span class="o">+</span> <span class="n">send_tmp_folder</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">fi</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">dest_dir</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">iteri</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;/&quot;</span><span class="o">+</span><span class="n">filename</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">command_hdfs</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">command_hdfs</span><span class="o">=</span><span class="s2">&quot;mv &quot;</span><span class="o">+</span> <span class="n">send_tmp_folder</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">fi</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span><span class="o">+</span> <span class="n">lustre_prefix</span> <span class="o">+</span> <span class="n">dest_dir</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">iteri</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;/&quot;</span><span class="o">+</span><span class="n">filename</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">command_hdfs</span><span class="p">)</span>
+                    
+                    
+                
+            <span class="k">if</span> <span class="n">copy_delay</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">copy_delay</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;rm -r &quot;</span><span class="o">+</span><span class="n">send_tmp_folder</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;100%, deleting temp files&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span> 
+        <span class="n">put_t_e</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">put_d</span> <span class="o">=</span> <span class="n">put_t_e</span> <span class="o">-</span> <span class="n">put_t_s</span>
+    
+    <span class="k">if</span> <span class="n">use_lustre_plugin</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">hadoop_dir</span> <span class="o">+</span> <span class="s2">&quot;bin/hdfs --config &quot;</span><span class="o">+</span><span class="n">hadoop_conf_dir</span><span class="o">+</span><span class="s2">&quot; dfs -ls &quot;</span> <span class="o">+</span> <span class="n">dest_dir</span> <span class="o">+</span> <span class="s2">&quot; &gt;&gt; &quot;</span> <span class="o">+</span> <span class="n">temp_log</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">copy_delay</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Last command: &quot;</span><span class="o">+</span><span class="n">command_hdfs</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Waiting for HDFS interaction (&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">copy_delay</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; s)...&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span> 
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">copy_delay</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;cd &quot;</span> <span class="o">+</span> <span class="n">hadoop_dir</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">use_lustre_plugin</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">hadoop_dir</span> <span class="o">+</span> <span class="s2">&quot;bin/hdfs --config &quot;</span><span class="o">+</span><span class="n">hadoop_conf_dir</span><span class="o">+</span><span class="s2">&quot; fsck &quot;</span> <span class="o">+</span> <span class="n">dest_dir</span> <span class="o">+</span> <span class="s2">&quot; -files -blocks &gt;&gt; &quot;</span> <span class="o">+</span> <span class="n">temp_log</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">copy_delay</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Waiting for HDFS interaction (&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">copy_delay</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; s)...&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>   
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">copy_delay</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">temp_log</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f_tmp</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f_tmp</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  &quot;</span><span class="o">+</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+    
+    
+    <span class="k">return</span><span class="p">([</span><span class="n">put_t_s</span><span class="p">,</span><span class="n">put_t_e</span><span class="p">,</span><span class="n">put_d</span><span class="p">])</span></div>
+
+
+
+
+<span class="c1">##################################################################</span>
+<span class="c1">#</span>
+<span class="c1">#              Hadoop master and slaves files</span>
+<span class="c1">#</span>
+<span class="c1">##################################################################</span>
+
+
+
+<div class="viewcode-block" id="nodes_to_slaves_masters"><a class="viewcode-back" href="../lib_hadoop_hdfs.html#lib_hadoop_hdfs.nodes_to_slaves_masters">[docs]</a><span class="k">def</span> <span class="nf">nodes_to_slaves_masters</span><span class="p">(</span><span class="n">conf_dir</span><span class="p">,</span><span class="n">hadoop_conf_dir</span><span class="p">,</span><span class="n">file_nodes</span><span class="p">,</span><span class="n">file_slaves</span><span class="p">,</span><span class="n">file_masters</span><span class="p">,</span><span class="n">max_slaves</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">master_is_slave</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert list of nodes (obtained by slurm or by local script) into hadoop slaves file.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     conf_dir</span>
+<span class="sd">         path to folder where master and slaves files are copied to.</span>
+<span class="sd">     hadoop_conf_dir</span>
+<span class="sd">         path to folder where masters and slaves files are created.</span>
+<span class="sd">     file_nodes</span>
+<span class="sd">         filename for file with all nodes in the allocation (master+slaves), one node per line.</span>
+<span class="sd">     file_slaves</span>
+<span class="sd">         filename for Hadoop slave nodes file.</span>
+<span class="sd">     file_masters</span>
+<span class="sd">         filename for Hadoop master node file.</span>
+<span class="sd">     max_slaves</span>
+<span class="sd">         maximum number of slave nodes.</span>
+<span class="sd">     master_is_slave</span>
+<span class="sd">         if 1 include master node in list of slave nodes.</span>
+<span class="sd">     v</span>
+<span class="sd">         verbose if 1.</span>
+<span class="sd">     file_log</span>
+<span class="sd">         handler for log file.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     N/A</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    |</span>
+<span class="sd">    | **TO DO:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  Remove hadoop_conf_dir (check correct folder).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">max_slaves</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">:</span>
+        <span class="n">max_slaves</span><span class="o">=</span><span class="mi">1</span>
+
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Creating slaves files...&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>   
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Slaves:&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+
+        <span class="n">i</span><span class="o">=</span><span class="mi">0</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">conf_dir</span> <span class="o">+</span> <span class="n">file_nodes</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f_nodes</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">hadoop_conf_dir</span> <span class="o">+</span> <span class="n">file_slaves</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f_slaves</span><span class="p">:</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">hadoop_conf_dir</span> <span class="o">+</span> <span class="n">file_masters</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f_masters</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="mi">0</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span> <span class="c1">#max_slaves==1:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;localhost&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">f_slaves</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;localhost&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">f_slaves</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  Forcing slaves files to show only localhost&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f_nodes</span><span class="p">:</span>
+                            <span class="n">i</span><span class="o">+=</span><span class="mi">1</span>
+                            <span class="k">if</span> <span class="n">i</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                                <span class="nb">print</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span><span class="n">file</span><span class="o">=</span><span class="n">f_masters</span><span class="p">)</span>
+                                <span class="k">if</span> <span class="n">master_is_slave</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                                    <span class="nb">print</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span><span class="n">file</span><span class="o">=</span><span class="n">f_slaves</span><span class="p">)</span>
+                            <span class="k">elif</span> <span class="n">i</span><span class="o">&lt;=</span><span class="n">max_slaves</span><span class="p">:</span>
+                                <span class="nb">print</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span><span class="n">file</span><span class="o">=</span><span class="n">f_slaves</span><span class="p">)</span>
+                                <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  &quot;</span><span class="o">+</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+
+        
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;cp &quot;</span> <span class="o">+</span> <span class="n">hadoop_conf_dir</span> <span class="o">+</span> <span class="n">file_slaves</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">conf_dir</span> <span class="o">+</span> <span class="n">file_slaves</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;cp &quot;</span> <span class="o">+</span> <span class="n">hadoop_conf_dir</span> <span class="o">+</span> <span class="n">file_masters</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">conf_dir</span> <span class="o">+</span> <span class="n">file_masters</span><span class="p">)</span></div>
+
+
+
+
+<span class="c1">##################################################################</span>
+<span class="c1">#</span>
+<span class="c1">#       Hadoop configuration files (Update configuration)</span>
+<span class="c1">#</span>
+<span class="c1">##################################################################</span>
+
+
+
+
+
+<div class="viewcode-block" id="update_hcparam"><a class="viewcode-back" href="../lib_hadoop_hdfs.html#lib_hadoop_hdfs.update_hcparam">[docs]</a><span class="k">def</span> <span class="nf">update_hcparam</span><span class="p">(</span><span class="n">source_file</span><span class="p">,</span><span class="n">destination_file</span><span class="p">,</span><span class="n">pairs</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Update parameter for hadoop configuration file.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     source_file</span>
+<span class="sd">         Template for Hadoop xml configuration file.</span>
+<span class="sd">     destination_file</span>
+<span class="sd">         Final Hadoop xml configuration file (template with mods applied).</span>
+<span class="sd">     pairs</span>
+<span class="sd">         list of pairs [parameter, value]. See notes below.</span>
+<span class="sd">     v</span>
+<span class="sd">         verbose if 1.</span>
+<span class="sd">     file_log</span>
+<span class="sd">         handler for log file.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     N/A</span>
+<span class="sd">    </span>
+<span class="sd">    Notes</span>
+<span class="sd">    ------</span>
+<span class="sd">    | If the parameter already exists in the file, its value is overriden.</span>
+<span class="sd">    | If the parameter does not exist, it is added following the required format (Hadoop xml).</span>
+<span class="sd">    | That is, given a list of pairs [PARAMETER,VALUE]</span>
+<span class="sd">    | </span>
+<span class="sd">    | &lt;configuration&gt;</span>
+<span class="sd">    |     &lt;property&gt;</span>
+<span class="sd">    |             &lt;name&gt;PARAMETER&lt;/name&gt;</span>
+<span class="sd">    |             &lt;value&gt;VALUE&lt;/value&gt;</span>
+<span class="sd">    |     &lt;/property&gt;</span>
+<span class="sd">    | ...</span>
+<span class="sd">    | &lt;/configuration&gt;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">isamec</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">copy_again</span><span class="o">=</span><span class="mi">0</span>
+    <span class="n">input_destination_file</span><span class="o">=</span><span class="n">destination_file</span>
+    <span class="k">if</span> <span class="n">source_file</span><span class="o">==</span><span class="n">destination_file</span><span class="p">:</span>
+        <span class="n">copy_again</span><span class="o">=</span><span class="mi">1</span>
+        <span class="n">destination_file</span><span class="o">+=</span><span class="s2">&quot;.tmp&quot;</span>
+        <span class="n">isamec</span> <span class="o">=</span> <span class="s2">&quot; mv &quot;</span> <span class="o">+</span> <span class="n">destination_file</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">source_file</span>
+        
+
+    <span class="n">command</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">iteration</span><span class="o">=</span><span class="mi">0</span>
+    <span class="n">updated_params</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">pairs</span><span class="p">:</span>
+        <span class="n">iteration</span><span class="o">+=</span><span class="mi">1</span>
+        <span class="k">if</span> <span class="n">iteration</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">command</span><span class="o">+=</span><span class="s2">&quot;sed -e &#39;/&quot;</span> <span class="o">+</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;/I!b;n;c</span><span class="se">\\\\</span><span class="s2">t</span><span class="se">\\</span><span class="s2">t&lt;value&gt;&quot;</span> <span class="o">+</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;&lt;/value&gt;&#39; &quot;</span><span class="o">+</span><span class="n">source_file</span>
+        <span class="k">if</span> <span class="n">iteration</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+            <span class="n">command</span><span class="o">+=</span><span class="s2">&quot;|sed -e &#39;/&quot;</span> <span class="o">+</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;/I!b;n;c</span><span class="se">\\\\</span><span class="s2">t</span><span class="se">\\</span><span class="s2">t&lt;value&gt;&quot;</span> <span class="o">+</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;&lt;/value&gt;&#39; &quot;</span>
+    <span class="n">command</span><span class="o">+=</span> <span class="s2">&quot;&gt; &quot;</span> <span class="o">+</span> <span class="n">destination_file</span> 
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">copy_again</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">isamec</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">pairs</span><span class="p">:</span> <span class="c1">#[1:]:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  &quot;</span> <span class="o">+</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">49</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span> 
+            
+    <span class="c1"># Now check if any parameter was not found, and thus was not updated</span>
+    <span class="c1"># Checks lowercase!</span>
+    <span class="n">add_params</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">source_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">pairs</span><span class="p">:</span>
+            <span class="n">count</span><span class="o">=</span><span class="mi">1</span>
+            <span class="k">if</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">lines</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                <span class="n">updated_params</span><span class="o">+=</span><span class="p">[</span><span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+                <span class="n">count</span><span class="o">=</span><span class="mi">0</span>
+            <span class="k">if</span> <span class="n">count</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  (!) Parameter not found: &quot;</span> <span class="o">+</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">49</span><span class="p">),</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span> 
+                    <span class="k">if</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">updated_params</span><span class="p">:</span>
+                        <span class="n">add_params</span><span class="o">+=</span><span class="p">[[</span><span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]]]</span>
+     
+
+        
+    <span class="k">if</span> <span class="n">add_params</span><span class="o">!=</span><span class="p">[]</span> <span class="ow">and</span> <span class="s2">&quot;.xml&quot;</span> <span class="ow">in</span> <span class="n">source_file</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">input_destination_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">lines_content</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">input_destination_file</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines_content</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="c1">#if &quot;&lt;/configuration&gt;&quot; not in line:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">line</span><span class="p">,</span><span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">f</span><span class="p">)</span> 
+                <span class="c1">#else:</span>
+            <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">add_params</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;        &lt;property&gt;&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">f</span><span class="p">)</span> 
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;                &lt;name&gt;&quot;</span><span class="o">+</span><span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s2">&quot;&lt;/name&gt;&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">f</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;                &lt;value&gt;&quot;</span><span class="o">+</span><span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="s2">&quot;&lt;/value&gt;&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">f</span><span class="p">)</span> 
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;        &lt;/property&gt;&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">f</span><span class="p">)</span> 
+                     
+                <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  (!) Added parameter: &quot;</span> <span class="o">+</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">49</span><span class="p">)</span><span class="o">+</span> <span class="s2">&quot; = &quot;</span><span class="o">+</span><span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span> 
+                    
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&lt;/configuration&gt;&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">f</span><span class="p">)</span> </div>
+    
+
+<div class="viewcode-block" id="process_hcfile"><a class="viewcode-back" href="../lib_hadoop_hdfs.html#lib_hadoop_hdfs.process_hcfile">[docs]</a><span class="k">def</span> <span class="nf">process_hcfile</span><span class="p">(</span><span class="n">pairs</span><span class="p">,</span><span class="n">conf_dir</span><span class="p">,</span><span class="n">templates_dir</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Process hadoop configuration file.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     pairs</span>
+<span class="sd">         list (by file) of lists (param,value) for overriding Hadoop configuration files.</span>
+<span class="sd">     conf_dir</span>
+<span class="sd">         path to folder for placing modified Hadoop configuration files.</span>
+<span class="sd">     templates_dir</span>
+<span class="sd">         path to folder with templates for Hadoop configuration files.</span>
+<span class="sd">     v</span>
+<span class="sd">         verbose if 1.</span>
+<span class="sd">     file_log</span>
+<span class="sd">         handler for log file.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     processed_filename</span>
+<span class="sd">         filename of the processed file.</span>
+<span class="sd">    </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    |</span>
+<span class="sd">    | **TO DO**</span>
+<span class="sd">    |</span>
+<span class="sd">    | Currently assuming that the filename is the first value in the list (i.e. [0][1]),</span>
+<span class="sd">    |   need to use C_CONF_H_ALL_CONFIG_FILE instead</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">pairs</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Processing &quot;</span> <span class="o">+</span> <span class="n">pairs</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;...&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>   
+
+    <span class="n">source_file</span> <span class="o">=</span> <span class="n">templates_dir</span><span class="o">+</span><span class="n">pairs</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">destination_file</span> <span class="o">=</span> <span class="n">conf_dir</span><span class="o">+</span><span class="n">pairs</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+    
+
+    <span class="n">update_hcparam</span><span class="p">(</span><span class="n">source_file</span><span class="o">=</span><span class="n">source_file</span><span class="p">,</span><span class="n">destination_file</span><span class="o">=</span><span class="n">destination_file</span><span class="p">,</span><span class="n">pairs</span><span class="o">=</span><span class="n">pairs</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span><span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span> 
+    <span class="n">processed_filename</span> <span class="o">=</span> <span class="n">pairs</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">return</span><span class="p">(</span><span class="n">processed_filename</span><span class="p">)</span></div>
+
+
+
+
+<div class="viewcode-block" id="process_hadoop_config_files"><a class="viewcode-back" href="../lib_hadoop_hdfs.html#lib_hadoop_hdfs.process_hadoop_config_files">[docs]</a><span class="k">def</span> <span class="nf">process_hadoop_config_files</span><span class="p">(</span><span class="n">list_configurations</span><span class="p">,</span><span class="n">pairs_config</span><span class="p">,</span><span class="n">templates_dir</span><span class="p">,</span><span class="n">conf_dir</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Process a set of Hadoop configuration files (core-site.xml, etc).</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     list_configurations</span>
+<span class="sd">         list of headers in configuration file associated to &quot;pairs_config&quot; below.</span>
+<span class="sd">     pairs_config</span>
+<span class="sd">         list of lists of pairs [[(param0,value0),(param1,value1),...]] to update xml files.</span>
+<span class="sd">     templates_dir</span>
+<span class="sd">         path to folder with Hadoop .xml file templates.</span>
+<span class="sd">     v</span>
+<span class="sd">         verbose if 1.</span>
+<span class="sd">     file_log</span>
+<span class="sd">         handler for log file.</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     configuration_files</span>
+<span class="sd">         list of str with filenames of processed configuration files.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Processing Hadoop configuration files...&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>  
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Reading from: &quot;</span> <span class="o">+</span> <span class="n">templates_dir</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>  
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Writing to: &quot;</span> <span class="o">+</span> <span class="n">conf_dir</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span> 
+    
+    <span class="n">configuration_files</span><span class="o">=</span><span class="p">[]</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="n">configuration</span><span class="p">,</span><span class="n">pair_config</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">list_configurations</span><span class="p">,</span><span class="n">pairs_config</span><span class="p">):</span>
+        <span class="n">processed_file</span> <span class="o">=</span> <span class="n">process_hcfile</span><span class="p">(</span><span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">file_log</span><span class="p">,</span><span class="n">pairs</span><span class="o">=</span><span class="n">pair_config</span><span class="p">,</span><span class="n">conf_dir</span><span class="o">=</span><span class="n">conf_dir</span><span class="p">,</span><span class="n">templates_dir</span><span class="o">=</span><span class="n">templates_dir</span><span class="p">)</span>
+        <span class="n">configuration_files</span><span class="o">+=</span><span class="p">[</span><span class="n">processed_file</span><span class="p">]</span>
+    
+
+    <span class="k">return</span><span class="p">(</span><span class="n">configuration_files</span><span class="p">)</span></div>
+
+
+
+
+
+
+
+
+<span class="c1">##################################################################</span>
+<span class="c1">#</span>
+<span class="c1">#    Hadoop application and configuration files distribution</span>
+<span class="c1">#</span>
+<span class="c1">##################################################################</span>
+
+
+<div class="viewcode-block" id="fix_file_header"><a class="viewcode-back" href="../lib_hadoop_hdfs.html#lib_hadoop_hdfs.fix_file_header">[docs]</a><span class="k">def</span> <span class="nf">fix_file_header</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s2">&quot;x.py&quot;</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">    Remove the first line which the iPython notebook adds to the .py files, since</span>
+<span class="sd">             files that do not begin with #!/usr/bin/env python may raise errors in hadoop.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     filename</span>
+<span class="sd">         path to python script.</span>
+<span class="sd">            </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     N/A</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">string_test</span><span class="o">=</span><span class="s2">&quot;python&quot;</span>
+    <span class="n">string_result</span><span class="o">=</span><span class="s2">&quot;\#\!\/usr\/bin\/python&quot;</span>
+    <span class="n">command</span><span class="o">=</span><span class="s2">&quot;sed -i -e &#39;s/^.*&quot;</span> <span class="o">+</span> <span class="n">string_test</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">string_result</span> <span class="o">+</span> <span class="s2">&quot;/&#39; &quot;</span> <span class="o">+</span> <span class="n">filename</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
+    <span class="n">command</span><span class="o">=</span><span class="s2">&quot;sed -i -n &#39;/python/,$p&#39; &quot;</span> <span class="o">+</span> <span class="n">filename</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">command</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="distribute_files"><a class="viewcode-back" href="../lib_hadoop_hdfs.html#lib_hadoop_hdfs.distribute_files">[docs]</a><span class="k">def</span> <span class="nf">distribute_files</span><span class="p">(</span><span class="n">simply_copy_local</span><span class="p">,</span><span class="n">file_group</span><span class="p">,</span><span class="n">files</span><span class="p">,</span><span class="n">source_dir</span><span class="p">,</span><span class="n">conf_dir</span><span class="p">,</span><span class="n">destination_dir</span><span class="p">,</span>\
+            <span class="n">nodes</span><span class="p">,</span><span class="n">temp_log</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">exec_permission</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;hduser&quot;</span><span class="p">,</span><span class="n">force_node</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Copy configuration and application files to nodes.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     simply_copy_local : int</span>
+<span class="sd">         | If 1 it will only copy app and config files to the specified folder for the current machine.</span>
+<span class="sd">         | If 0, it will distribute the app and config files to the rest of the nodes via ssh.</span>
+<span class="sd">     file_group : str</span>
+<span class="sd">         identifier for this batch of files, only for reporting.</span>
+<span class="sd">     source_dir</span>
+<span class="sd">         path to folder with the files that will be distributed.</span>
+<span class="sd">     files</span>
+<span class="sd">         list of files (relative to the &quot;source_dir&quot; folder&quot;).</span>
+<span class="sd">     destination_dir</span>
+<span class="sd">         path to destination folder in the remote machines (thise in &quot;nodes&quot;).</span>
+<span class="sd">     conf_dir</span>
+<span class="sd">         path to folder that includes the file &quot;nodes&quot;.</span>
+<span class="sd">     nodes</span>
+<span class="sd">         filename (relative to &quot;conf_dir&quot;) with one machine per line.</span>
+<span class="sd">     temp_log</span>
+<span class="sd">         handler for intermediate file (buffer) for system calls.</span>
+<span class="sd">     v</span>
+<span class="sd">         verbose if 1.</span>
+<span class="sd">     exec_permission</span>
+<span class="sd">         if 1 it will give execution permissions to the distributed files.</span>
+<span class="sd">     file_log</span>
+<span class="sd">         handler for log file.</span>
+<span class="sd">     username : str</span>
+<span class="sd">         user name (to be used to login into slave nodes through ssh).</span>
+<span class="sd">     force_node : str</span>
+<span class="sd">         if not &quot;&quot;, it will only send the files to this node (&quot;force_node&quot;).</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     0</span>
+<span class="sd">    </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    |</span>
+<span class="sd">    | **TO DO:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  (!) It will delete ipython-notebook lines. Need to add this as an option, or add another configuration option for third-party sources.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1">#show_errors=&quot;&quot;</span>
+    <span class="n">show_errors</span><span class="o">=</span><span class="s2">&quot; 2&gt;&gt; &quot;</span> <span class="o">+</span> <span class="n">temp_log</span>
+    
+    <span class="n">count_nodes</span><span class="o">=</span><span class="mi">0</span>
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Copying &quot;</span> <span class="o">+</span> <span class="n">file_group</span> <span class="o">+</span> <span class="s2">&quot; files to nodes...&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>   
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Nodes:&quot;</span><span class="p">,</span><span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">conf_dir</span> <span class="o">+</span> <span class="n">nodes</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f_nodes</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f_nodes</span><span class="p">:</span>
+                <span class="n">count_nodes</span><span class="o">+=</span><span class="mi">1</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t\t\t</span><span class="s2">&quot;</span><span class="o">+</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Username: </span><span class="se">\t\t</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">username</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">file_group</span> <span class="o">+</span> <span class="s2">&quot; source dir: </span><span class="se">\t</span><span class="s2">&quot;</span><span class="o">+</span><span class="n">source_dir</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">file_group</span> <span class="o">+</span> <span class="s2">&quot; files: </span><span class="se">\t\t</span><span class="s2">&quot;</span><span class="o">+</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">files</span><span class="p">),</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>  
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">file_group</span> <span class="o">+</span> <span class="s2">&quot; destination dir: </span><span class="se">\t</span><span class="s2">&quot;</span><span class="o">+</span><span class="n">destination_dir</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+
+
+    <span class="n">fixed_headers</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+        
+        <span class="c1">#Remove ipython-notebook lines from source files (.py)</span>
+        <span class="n">filename</span><span class="o">=</span><span class="p">(</span><span class="n">source_dir</span> <span class="o">+</span> <span class="n">f</span><span class="p">)</span>
+        <span class="c1">#Only for third party dependencies, need to add this intoa new line in config file.</span>
+        <span class="c1">#TO DO: Quick fix for third party library (hardcoded). Add option for third party dependencies.</span>
+        <span class="c1">#if (filename[-3:]==&quot;.py&quot;)and(&quot;six&quot; not in filename):</span>
+        <span class="k">if</span> <span class="n">filename</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">:]</span><span class="o">==</span><span class="s2">&quot;.py&quot;</span><span class="p">:</span>
+            <span class="n">fixed_headers</span><span class="o">+=</span><span class="mi">1</span>
+            <span class="n">fix_file_header</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">simply_copy_local</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;mkdir -p &quot;</span> <span class="o">+</span> <span class="n">destination_dir</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;cp &quot;</span> <span class="o">+</span> <span class="n">source_dir</span> <span class="o">+</span> <span class="n">f</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">destination_dir</span> <span class="o">+</span> <span class="n">show_errors</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1">#os.system(&quot;pdsh -d -R ssh -l &quot; + username + &quot; -w ^&quot; + conf_dir + nodes + &quot; mkdir -p &quot; + destination_dir + &quot; 2&gt;&gt; &quot; + temp_log)</span>
+            <span class="c1">#os.system(&quot;pdcp -d -R ssh -l &quot; + username + &quot; -w ^&quot; + conf_dir + nodes + &quot; &quot; + source_dir + f + &quot; &quot; + destination_dir + &quot; 2&gt; &quot; + temp_log)</span>
+            <span class="k">if</span> <span class="n">force_node</span><span class="o">==</span><span class="s2">&quot;&quot;</span><span class="p">:</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;pdsh -d -R ssh -l &quot;</span> <span class="o">+</span> <span class="n">username</span> <span class="o">+</span> <span class="s2">&quot; -w `cat&quot;</span> <span class="o">+</span> <span class="n">conf_dir</span> <span class="o">+</span> <span class="n">nodes</span> <span class="o">+</span> \
+                          <span class="s2">&quot;|tr &#39;</span><span class="se">\n</span><span class="s2">&#39; &#39;,&#39;|rev|cut -c2-|rev` mkdir -p &quot;</span> <span class="o">+</span> <span class="n">destination_dir</span> <span class="o">+</span> <span class="n">show_errors</span><span class="p">)</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;pdcp -d -R ssh -l &quot;</span> <span class="o">+</span> <span class="n">username</span> <span class="o">+</span> <span class="s2">&quot; -w `cat&quot;</span> <span class="o">+</span> <span class="n">conf_dir</span> <span class="o">+</span> <span class="n">nodes</span> <span class="o">+</span> \
+                          <span class="s2">&quot;|tr &#39;</span><span class="se">\n</span><span class="s2">&#39; &#39;,&#39;|rev|cut -c2-|rev` &quot;</span> <span class="o">+</span> <span class="n">source_dir</span> <span class="o">+</span> <span class="n">f</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">destination_dir</span> <span class="o">+</span> <span class="n">show_errors</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;pdsh -d -R ssh -l &quot;</span> <span class="o">+</span> <span class="n">username</span> <span class="o">+</span> <span class="s2">&quot; -w &quot;</span> <span class="o">+</span> <span class="n">force_node</span> <span class="o">+</span> <span class="s2">&quot; mkdir -p &quot;</span> <span class="o">+</span> <span class="n">destination_dir</span> <span class="o">+</span> <span class="n">show_errors</span><span class="p">)</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;pdcp -d -R ssh -l &quot;</span> <span class="o">+</span> <span class="n">username</span> <span class="o">+</span> <span class="s2">&quot; -w &quot;</span> <span class="o">+</span> <span class="n">force_node</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">source_dir</span> <span class="o">+</span> <span class="n">f</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">destination_dir</span> <span class="o">+</span> <span class="n">show_errors</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">exec_permission</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">simply_copy_local</span><span class="p">:</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;chmod a+x &quot;</span> <span class="o">+</span> <span class="n">destination_dir</span> <span class="o">+</span> <span class="n">f</span> <span class="o">+</span> <span class="n">show_errors</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;pdsh -d -R ssh -l &quot;</span> <span class="o">+</span> <span class="n">username</span> <span class="o">+</span> <span class="s2">&quot; -w ^&quot;</span> <span class="o">+</span> <span class="n">conf_dir</span> <span class="o">+</span> <span class="n">nodes</span> <span class="o">+</span> <span class="s2">&quot; chmod a+x &quot;</span> <span class="o">+</span> <span class="n">destination_dir</span> <span class="o">+</span> <span class="n">f</span> <span class="o">+</span> <span class="n">show_errors</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">temp_log</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f_tmp</span><span class="p">:</span>
+                <span class="n">lines</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">f_tmp</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+                <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="s2">&quot;Failures&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  &quot;</span><span class="o">+</span><span class="n">f</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">24</span><span class="p">)</span><span class="o">+</span> <span class="s2">&quot; -&gt; &quot;</span> <span class="p">,</span><span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">+</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span><span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; for &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">count_nodes</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot; nodes.&quot;</span><span class="p">,</span><span class="n">end</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Fixed .py files: </span><span class="se">\t</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">fixed_headers</span><span class="p">),</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Execution permission:</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>   
+        <span class="k">if</span> <span class="n">exec_permission</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;+x&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>   
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;N/A&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>   
+
+    <span class="k">return</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div>
+
+<span class="c1"># &lt;codecell&gt;</span>
+
+
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Antonio Vazquez Alvarez, Victor Pankratius, and Pedro Elosegui.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

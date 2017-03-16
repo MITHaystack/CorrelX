@@ -1,0 +1,1019 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>lib_mapredcorr &#8212; CorrelX 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for lib_mapredcorr</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># &lt;nbformat&gt;3.0&lt;/nbformat&gt;</span>
+
+<span class="c1"># &lt;codecell&gt;</span>
+
+<span class="c1">#!/usr/bin/env python</span>
+<span class="c1">#</span>
+<span class="c1">#The MIT CorrelX Correlator</span>
+<span class="c1">#</span>
+<span class="c1">#https://github.com/MITHaystack/CorrelX</span>
+<span class="c1">#Contact: correlX@haystack.mit.edu</span>
+<span class="c1">#Project leads: Victor Pankratius, Pedro Elosegui Project developer: A.J. Vazquez Alvarez</span>
+<span class="c1">#</span>
+<span class="c1">#Copyright 2017 MIT Haystack Observatory</span>
+<span class="c1">#</span>
+<span class="c1">#Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the &quot;Software&quot;), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1">#The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</span>
+<span class="c1">#</span>
+<span class="c1">#THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#------------------------------</span>
+<span class="c1">#------------------------------</span>
+<span class="c1">#Project: CorrelX.</span>
+<span class="c1">#File: lib_mapredcorr.py.</span>
+<span class="c1">#Author: A.J. Vazquez Alvarez (ajvazquez@haystack.mit.edu)</span>
+<span class="c1">#Description: </span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Main functions for performing the mapreduce correlation through Hadoop (and pipeline).</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="c1">#History:</span>
+<span class="c1">#initial version: 2015.12 ajva</span>
+<span class="c1">#MIT Haystack Observatory</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">imp</span>
+
+<span class="c1"># Constants for mapper and reducer</span>
+<span class="kn">import</span> <span class="nn">const_mapred</span>
+<span class="n">imp</span><span class="o">.</span><span class="n">reload</span><span class="p">(</span><span class="n">const_mapred</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">const_mapred</span> <span class="k">import</span> <span class="o">*</span>
+
+<span class="kn">import</span> <span class="nn">const_hadoop</span>
+<span class="n">imp</span><span class="o">.</span><span class="n">reload</span><span class="p">(</span><span class="n">const_hadoop</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">const_hadoop</span> <span class="k">import</span> <span class="o">*</span>
+
+<span class="kn">import</span> <span class="nn">lib_profiling</span>
+<span class="n">imp</span><span class="o">.</span><span class="n">reload</span><span class="p">(</span><span class="n">lib_profiling</span><span class="p">)</span>
+
+
+
+<span class="c1">##################################################################</span>
+<span class="c1">#</span>
+<span class="c1">#                  Map and reduce caller scripts</span>
+<span class="c1">#</span>
+<span class="c1">##################################################################</span>
+
+
+
+<div class="viewcode-block" id="get_mapper_params_str"><a class="viewcode-back" href="../lib_mapredcorr.html#lib_mapredcorr.get_mapper_params_str">[docs]</a><span class="k">def</span> <span class="nf">get_mapper_params_str</span><span class="p">(</span><span class="n">stations</span><span class="p">,</span><span class="n">num_pols</span><span class="p">,</span><span class="n">fft_size</span><span class="p">,</span><span class="n">accumulation_time</span><span class="p">,</span><span class="n">signal_start</span><span class="p">,</span><span class="n">signal_duration</span><span class="p">,</span>\
+                          <span class="n">first_frame_num</span><span class="p">,</span><span class="n">num_frames</span><span class="p">,</span><span class="n">codecs_serial</span><span class="p">,</span><span class="n">auto_stations</span><span class="p">,</span>\
+                          <span class="n">auto_pols</span><span class="p">,</span><span class="n">ini_stations</span><span class="p">,</span><span class="n">ini_media</span><span class="p">,</span><span class="n">ini_delays</span><span class="p">,</span><span class="n">fft_at_mapper</span><span class="p">,</span>\
+                          <span class="n">internal_log_mapper</span><span class="p">,</span><span class="n">ffts_per_chunk</span><span class="p">,</span><span class="n">windowing</span><span class="p">,</span>\
+                          <span class="n">one_baseline_per_task</span><span class="p">,</span><span class="n">phase_calibration</span><span class="p">,</span><span class="n">min_mapper_chunk</span><span class="p">,</span><span class="n">max_mapper_chunk</span><span class="p">,</span>\
+                          <span class="n">task_scaling_stations</span><span class="p">,</span><span class="n">single_precision</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns string with all the parameters to call the mapper.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     stations</span>
+<span class="sd">         number of stations.</span>
+<span class="sd">     num_pols</span>
+<span class="sd">         [not used in all-baselines-per-task mode] number of polarizations.</span>
+<span class="sd">     fft_size</span>
+<span class="sd">         [not used if fft in reducer?] fft length from the configuration.</span>
+<span class="sd">     accumulation_time</span>
+<span class="sd">         duration of the accumulation period (float) [s] .</span>
+<span class="sd">     signal_start</span>
+<span class="sd">         start time for the experiment (float) [s] .</span>
+<span class="sd">     signal_duration</span>
+<span class="sd">         duration of the experiment (float) [s] .</span>
+<span class="sd">     first_frame_num</span>
+<span class="sd">         [only testing] -1 by default. Discard frames with id lesser than this value.</span>
+<span class="sd">     num_frames</span>
+<span class="sd">         [only testing] -1 by default. If &gt;0 discard frames with id greater than this value. </span>
+<span class="sd">                              If both first_frame_num and num_frames are &lt;0, all frames are processed.</span>
+<span class="sd">     codecs_serial</span>
+<span class="sd">         [only testing] &quot;&quot; by default. Serialized version of codecs used for comrpession.</span>
+<span class="sd">     auto_stations</span>
+<span class="sd">         [not used in all-baselines-per-task mode] controls pairs generation (see msvf.calculate_corr_pairs())</span>
+<span class="sd">     auto_pols</span>
+<span class="sd">         [not used in all-baselines-per-task mode] controls pairs generation (see msvf.calculate_corr_pairs())</span>
+<span class="sd">     ini_stations</span>
+<span class="sd">         string with stations ini file name.</span>
+<span class="sd">     ini_media</span>
+<span class="sd">         string with media ini file name.</span>
+<span class="sd">     ini_delays</span>
+<span class="sd">         string with delays ini file name.</span>
+<span class="sd">     fft_at_mapper</span>
+<span class="sd">         [0 by default]. Initially devised to allow configuration of FFT in mapper or reducer.</span>
+<span class="sd">     internal_log_mapper</span>
+<span class="sd">         [unused]</span>
+<span class="sd">     ffts_per_chunk</span>
+<span class="sd">         [-1 by default]. If -1, all the samples in the channel go into the same line. Other values allow to </span>
+<span class="sd">                            control the number of samples that go into the same line, but this feature is discontinued.</span>
+<span class="sd">     windowing : str</span>
+<span class="sd">         window before FFT, default value is &quot;square&quot;.</span>
+<span class="sd">     one_baseline_per_task: bool</span>
+<span class="sd">         boolean to activate one-baseline-per-task mode.</span>
+<span class="sd">     phase_calibration</span>
+<span class="sd">         [unused].</span>
+<span class="sd">     min_mapper_chunk</span>
+<span class="sd">         [-1 by default]</span>
+<span class="sd">     max_mapper_chunk</span>
+<span class="sd">         [-1 by default]</span>
+<span class="sd">     task_scaling_stations</span>
+<span class="sd">         0 for all-baselines-per-task mode, 1 to activate linear scaling with number of stations.</span>
+<span class="sd">     single_precision</span>
+<span class="sd">         [unused]</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     mapper_params_str : str</span>
+<span class="sd">         parameters to call mapper.</span>
+<span class="sd">    </span>
+<span class="sd">    Notes:</span>
+<span class="sd">    ------</span>
+<span class="sd">    |</span>
+<span class="sd">    | **TO DO:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  Automate finding max number of polarizations.</span>
+<span class="sd">    |  Remove all unused arguments.</span>
+<span class="sd">    |  Consider adding paths for long ini files, currently this is done only for delays.ini.</span>
+<span class="sd">    |  Consider removing fft_size, fft always in reducer.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mapper_params_str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">stations</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span>\
+                        <span class="nb">str</span><span class="p">(</span><span class="n">num_pols</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span>\
+                        <span class="nb">str</span><span class="p">(</span><span class="n">fft_size</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span>\
+                        <span class="nb">str</span><span class="p">(</span><span class="n">accumulation_time</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span>\
+                        <span class="nb">str</span><span class="p">(</span><span class="n">signal_start</span><span class="p">)</span><span class="o">+</span>  <span class="s2">&quot; &quot;</span> <span class="o">+</span>\
+                        <span class="nb">str</span><span class="p">(</span><span class="n">signal_duration</span><span class="p">)</span><span class="o">+</span>  <span class="s2">&quot; &quot;</span> <span class="o">+</span>\
+                        <span class="nb">str</span><span class="p">(</span><span class="n">first_frame_num</span><span class="p">)</span><span class="o">+</span>  <span class="s2">&quot; &quot;</span> <span class="o">+</span>\
+                        <span class="nb">str</span><span class="p">(</span><span class="n">num_frames</span><span class="p">)</span><span class="o">+</span>  <span class="s2">&quot; &quot;</span> <span class="o">+</span>\
+                        <span class="nb">str</span><span class="p">(</span><span class="n">auto_stations</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span>\
+                        <span class="nb">str</span><span class="p">(</span><span class="n">auto_pols</span><span class="p">)</span><span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span>\
+                        <span class="s2">&quot;1&quot;</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span>\
+                        <span class="s2">&quot;&#39;&quot;</span><span class="o">+</span><span class="n">ini_stations</span><span class="o">+</span><span class="s2">&quot;&#39;&quot;</span><span class="o">+</span><span class="s2">&quot; &quot;</span> <span class="o">+</span>\
+                        <span class="s2">&quot;&#39;&quot;</span><span class="o">+</span><span class="n">ini_media</span><span class="o">+</span><span class="s2">&quot;&#39;&quot;</span><span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span>\
+                        <span class="s2">&quot;&#39;&quot;</span><span class="o">+</span><span class="n">ini_delays</span><span class="o">+</span><span class="s2">&quot;&#39;&quot;</span><span class="o">+</span> <span class="s2">&quot; &quot;</span><span class="o">+</span>\
+                        <span class="s2">&quot;&#39;&quot;</span><span class="o">+</span><span class="n">codecs_serial</span> <span class="o">+</span><span class="s2">&quot;&#39;&quot;</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span>\
+                        <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">fft_at_mapper</span><span class="p">))</span><span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> \
+                        <span class="nb">str</span><span class="p">(</span><span class="n">internal_log_mapper</span><span class="p">)</span><span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> \
+                        <span class="nb">str</span><span class="p">(</span><span class="n">ffts_per_chunk</span><span class="p">)</span><span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> \
+                        <span class="s2">&quot;&#39;&quot;</span><span class="o">+</span><span class="n">windowing</span><span class="o">+</span><span class="s2">&quot;&#39;&quot;</span><span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> \
+                        <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">one_baseline_per_task</span><span class="p">))</span><span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> \
+                        <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">phase_calibration</span><span class="p">))</span><span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> \
+                        <span class="nb">str</span><span class="p">(</span><span class="n">min_mapper_chunk</span><span class="p">)</span><span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> \
+                        <span class="nb">str</span><span class="p">(</span><span class="n">max_mapper_chunk</span><span class="p">)</span><span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> \
+                        <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">task_scaling_stations</span><span class="p">))</span><span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> \
+                        <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">single_precision</span><span class="p">))</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">mapper_params_str</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_reducer_params_str"><a class="viewcode-back" href="../lib_mapredcorr.html#lib_mapredcorr.get_reducer_params_str">[docs]</a><span class="k">def</span> <span class="nf">get_reducer_params_str</span><span class="p">(</span><span class="n">codecs_serial</span><span class="p">,</span><span class="n">fft_at_mapper</span><span class="p">,</span><span class="n">internal_log_reducer</span><span class="p">,</span><span class="n">fft_size</span><span class="p">,</span><span class="n">windowing</span><span class="p">,</span><span class="n">phase_calibration</span><span class="p">,</span><span class="n">single_precision</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns string with all the parameters to call the reducer.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     codecs_serial</span>
+<span class="sd">         [only testing] &quot;&quot; by default. Serialized version of codecs used for comrpession.</span>
+<span class="sd">     fft_at_mapper</span>
+<span class="sd">         same variable used to call get_mapper_params_str(), inverted here.</span>
+<span class="sd">     internal_log_reducer</span>
+<span class="sd">         [unused]</span>
+<span class="sd">     fft_size</span>
+<span class="sd">         fft length from the configuration.</span>
+<span class="sd">     windowing</span>
+<span class="sd">         window type before FFT, &quot;square&quot; by default.</span>
+<span class="sd">     phase_calibration</span>
+<span class="sd">         if 1 phase calibration tones will be extracted.</span>
+<span class="sd">     single_precision</span>
+<span class="sd">         boolean to control data types for unpacked samples.</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     reducer_params_str : str</span>
+<span class="sd">         parameters to call mapper.</span>
+<span class="sd">    </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    |</span>
+<span class="sd">    | **TO DO:</span>
+<span class="sd">    |</span>
+<span class="sd">    |  Remove unused parameters</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">reducer_params_str</span> <span class="o">=</span> <span class="s2">&quot;&#39;&quot;</span><span class="o">+</span><span class="n">codecs_serial</span> <span class="o">+</span><span class="s2">&quot;&#39;&quot;</span><span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> \
+                        <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="ow">not</span><span class="p">(</span><span class="n">fft_at_mapper</span><span class="p">)))</span><span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> \
+                        <span class="nb">str</span><span class="p">(</span><span class="n">internal_log_reducer</span><span class="p">)</span><span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> \
+                        <span class="nb">str</span><span class="p">(</span><span class="n">fft_size</span><span class="p">)</span><span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> \
+                        <span class="s2">&quot;&#39;&quot;</span><span class="o">+</span><span class="n">windowing</span><span class="o">+</span><span class="s2">&quot;&#39;&quot;</span><span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> \
+                        <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">phase_calibration</span><span class="p">))</span><span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> \
+                        <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">single_precision</span><span class="p">))</span>
+                        
+    <span class="k">return</span><span class="p">(</span><span class="n">reducer_params_str</span><span class="p">)</span></div>
+
+
+
+
+<div class="viewcode-block" id="create_inter_sh"><a class="viewcode-back" href="../lib_mapredcorr.html#lib_mapredcorr.create_inter_sh">[docs]</a><span class="k">def</span> <span class="nf">create_inter_sh</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="n">python_x</span><span class="p">,</span><span class="n">command</span><span class="p">,</span><span class="n">temp_log</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create script with python call for mapper/reducer.</span>
+<span class="sd">    Devised to avoid issues with arguments.</span>
+<span class="sd">    Currently used for creating the mapper and reducer scripts passed to hadoop.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     filename</span>
+<span class="sd">         filename for resulting bash script with python call.</span>
+<span class="sd">     python_x</span>
+<span class="sd">         python executable.</span>
+<span class="sd">     command</span>
+<span class="sd">         python script plus arguments.</span>
+<span class="sd">     temp_log</span>
+<span class="sd">         path to temporary (buffer) file for system calls.</span>
+<span class="sd">     v</span>
+<span class="sd">         verbose if 1.</span>
+<span class="sd">     file_log</span>
+<span class="sd">         handler for log file.</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     N/A</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;echo $LD_LIBRARY_PATH &gt; &quot;</span> <span class="o">+</span> <span class="n">temp_log</span><span class="p">)</span>
+        
+    <span class="n">line</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2">&quot;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">temp_log</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f_log</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">line_in</span> <span class="ow">in</span> <span class="n">f_log</span><span class="p">:</span>
+            <span class="n">line</span><span class="o">+=</span><span class="n">line_in</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="n">line</span><span class="o">+=</span><span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2">&quot;</span>
+ 
+
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;echo $PYTHONPATH &gt; &quot;</span> <span class="o">+</span> <span class="n">temp_log</span><span class="p">)</span>
+    <span class="n">line2</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2">&quot;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">temp_log</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f_log</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">line_in</span> <span class="ow">in</span> <span class="n">f_log</span><span class="p">:</span>
+            <span class="n">line2</span><span class="o">+=</span><span class="n">line_in</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="n">line2</span><span class="o">+=</span><span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2">&quot;</span>
+
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;#!/bin/bash&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">f</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;export LD_LIBRARY_PATH=&quot;</span> <span class="o">+</span> <span class="n">line</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">f</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;export PYTHONPATH=&quot;</span> <span class="o">+</span> <span class="n">line2</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">f</span><span class="p">)</span>
+        <span class="c1">#print(python_x+&quot; --version&quot;)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">python_x</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">command</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">f</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Creating script file:&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+            
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">+</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span></div>
+
+
+
+
+
+
+<div class="viewcode-block" id="get_mr_command"><a class="viewcode-back" href="../lib_mapredcorr.html#lib_mapredcorr.get_mr_command">[docs]</a><span class="k">def</span> <span class="nf">get_mr_command</span><span class="p">(</span><span class="n">app_dir</span><span class="p">,</span><span class="n">script</span><span class="p">,</span><span class="n">params</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Script for creating line with call to mapper/reducer with parameters.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">command</span> <span class="o">=</span>  <span class="n">app_dir</span> <span class="o">+</span> <span class="n">script</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">params</span> 
+    <span class="k">return</span><span class="p">(</span><span class="n">command</span><span class="p">)</span></div>
+
+
+
+
+<span class="c1">##################################################################</span>
+<span class="c1">#</span>
+<span class="c1">#                      Pipeline</span>
+<span class="c1">#</span>
+<span class="c1">##################################################################</span>
+
+
+
+<div class="viewcode-block" id="pipeline_app"><a class="viewcode-back" href="../lib_mapredcorr.html#lib_mapredcorr.pipeline_app">[docs]</a><span class="k">def</span> <span class="nf">pipeline_app</span><span class="p">(</span><span class="n">python_x</span><span class="p">,</span><span class="n">stations</span><span class="p">,</span><span class="n">input_files</span><span class="p">,</span><span class="n">app_dir</span><span class="p">,</span><span class="n">mapper</span><span class="p">,</span><span class="n">reducer</span><span class="p">,</span><span class="n">fft_size</span><span class="p">,</span><span class="n">fft_at_mapper</span><span class="p">,</span><span class="n">accumulation_time</span><span class="p">,</span>\
+                 <span class="n">signal_start</span><span class="p">,</span><span class="n">signal_duration</span><span class="p">,</span><span class="n">first_frame_num</span><span class="p">,</span><span class="n">num_frames</span><span class="p">,</span>\
+                 <span class="n">data_dir</span><span class="p">,</span><span class="n">output_dir</span><span class="p">,</span><span class="n">output_sym</span><span class="p">,</span><span class="n">auto_stations</span><span class="p">,</span><span class="n">auto_pols</span><span class="p">,</span><span class="n">num_pols</span><span class="p">,</span>\
+                 <span class="n">codecs_serial</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span>\
+                 <span class="n">file_out</span><span class="o">=</span><span class="s2">&quot;vt4.txt&quot;</span><span class="p">,</span><span class="n">ini_stations</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">,</span>\
+                 <span class="n">ini_media</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">,</span><span class="n">ini_delays</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">,</span><span class="n">internal_log_mapper</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">internal_log_reducer</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">ffts_per_chunk</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>\
+                 <span class="n">windowing</span><span class="o">=</span><span class="s2">&quot;square&quot;</span><span class="p">,</span><span class="n">one_baseline_per_task</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">phase_calibration</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">min_mapper_chunk</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>\
+                 <span class="n">max_mapper_chunk</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span><span class="n">task_scaling_stations</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">sort_output</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">single_precision</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">profile_map</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">profile_red</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">timestamp_str</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Perform correlation through pipeline execution (that is, without hadoop). All the data is passed through the mapper, </span>
+<span class="sd">    then the results are sorted and passed through the reducer.</span>
+<span class="sd">                                                                                           </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     See table below.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     list with start time, end time and duration of the execution in seconds.     </span>
+<span class="sd">     </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">     Note that the environment variable map_input_file is modified for each processed file to emulate the hadoop behavior </span>
+<span class="sd">        (and thus provide access to the mapper to the name of the file currently being processed.</span>
+<span class="sd">    </span>
+
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Pipeline execution...&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+
+    <span class="n">files_str</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+    <span class="n">files_out_str</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+    <span class="n">command</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+    <span class="n">str_cprof_conv</span><span class="o">=</span><span class="s2">&quot; &quot;</span>
+    <span class="c1"># Map for every file, setting the environment variable map_input_file (to access the filename). This environment variable is </span>
+    <span class="c1">#  generated by hadoop, so we manually create it in the pipeline execution.</span>
+    <span class="n">i</span><span class="o">=</span><span class="mi">0</span>
+    <span class="k">for</span> <span class="n">input_file</span> <span class="ow">in</span> <span class="n">input_files</span><span class="p">:</span> <span class="c1">#range(stations):</span>
+        <span class="n">i</span><span class="o">+=</span><span class="mi">1</span>
+        <span class="n">file_str</span> <span class="o">=</span>  <span class="n">data_dir</span> <span class="o">+</span> <span class="n">input_file</span> <span class="c1">#prefix_files + &quot;-&quot; + str(i) + &quot;.vt&quot;</span>
+        <span class="n">file_out_str</span> <span class="o">=</span> <span class="n">output_dir</span> <span class="o">+</span> <span class="n">file_out</span> <span class="o">+</span> <span class="s2">&quot;part&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="n">files_str</span> <span class="o">+=</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">file_str</span>
+        <span class="n">command</span> <span class="o">+=</span> <span class="s2">&quot;export &quot;</span><span class="o">+</span><span class="n">C_H_ENV_MAP_INPUT_FILE</span><span class="o">+</span><span class="s2">&quot;=&quot;</span><span class="o">+</span> <span class="n">file_str</span> <span class="o">+</span> <span class="s2">&quot; &amp;&amp; &quot;</span>
+        <span class="n">command</span> <span class="o">+=</span> <span class="s2">&quot;cat &quot;</span> <span class="o">+</span> <span class="n">file_str</span> <span class="o">+</span> <span class="s2">&quot;|&quot;</span>
+        <span class="k">if</span> <span class="n">profile_map</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">i_args</span> <span class="o">=</span> <span class="n">lib_profiling</span><span class="o">.</span><span class="n">get_include_functions</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">app_dir</span><span class="o">+</span><span class="n">mapper</span><span class="p">),</span><span class="n">profile_memory</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">command</span> <span class="o">+=</span> <span class="s2">&quot;PYTHONPATH=&quot;</span><span class="o">+</span><span class="n">app_dir</span><span class="o">+</span><span class="s2">&quot;:$PYTHONPATH &quot;</span><span class="o">+</span><span class="n">lib_profiling</span><span class="o">.</span><span class="n">get_pycallgraph_str</span><span class="p">(</span><span class="n">i_args</span><span class="p">,</span><span class="n">file_out_str</span><span class="o">+</span><span class="s2">&quot;_&quot;</span><span class="o">+</span><span class="n">input_file</span><span class="o">+</span><span class="s2">&quot;_map_prof_&quot;</span><span class="o">+</span><span class="n">timestamp_str</span><span class="o">+</span><span class="s2">&quot;.png &quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">profile_map</span><span class="o">==</span><span class="mi">2</span><span class="p">:</span>
+            <span class="n">str_map_cprof</span> <span class="o">=</span> <span class="n">file_out_str</span><span class="o">+</span><span class="s2">&quot;_&quot;</span><span class="o">+</span><span class="n">input_file</span><span class="o">+</span><span class="s2">&quot;_map_prof_&quot;</span><span class="o">+</span><span class="n">timestamp_str</span><span class="o">+</span><span class="s2">&quot;.cprof&quot;</span>
+            <span class="n">str_map_ctxt</span> <span class="o">=</span> <span class="n">file_out_str</span><span class="o">+</span><span class="s2">&quot;_&quot;</span><span class="o">+</span><span class="n">input_file</span><span class="o">+</span><span class="s2">&quot;_map_prof_&quot;</span><span class="o">+</span><span class="n">timestamp_str</span><span class="o">+</span><span class="s2">&quot;.txt&quot;</span>
+            <span class="n">command</span> <span class="o">+=</span> <span class="n">python_x</span><span class="o">+</span><span class="s2">&quot; &quot;</span><span class="o">+</span><span class="n">lib_profiling</span><span class="o">.</span><span class="n">C_PROFILE_OPTS</span><span class="o">+</span><span class="s2">&quot; -o &quot;</span><span class="o">+</span><span class="n">str_map_cprof</span><span class="o">+</span><span class="s2">&quot; &quot;</span>
+            <span class="n">str_cprof_conv</span> <span class="o">+=</span> <span class="s2">&quot;&amp;&amp; &quot;</span><span class="o">+</span><span class="n">python_x</span><span class="o">+</span><span class="s2">&quot; &quot;</span><span class="o">+</span><span class="n">app_dir</span><span class="o">+</span><span class="n">lib_profiling</span><span class="o">.</span><span class="n">C_PROFILE_CONVERT_CMD</span><span class="o">+</span><span class="n">str_map_cprof</span><span class="o">+</span><span class="s2">&quot; &gt; &quot;</span><span class="o">+</span><span class="n">str_map_ctxt</span><span class="o">+</span><span class="s2">&quot; &quot;</span>
+        <span class="k">else</span><span class="p">:</span> <span class="c1"># 0</span>
+            <span class="n">command</span> <span class="o">+=</span> <span class="n">python_x</span><span class="o">+</span><span class="s2">&quot; &quot;</span>
+        <span class="n">command</span> <span class="o">+=</span> <span class="nb">str</span><span class="p">(</span><span class="n">app_dir</span><span class="o">+</span><span class="n">mapper</span><span class="p">)</span>
+        <span class="n">command</span> <span class="o">+=</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">get_mapper_params_str</span><span class="p">(</span><span class="n">stations</span><span class="p">,</span><span class="n">num_pols</span><span class="p">,</span><span class="n">fft_size</span><span class="p">,</span><span class="n">accumulation_time</span><span class="p">,</span><span class="n">signal_start</span><span class="p">,</span><span class="n">signal_duration</span><span class="p">,</span>\
+                            <span class="n">first_frame_num</span><span class="p">,</span><span class="n">num_frames</span><span class="p">,</span><span class="n">codecs_serial</span><span class="p">,</span>\
+                            <span class="n">auto_stations</span><span class="p">,</span><span class="n">auto_pols</span><span class="p">,</span><span class="n">ini_stations</span><span class="p">,</span><span class="n">ini_media</span><span class="p">,</span><span class="n">ini_delays</span><span class="p">,</span><span class="n">fft_at_mapper</span><span class="p">,</span>\
+                            <span class="n">internal_log_mapper</span><span class="p">,</span><span class="n">ffts_per_chunk</span><span class="p">,</span><span class="n">windowing</span><span class="p">,</span>\
+                            <span class="n">one_baseline_per_task</span><span class="p">,</span><span class="n">phase_calibration</span><span class="p">,</span><span class="n">min_mapper_chunk</span><span class="p">,</span><span class="n">max_mapper_chunk</span><span class="p">,</span>\
+                            <span class="n">task_scaling_stations</span><span class="p">,</span><span class="n">single_precision</span><span class="p">)</span>
+        <span class="n">command</span><span class="o">+=</span><span class="s2">&quot; &gt; &quot;</span> <span class="o">+</span> <span class="n">file_out_str</span> <span class="o">+</span> <span class="s2">&quot; &amp;&amp; &quot;</span> 
+        <span class="n">command</span><span class="o">+=</span><span class="s2">&quot;unset &quot;</span><span class="o">+</span><span class="n">C_H_ENV_MAP_INPUT_FILE</span><span class="o">+</span><span class="s2">&quot; &amp;&amp; &quot;</span>
+        <span class="n">files_out_str</span> <span class="o">+=</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">file_out_str</span>
+    
+    <span class="c1"># Reduce (includes sorting and reducing)</span>
+    <span class="n">command</span><span class="o">+=</span> <span class="s2">&quot; cat &quot;</span> <span class="o">+</span> <span class="n">files_out_str</span>
+    <span class="c1">#command+= &quot;|sort -t&quot;+FIELD_SEP+&quot; -k1 -k2 -k3 -k4 -k5 -k6 -k7 -k8 -k9 &gt;&quot; + output_dir + file_out + &quot;_tmp&quot;</span>
+    <span class="n">command</span><span class="o">+=</span> <span class="s2">&quot;|sort -t&quot;</span><span class="o">+</span><span class="n">FIELD_SEP</span><span class="o">+</span><span class="s2">&quot; &quot;</span><span class="o">+</span><span class="n">COMMON_SORT_ALL_BASELINES_PER_TASK_STR</span><span class="o">+</span><span class="s2">&quot; &gt;&quot;</span> <span class="o">+</span> <span class="n">output_dir</span> <span class="o">+</span> <span class="n">file_out</span> <span class="o">+</span> <span class="s2">&quot;_tmp&quot;</span>
+    <span class="n">command</span> <span class="o">+=</span> <span class="s2">&quot; &amp;&amp; cat &quot;</span><span class="o">+</span> <span class="n">output_dir</span> <span class="o">+</span> <span class="n">file_out</span> <span class="o">+</span><span class="s2">&quot;_tmp|&quot;</span>
+    <span class="k">if</span> <span class="n">profile_red</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="n">i_args</span> <span class="o">=</span> <span class="n">lib_profiling</span><span class="o">.</span><span class="n">get_include_functions</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">app_dir</span><span class="o">+</span><span class="n">reducer</span><span class="p">))</span>
+        <span class="n">command</span> <span class="o">+=</span> <span class="s2">&quot;PYTHONPATH=&quot;</span><span class="o">+</span><span class="n">app_dir</span><span class="o">+</span><span class="s2">&quot;:$PYTHONPATH &quot;</span><span class="o">+</span><span class="n">lib_profiling</span><span class="o">.</span><span class="n">get_pycallgraph_str</span><span class="p">(</span><span class="n">i_args</span><span class="p">,</span><span class="n">file_out_str</span><span class="o">+</span><span class="s2">&quot;_red_prof&quot;</span><span class="o">+</span><span class="n">timestamp_str</span><span class="o">+</span><span class="s2">&quot;.png&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">profile_red</span><span class="o">==</span><span class="mi">2</span><span class="p">:</span>
+        <span class="n">str_red_cprof</span> <span class="o">=</span> <span class="n">file_out_str</span><span class="o">+</span><span class="s2">&quot;_red_prof_&quot;</span><span class="o">+</span><span class="n">timestamp_str</span><span class="o">+</span><span class="s2">&quot;.cprof&quot;</span>
+        <span class="n">str_red_ctxt</span> <span class="o">=</span> <span class="n">file_out_str</span><span class="o">+</span><span class="s2">&quot;_red_prof_&quot;</span><span class="o">+</span><span class="n">timestamp_str</span><span class="o">+</span><span class="s2">&quot;.txt&quot;</span>
+        <span class="n">command</span> <span class="o">+=</span> <span class="n">python_x</span><span class="o">+</span><span class="s2">&quot; &quot;</span><span class="o">+</span><span class="n">lib_profiling</span><span class="o">.</span><span class="n">C_PROFILE_OPTS</span><span class="o">+</span><span class="s2">&quot; -o &quot;</span><span class="o">+</span><span class="n">str_red_cprof</span>
+        <span class="n">str_cprof_conv</span> <span class="o">+=</span> <span class="s2">&quot;&amp;&amp; &quot;</span><span class="o">+</span><span class="n">python_x</span><span class="o">+</span><span class="s2">&quot; &quot;</span><span class="o">+</span><span class="n">app_dir</span><span class="o">+</span><span class="n">lib_profiling</span><span class="o">.</span><span class="n">C_PROFILE_CONVERT_CMD</span><span class="o">+</span><span class="n">str_red_cprof</span><span class="o">+</span><span class="s2">&quot; &gt; &quot;</span><span class="o">+</span><span class="n">str_red_ctxt</span><span class="o">+</span><span class="s2">&quot; &quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">command</span> <span class="o">+=</span> <span class="n">python_x</span>
+    <span class="n">command</span> <span class="o">+=</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">app_dir</span><span class="o">+</span><span class="n">reducer</span><span class="p">)</span> 
+    <span class="n">command</span> <span class="o">+=</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">get_reducer_params_str</span><span class="p">(</span><span class="n">codecs_serial</span><span class="p">,</span><span class="n">fft_at_mapper</span><span class="p">,</span><span class="n">internal_log_reducer</span><span class="p">,</span><span class="n">fft_size</span><span class="p">,</span><span class="n">windowing</span><span class="p">,</span>\
+                                           <span class="n">phase_calibration</span><span class="p">,</span><span class="n">single_precision</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span>
+    <span class="k">if</span> <span class="n">sort_output</span><span class="p">:</span>
+        <span class="n">command</span><span class="o">+=</span> <span class="s2">&quot;|sort &gt; &quot;</span> <span class="o">+</span> <span class="n">output_dir</span> <span class="o">+</span> <span class="n">file_out</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">command</span><span class="o">+=</span> <span class="s2">&quot; &gt; &quot;</span> <span class="o">+</span> <span class="n">output_dir</span> <span class="o">+</span> <span class="n">file_out</span>
+
+    <span class="n">command</span><span class="o">+=</span><span class="n">str_cprof_conv</span>
+    
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span><span class="n">command</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+
+        
+    <span class="c1"># Execution times</span>
+    <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
+    <span class="n">end_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">elapsed_time</span> <span class="o">=</span> <span class="n">end_time</span> <span class="o">-</span> <span class="n">start_time</span>
+
+    <span class="n">command_mk</span> <span class="o">=</span> <span class="s2">&quot;mkdir &quot;</span><span class="o">+</span><span class="n">output_sym</span>
+    <span class="n">command_ln</span> <span class="o">=</span> <span class="s2">&quot;ln -s &quot;</span><span class="o">+</span><span class="n">output_dir</span><span class="o">+</span><span class="n">file_out</span><span class="o">+</span><span class="s2">&quot; &quot;</span><span class="o">+</span><span class="n">output_sym</span><span class="o">+</span><span class="n">file_out</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">command_mk</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">command_ln</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Elapsed time = &quot;</span><span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">elapsed_time</span><span class="p">)</span><span class="o">+</span> <span class="s2">&quot; s&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+
+
+
+
+
+    <span class="k">return</span><span class="p">([</span><span class="n">start_time</span><span class="p">,</span><span class="n">end_time</span><span class="p">,</span><span class="n">elapsed_time</span><span class="p">])</span></div>
+
+
+
+
+
+
+
+
+<span class="c1">##################################################################</span>
+<span class="c1">#</span>
+<span class="c1">#             In-line job submission java options</span>
+<span class="c1">#</span>
+<span class="c1">##################################################################</span>
+
+
+<div class="viewcode-block" id="d_opt"><a class="viewcode-back" href="../lib_mapredcorr.html#lib_mapredcorr.d_opt">[docs]</a><span class="k">def</span> <span class="nf">d_opt</span><span class="p">(</span><span class="n">param</span><span class="p">,</span><span class="n">value</span><span class="p">,</span><span class="n">extra_q</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create string &quot;-D param=value&quot;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sym_q</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">extra_q</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="n">sym_q</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2">&quot;</span>
+    <span class="k">return</span><span class="p">(</span><span class="s2">&quot;-D &quot;</span><span class="o">+</span><span class="n">param</span><span class="o">+</span><span class="s2">&quot;=&quot;</span><span class="o">+</span><span class="n">sym_q</span><span class="o">+</span><span class="n">value</span><span class="o">+</span><span class="n">sym_q</span><span class="o">+</span><span class="s2">&quot; &quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_options_partitioning"><a class="viewcode-back" href="../lib_mapredcorr.html#lib_mapredcorr.get_options_partitioning">[docs]</a><span class="k">def</span> <span class="nf">get_options_partitioning</span><span class="p">(</span><span class="n">field_sep</span><span class="p">,</span><span class="n">key_fields</span><span class="p">,</span><span class="n">key_field_sep</span><span class="p">,</span><span class="n">part_opts</span><span class="p">,</span><span class="n">comp_opts</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get partitioning options.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     field_sep</span>
+<span class="sd">         field separator.</span>
+<span class="sd">     key_fields</span>
+<span class="sd">         number of key fields.</span>
+<span class="sd">     key_field_sep</span>
+<span class="sd">         key field separator.</span>
+<span class="sd">     part_opts</span>
+<span class="sd">         partitioning options.</span>
+<span class="sd">     comp_opts</span>
+<span class="sd">         comparator options.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     option1 : str</span>
+<span class="sd">         java options (relative to partitioning) for job submission.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">options_partitioner</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">options_partitioner</span> <span class="o">+=</span> <span class="n">d_opt</span><span class="p">(</span><span class="n">C_H_INLINE_FIELD_SEP</span><span class="p">,</span><span class="n">field_sep</span><span class="p">)</span>
+    <span class="n">options_partitioner</span> <span class="o">+=</span> <span class="n">d_opt</span><span class="p">(</span><span class="n">C_H_INLINE_KEY_FIELDS</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">key_fields</span><span class="p">))</span>
+    <span class="n">options_partitioner</span> <span class="o">+=</span> <span class="n">d_opt</span><span class="p">(</span><span class="n">C_H_INLINE_KEY_FIELD_SEP</span><span class="p">,</span><span class="n">key_field_sep</span><span class="p">)</span>
+    <span class="n">options_partitioner</span> <span class="o">+=</span> <span class="n">d_opt</span><span class="p">(</span><span class="n">C_H_INLINE_PARTITIONER_OPTS</span><span class="p">,</span><span class="n">part_opts</span><span class="p">,</span><span class="n">extra_q</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">options_partitioner</span> <span class="o">+=</span> <span class="n">d_opt</span><span class="p">(</span><span class="n">C_H_INLINE_COMPARATOR_OPTS</span><span class="p">,</span><span class="n">comp_opts</span><span class="p">,</span><span class="n">extra_q</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">options_partitioner</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="get_options_custom_partitioner"><a class="viewcode-back" href="../lib_mapredcorr.html#lib_mapredcorr.get_options_custom_partitioner">[docs]</a><span class="k">def</span> <span class="nf">get_options_custom_partitioner</span><span class="p">(</span><span class="n">use_nohash_partitioner</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Options for custom partitioner.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">use_nohash_partitioner</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="n">options_custom_partitioner</span> <span class="o">=</span> <span class="s2">&quot; -partitioner &quot;</span><span class="o">+</span><span class="n">C_H_INLINE_NOHASH_PARITIONER</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">options_custom_partitioner</span> <span class="o">=</span> <span class="s2">&quot; -partitioner &quot;</span><span class="o">+</span><span class="n">C_H_INLINE_DEFAULT_PARITIONER</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">options_custom_partitioner</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_options_lustre"><a class="viewcode-back" href="../lib_mapredcorr.html#lib_mapredcorr.get_options_lustre">[docs]</a><span class="k">def</span> <span class="nf">get_options_lustre</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Options for lustre filesystem.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">options_lustre</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">options_lustre</span> <span class="o">+=</span> <span class="s2">&quot; &quot;</span><span class="o">+</span><span class="n">d_opt</span><span class="p">(</span><span class="n">C_H_INLINE_LUSTRE_FS_ABS_PARAM</span><span class="p">,</span><span class="n">C_H_INLINE_LUSTRE_FS_ABS_VAL</span><span class="p">)</span>
+    <span class="n">options_lustre</span> <span class="o">+=</span> <span class="s2">&quot; &quot;</span><span class="o">+</span><span class="n">d_opt</span><span class="p">(</span><span class="n">C_H_INLINE_LUSTRE_FS_PARAM</span><span class="p">,</span><span class="n">C_H_INLINE_LUSTRE_FS_VAL</span><span class="p">)</span>
+    <span class="n">options_lustre</span> <span class="o">+=</span> <span class="s2">&quot; &quot;</span><span class="o">+</span><span class="n">d_opt</span><span class="p">(</span><span class="n">C_H_INLINE_SHUFFLE_PARAM</span><span class="p">,</span><span class="n">C_H_INLINE_SHUFFLE_VAL</span><span class="p">)</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">options_lustre</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="get_options_logging"><a class="viewcode-back" href="../lib_mapredcorr.html#lib_mapredcorr.get_options_logging">[docs]</a><span class="k">def</span> <span class="nf">get_options_logging</span><span class="p">(</span><span class="n">log_properties</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Options for log4j logging.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     log_properties</span>
+<span class="sd">         path to log4j.properties file.</span>
+<span class="sd">     </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    |</span>
+<span class="sd">    | **TO DO:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  Currently not working, and thus &quot;log_properties&quot; is copied to a specific folder (see un_mapreduce_sh()).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">options_logging</span> <span class="o">=</span> <span class="n">d_opt</span><span class="p">(</span><span class="n">C_H_INLINE_LOG_CONF</span><span class="p">,</span><span class="n">log_properties</span><span class="p">)</span>
+    <span class="n">options_logging</span> <span class="o">+=</span> <span class="s2">&quot; &quot;</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">options_logging</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="get_options_text_delimiter"><a class="viewcode-back" href="../lib_mapredcorr.html#lib_mapredcorr.get_options_text_delimiter">[docs]</a><span class="k">def</span> <span class="nf">get_options_text_delimiter</span><span class="p">(</span><span class="n">hadoop_text_delimiter</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Options for text delimiter.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">options_text_delimiter</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span>
+    <span class="n">options_text_delimiter</span> <span class="o">+=</span> <span class="n">d_opt</span><span class="p">(</span><span class="n">C_H_INLINE_TEXT_DELIMITER</span><span class="p">,</span><span class="n">hadoop_text_delimiter</span><span class="p">)</span>
+    <span class="n">options_text_delimiter</span> <span class="o">+=</span> <span class="s2">&quot; &quot;</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">options_text_delimiter</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="get_options_num_maps"><a class="viewcode-back" href="../lib_mapredcorr.html#lib_mapredcorr.get_options_num_maps">[docs]</a><span class="k">def</span> <span class="nf">get_options_num_maps</span><span class="p">(</span><span class="n">num_maps</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Total number of mappers for this job.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">d_opt</span><span class="p">(</span><span class="n">C_H_INLINE_NUM_MAPS</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">num_maps</span><span class="p">)))</span></div>
+    
+<div class="viewcode-block" id="get_options_num_reduces"><a class="viewcode-back" href="../lib_mapredcorr.html#lib_mapredcorr.get_options_num_reduces">[docs]</a><span class="k">def</span> <span class="nf">get_options_num_reduces</span><span class="p">(</span><span class="n">num_reduces</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Total number of reducers for this job.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">d_opt</span><span class="p">(</span><span class="n">C_H_INLINE_NUM_REDUCES</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">num_reduces</span><span class="p">)))</span></div>
+
+<div class="viewcode-block" id="get_options_fixed_length_records"><a class="viewcode-back" href="../lib_mapredcorr.html#lib_mapredcorr.get_options_fixed_length_records">[docs]</a><span class="k">def</span> <span class="nf">get_options_fixed_length_records</span><span class="p">(</span><span class="n">record_size</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Options for fixed length records as input, instead of text.</span>
+<span class="sd">    </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    | </span>
+<span class="sd">    | **TO DO:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  This needs work.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">option_fixed_1</span> <span class="o">=</span> <span class="n">d_opt</span><span class="p">(</span><span class="n">C_H_INLINE_FIXED_LENGTH</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">record_size</span><span class="p">))</span><span class="o">+</span><span class="s2">&quot; &quot;</span>
+    <span class="n">option_fixed_2</span> <span class="o">=</span> <span class="s2">&quot; -inputformat &quot;</span><span class="o">+</span><span class="n">C_H_INLINE_FIXED_FORMAT</span>
+    <span class="k">return</span><span class="p">([</span><span class="n">option_fixed_1</span><span class="p">,</span><span class="n">option_fixed_2</span><span class="p">])</span></div>
+
+
+
+<span class="c1">##################################################################</span>
+<span class="c1">#</span>
+<span class="c1">#                      Job submission</span>
+<span class="c1">#</span>
+<span class="c1">##################################################################</span>
+
+
+
+<div class="viewcode-block" id="run_mapreduce_sh"><a class="viewcode-back" href="../lib_mapredcorr.html#lib_mapredcorr.run_mapreduce_sh">[docs]</a><span class="k">def</span> <span class="nf">run_mapreduce_sh</span><span class="p">(</span><span class="n">record_size</span><span class="p">,</span><span class="n">jobsh</span><span class="p">,</span><span class="n">mappersh</span><span class="p">,</span><span class="n">reducersh</span><span class="p">,</span><span class="n">app_dir</span><span class="p">,</span><span class="n">hadoop_dir</span><span class="p">,</span><span class="n">hadoop_conf_dir</span><span class="p">,</span><span class="n">folder_deps</span><span class="p">,</span><span class="n">files_deps</span><span class="p">,</span><span class="n">add_deps</span><span class="p">,</span>\
+                  <span class="n">mapper</span><span class="p">,</span><span class="n">reducer</span><span class="p">,</span><span class="n">hdfs_data_dir</span><span class="p">,</span><span class="n">hdfs_output_file</span><span class="p">,</span><span class="n">output_hadoop</span><span class="p">,</span><span class="n">text_mode</span><span class="p">,</span><span class="n">hadoop_text_delimiter</span><span class="p">,</span><span class="n">output_dir</span><span class="p">,</span><span class="n">output_sym</span><span class="p">,</span>\
+                  <span class="n">temp_log</span><span class="p">,</span><span class="n">packets_per_hdfs_block</span><span class="p">,</span><span class="n">total_frames</span><span class="p">,</span><span class="n">total_partitions</span><span class="p">,</span><span class="n">adjust_mappers</span><span class="p">,</span><span class="n">adjust_reducers</span><span class="p">,</span>\
+                  <span class="n">use_nohash_partitioner</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">use_lustre_plugin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">lustre_user_dir</span><span class="o">=</span><span class="s2">&quot;r/ajva/&quot;</span><span class="p">,</span><span class="n">num_slaves</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">num_vcores</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>\
+                  <span class="n">one_baseline_per_task</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">sort_output</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">bm_delete_output</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">bypass_reduce</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">):</span>
+                  <span class="c1">#use_lustre_plugin=0,lustre_user_dir=&quot;r/ajva/&quot;,num_slaves=1,num_vcores=1,v=0,file_log=sys.stdout):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Perform correlation through hadoop. Requires hadoop started (see lib_hadoop_hdfs.py).</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     record_size</span>
+<span class="sd">         [0 by default] If 1 will use fixed length records in Hadoop, testing only.</span>
+<span class="sd">     jobsh</span>
+<span class="sd">         bash file to write complete call to hadoop for job submission.</span>
+<span class="sd">     mappersh</span>
+<span class="sd">         bash file with complete call to the mapper.</span>
+<span class="sd">     reducersh</span>
+<span class="sd">         bash file with complete call to the reducer.</span>
+<span class="sd">     app_dir</span>
+<span class="sd">         path to mapper and reducer .py files.</span>
+<span class="sd">     hadoop_dir</span>
+<span class="sd">         base path of the hadoop installation.</span>
+<span class="sd">     hadoop_conf_dir</span>
+<span class="sd">         path with hadoop configuration files.</span>
+<span class="sd">     folder_deps</span>
+<span class="sd">         path to the dependencies for the mapper and the reducer. </span>
+<span class="sd">     files_deps</span>
+<span class="sd">         list of strings with the filenames of the dependencies (.py files).</span>
+<span class="sd">     add_deps</span>
+<span class="sd">         list of strings with paths for additional dependencies (.ini files if applicable)</span>
+<span class="sd">     mapper</span>
+<span class="sd">         filename of the mapper (.py).</span>
+<span class="sd">     reducer</span>
+<span class="sd">         filename of the reducer (.py).</span>
+<span class="sd">     hdfs_data_dir</span>
+<span class="sd">         working path in HDFS or Lustre.</span>
+<span class="sd">     hdfs_output_file</span>
+<span class="sd">         filename of the output file in the working path (HDFS or Lustre).</span>
+<span class="sd">     output_hadoop</span>
+<span class="sd">         filename of the output file in a local folder (output_dir).</span>
+<span class="sd">     text_mode</span>
+<span class="sd">         [1 by default] 0 for binary, only testing.</span>
+<span class="sd">     hadoop_text_delimiter</span>
+<span class="sd">         text delimiter for input data at mapper, see notes below.</span>
+<span class="sd">     output_dir</span>
+<span class="sd">         output folder (local).</span>
+<span class="sd">     output_sym</span>
+<span class="sd">         path (local) for the symbolic link to the output file (typically sub-path in experiment folder).</span>
+<span class="sd">     temp_log</span>
+<span class="sd">         filename for temporary logging.</span>
+<span class="sd">     packets_per_hdfs_block</span>
+<span class="sd">         number of frames per mapper.</span>
+<span class="sd">     total_frames</span>
+<span class="sd">         total number of frames in all the VDIF files to be processed.</span>
+<span class="sd">     total_partitions</span>
+<span class="sd">         maximum number of reducers.</span>
+<span class="sd">     adjust_mappers</span>
+<span class="sd">         force the calculated number of mappers to be multiplied by this factor.</span>
+<span class="sd">     adjust_reducers</span>
+<span class="sd">         force the calculated number of reducers to be multiplied by this factor.</span>
+<span class="sd">     use_nohash_partitioner</span>
+<span class="sd">         0 for default partitioner, 1 for nohash partitioner (better load balancing).</span>
+<span class="sd">     use_lustre_plugin</span>
+<span class="sd">         boolean to allow Hadoop to work directly in Lustre instead of HDFS.</span>
+<span class="sd">     lustre_user_dir</span>
+<span class="sd">         absolute path for the Lustre working path.</span>
+<span class="sd">     num_slaves</span>
+<span class="sd">         [unused] included to have the option to control the number of mappers reducers based on this.</span>
+<span class="sd">     num_vcores</span>
+<span class="sd">         [unused] included to have the option to control the number of mappers reducers based on this</span>
+<span class="sd">     one_baseline_per_task [0 by default]</span>
+<span class="sd">     sort_output</span>
+<span class="sd">         [0 by default]</span>
+<span class="sd">     bm_delete_output</span>
+<span class="sd">         delete ouput file if 1 (only for benchmarking).</span>
+<span class="sd">     bypass_reduce</span>
+<span class="sd">         do not run reduce phase if 1 (so that output is directly that of the mappers), use only for debugging.</span>
+<span class="sd">     v</span>
+<span class="sd">         0 by default, 1 for verbose mode.</span>
+<span class="sd">     file_log</span>
+<span class="sd">         logging file.</span>
+<span class="sd">                  </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     start_time</span>
+<span class="sd">         number of seconds when the job is launched.</span>
+<span class="sd">     end_time</span>
+<span class="sd">         number of seconds when the job finishes.</span>
+<span class="sd">     elapsed_time</span>
+<span class="sd">         duration of the execution of the job [s].</span>
+<span class="sd">     ret_start_time</span>
+<span class="sd">         number of seconds when the output file is requested to the working filesystem (HDFS/Lustre).</span>
+<span class="sd">     ret_end_time</span>
+<span class="sd">         number of seconds when the output file gets to the local output folder.</span>
+<span class="sd">     ret_elapsed_time</span>
+<span class="sd">         duration of the retrieval of the output file from HDFS/Lustre to the local output folder [s].</span>
+<span class="sd">     sort_start_time</span>
+<span class="sd">         number of seconds when the output file sort starts.</span>
+<span class="sd">     sort_end_time</span>
+<span class="sd">         number of seconds when the output file sort starts.</span>
+<span class="sd">     sort_elapsed_time</span>
+<span class="sd">         duration of the output file sort [s].</span>
+<span class="sd">    </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    |</span>
+<span class="sd">    | **Configuration:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  -Controling the number of mappers and reducers:</span>
+<span class="sd">    |    packets_per_hdfs_block and total frames control the number of mappers.</span>
+<span class="sd">    |    total_partitions controls the number of reducers.</span>
+<span class="sd">    |    adjust_mappers and adjust_reducers allow to modify the number or mappers/reducers.</span>
+<span class="sd">    |    *The number of reducers allows finer tunning:</span>
+<span class="sd">    |     -if adjust_reducers==0, the reducer phase is bypassed.</span>
+<span class="sd">    |     -if adjust_reducers&lt;0, the number of reducers is fixed to the absolute value of the integer given.</span>
+<span class="sd">    |  -Configuration of the input reader:</span>
+<span class="sd">    |    Hadoop is currently used in text mode to process binary data. Until an implementation with full binary support,</span>
+<span class="sd">    |      the text mode is used. In this mode Hadoop splits the input blocks if it finds this delimiter, so it has to </span>
+<span class="sd">    |      be configured to minimize its probability. Need to find a more elegant solution.</span>
+<span class="sd">    |  -Configuration files:</span>
+<span class="sd">    |     Use a different hadoop_conf_dir for each node, otherwise there will be conflicts in clusters with shared filesystems.</span>
+<span class="sd">    |  -Filesystem:</span>
+<span class="sd">    |     Use Lustre if possible.</span>
+<span class="sd">    |</span>
+<span class="sd">    |</span>
+<span class="sd">    | **Dependencies:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  -Lustre:</span>
+<span class="sd">    |    Lustre support based on the pluging in https://github.com/Seagate/lustrefs.</span>
+<span class="sd">    |  -Partitioner:</span>
+<span class="sd">    |    The custom partitioner KeyFieldBasedPartitionerNH (NH for no hash) has to be used to avoid unbalanced loads on the reducers,</span>
+<span class="sd">    |       due to the default behavior by hashing the keys.</span>
+<span class="sd">    |</span>
+<span class="sd">    |</span>
+<span class="sd">    | **Notes:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  Note that in this case if  adjust_mappers and adjust_reducers are -1 that does not mean that are computed</span>
+<span class="sd">    |   automatically (this is the usual convention in the code), but however that only 1 mapper or 1 reducer are used </span>
+<span class="sd">    |   (see &quot;Configuration&quot; for more details).</span>
+<span class="sd">    |</span>
+<span class="sd">    |</span>
+<span class="sd">    | **TO DO:**</span>
+<span class="sd">    |</span>
+<span class="sd">    | Implement native binary support, instead of using text mode.</span>
+<span class="sd">    | Document sorting.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Running mapreduce...&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>  
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; (HDFS) Input file dir: &quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">24</span><span class="p">)</span> <span class="o">+</span> <span class="n">hdfs_data_dir</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>  
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; (HDFS) Output file: &quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">24</span><span class="p">)</span> <span class="o">+</span> <span class="n">hdfs_output_file</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>  
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Deleting HDFS output file...&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Text delimiter: &quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">24</span><span class="p">)</span><span class="o">+</span><span class="n">hadoop_text_delimiter</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Record size: &quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">24</span><span class="p">)</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">record_size</span><span class="p">),</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Text mode: &quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">24</span><span class="p">)</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">text_mode</span><span class="p">),</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+    
+    <span class="c1">#TO DO: pass this as an argument to hadoop (not working well currently, and this may cause reducers to fail)</span>
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Copying log4j configuration to classpath...&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span> 
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;cp &quot;</span><span class="o">+</span><span class="n">hadoop_conf_dir</span><span class="o">+</span><span class="s2">&quot;/log4j.properties &quot;</span><span class="o">+</span><span class="n">hadoop_dir</span><span class="o">+</span><span class="s2">&quot;/share/hadoop/mapreduce&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># Remove output file from HDFS if it exists</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">hadoop_dir</span><span class="o">+</span><span class="s2">&quot;bin/hdfs dfs -rm -r -f &quot;</span> <span class="o">+</span> <span class="n">hdfs_output_file</span><span class="p">)</span>
+
+    <span class="n">num_maps</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">total_frames</span><span class="o">//</span><span class="n">packets_per_hdfs_block</span><span class="p">)</span>
+    <span class="n">num_reduces</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">total_partitions</span><span class="p">)</span>
+    
+    <span class="c1"># Adjust values for number of mappers and reducers</span>
+    <span class="n">num_maps</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="nb">int</span><span class="p">((</span><span class="n">num_maps</span><span class="o">*</span><span class="n">adjust_mappers</span><span class="p">)</span><span class="o">//</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">num_reduces</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="nb">int</span><span class="p">((</span><span class="n">num_reduces</span><span class="o">*</span><span class="n">adjust_reducers</span><span class="p">)</span><span class="o">//</span><span class="mi">1</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">adjust_mappers</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">:</span>
+        <span class="n">num_maps</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="o">-</span><span class="n">adjust_mappers</span><span class="o">//</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">adjust_reducers</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">:</span>
+        <span class="n">num_reduces</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="o">-</span><span class="n">adjust_reducers</span><span class="o">//</span><span class="mi">1</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="n">bypass_reduce</span> <span class="ow">or</span> <span class="n">adjust_reducers</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+        <span class="n">num_reduces</span><span class="o">=</span><span class="mi">0</span> 
+
+
+    
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">text_mode</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  Forcing mappers: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">num_maps</span><span class="p">))</span> 
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  Forcing reducers: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">num_reduces</span><span class="p">))</span> 
+
+    <span class="c1"># TO DO: outputdelimiter: this needs to be done in a different way (more efficient and correct)</span>
+    <span class="c1">#     Workaround to avoid spliting packets, default delimiter is custom. Need to find option for fixed text length</span>
+
+    <span class="c1"># Group options with -D into option1</span>
+    <span class="c1"># Group options with other names (-partitioner, -inputformat, ...) into option2</span>
+    
+    <span class="n">option1</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">use_lustre_plugin</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="n">option1</span> <span class="o">+=</span> <span class="n">get_options_lustre</span><span class="p">()</span>
+ 
+    <span class="k">if</span> <span class="n">text_mode</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="n">option1</span> <span class="o">+=</span> <span class="n">get_options_text_delimiter</span><span class="p">(</span><span class="n">hadoop_text_delimiter</span><span class="p">)</span>
+        <span class="n">option1</span> <span class="o">+=</span> <span class="n">get_options_num_maps</span><span class="p">(</span><span class="n">num_maps</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">option1</span> <span class="o">+=</span> <span class="s2">&quot; &quot;</span>
+    
+    <span class="c1"># Separator and sorting.</span>
+    <span class="c1"># TODO: Take this to the constants file (const_mapred.py) (?). Currently in configuration file.</span>
+
+    <span class="n">option1</span> <span class="o">+=</span> <span class="n">get_options_logging</span><span class="p">(</span><span class="n">hadoop_conf_dir</span><span class="o">+</span><span class="s2">&quot;/log4j.properties&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># all baselines</span>
+    <span class="k">if</span> <span class="n">one_baseline_per_task</span><span class="p">:</span>
+        <span class="n">option1</span> <span class="o">+=</span> <span class="n">get_options_partitioning</span><span class="p">(</span><span class="n">FIELD_SEP</span><span class="p">,</span>\
+                                            <span class="n">HADOOP_NUM_KEY_FIELDS</span><span class="p">,</span>\
+                                            <span class="n">FIELD_SEP</span><span class="p">,</span>\
+                                            <span class="n">HADOOP_PARTITION_ONE_BASELINE_PER_TASK_STR</span><span class="p">,</span>\
+                                            <span class="n">COMMON_SORT_ONE_BASELINE_PER_TASK_STR</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">option1</span> <span class="o">+=</span> <span class="n">get_options_partitioning</span><span class="p">(</span><span class="n">FIELD_SEP</span><span class="p">,</span>\
+                                            <span class="n">HADOOP_NUM_KEY_FIELDS</span><span class="p">,</span>\
+                                            <span class="n">FIELD_SEP</span><span class="p">,</span>\
+                                            <span class="n">HADOOP_PARTITION_ALL_BASELINES_PER_TASK_STR</span><span class="p">,</span>\
+                                            <span class="n">COMMON_SORT_ALL_BASELINES_PER_TASK_STR</span><span class="p">)</span>
+    
+    <span class="n">option1</span> <span class="o">+=</span> <span class="n">get_options_num_reduces</span><span class="p">(</span><span class="n">num_reduces</span><span class="p">)</span>
+    
+    
+    <span class="c1">#option2 =  &quot; -partitioner org.apache.hadoop.mapred.lib.KeyFieldBasedPartitioner&quot;</span>
+    <span class="c1"># No hash - custom partitioner (specify reducer id as number from 0 to num_reducers)</span>
+    <span class="c1">#option2 =  &quot; -partitioner org.apache.hadoop.mapred.lib.KeyFieldBasedPartitionerNH&quot;</span>
+    
+    <span class="n">option2</span> <span class="o">=</span> <span class="n">get_options_custom_partitioner</span><span class="p">(</span><span class="n">use_nohash_partitioner</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">text_mode</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+        <span class="p">[</span><span class="n">options_fixed_1</span><span class="p">,</span><span class="n">options_fixed_2</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_options_fixed_length_records</span><span class="p">(</span><span class="n">record_size</span><span class="p">)</span>
+        <span class="n">option1</span> <span class="o">+=</span> <span class="n">options_fixed_1</span>
+        <span class="n">option2</span> <span class="o">+=</span> <span class="n">options_fixed_2</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">hdfs_data_dir</span> <span class="o">+=</span> <span class="s2">&quot;/*&quot;</span>
+   
+    <span class="c1"># Files</span>
+    <span class="n">files_extra</span><span class="o">=</span> <span class="s2">&quot; -file </span><span class="se">\&quot;</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">mappersh</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2">&quot;</span> 
+    <span class="n">files_extra</span><span class="o">+=</span><span class="s2">&quot; -file </span><span class="se">\&quot;</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">reducersh</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2">&quot;</span> 
+    <span class="n">files_extra</span><span class="o">+=</span><span class="s2">&quot; -file </span><span class="se">\&quot;</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">app_dir</span> <span class="o">+</span> <span class="n">mapper</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2">&quot;</span> 
+    <span class="n">files_extra</span><span class="o">+=</span><span class="s2">&quot; -file </span><span class="se">\&quot;</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">app_dir</span> <span class="o">+</span> <span class="n">reducer</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2">&quot;</span> 
+        
+    <span class="c1"># Application dependencies</span>
+    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files_deps</span><span class="p">:</span>
+        <span class="n">files_extra</span><span class="o">+=</span><span class="s2">&quot; -file </span><span class="se">\&quot;</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">folder_deps</span> <span class="o">+</span> <span class="n">f</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2">&quot;</span> 
+    
+    <span class="c1"># Configuration dependencies (if applicable)</span>
+    <span class="k">for</span> <span class="n">f_add</span> <span class="ow">in</span> <span class="n">add_deps</span><span class="p">:</span>
+        <span class="n">files_extra</span><span class="o">+=</span><span class="s2">&quot; -file </span><span class="se">\&quot;</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">f_add</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2">&quot;</span> 
+    
+    
+    <span class="c1"># TO DO: specify log4j file...</span>
+    <span class="c1">#option2 += &quot; -D log4j.configuation=&quot;+hadoop_conf_dir+&quot;/log4j.properties&quot;</span>
+    
+    <span class="n">str_command</span> <span class="o">=</span> <span class="n">hadoop_dir</span> <span class="o">+</span> <span class="s2">&quot;bin/hadoop --config &quot;</span> <span class="o">+</span> <span class="n">hadoop_conf_dir</span> <span class="o">+</span> <span class="s2">&quot; jar &quot;</span> <span class="o">+</span> <span class="n">hadoop_dir</span> <span class="o">+</span> <span class="s2">&quot;share/hadoop/tools/lib/&quot;</span><span class="o">+</span><span class="n">HADOOP_STREAMING_JAR</span><span class="o">+</span><span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">option1</span> <span class="o">+</span> <span class="s2">&quot;-input &quot;</span> <span class="o">+</span> <span class="n">hdfs_data_dir</span>  <span class="o">+</span> <span class="s2">&quot; -output &quot;</span> <span class="o">+</span> <span class="n">hdfs_output_file</span> <span class="o">+</span> <span class="s2">&quot; -mapper &quot;</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2">&quot;</span>  <span class="o">+</span> <span class="n">mappersh</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot; -reducer &quot;</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">reducersh</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">files_extra</span> <span class="o">+</span> <span class="n">option2</span>
+    
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">str_command</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+       
+
+
+    
+    
+    <span class="c1"># Prepare jobsh bash file for job submission</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;echo $LD_LIBRARY_PATH &gt; &quot;</span> <span class="o">+</span> <span class="n">temp_log</span><span class="p">)</span>
+
+    <span class="n">line</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2">&quot;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">temp_log</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f_log</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">line_in</span> <span class="ow">in</span> <span class="n">f_log</span><span class="p">:</span>
+            <span class="n">line</span><span class="o">+=</span><span class="n">line_in</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="n">line</span><span class="o">+=</span><span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2">&quot;</span>
+
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">jobsh</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;#!/bin/bash&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">f</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;export LD_LIBRARY_PATH=&quot;</span> <span class="o">+</span> <span class="n">line</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">f</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">str_command</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">f</span><span class="p">)</span>
+
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;chmod +x &quot;</span><span class="o">+</span><span class="n">jobsh</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="s2">&quot;/home&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">jobsh</span><span class="p">:</span>
+        <span class="n">jobsh</span><span class="o">=</span><span class="s2">&quot;./&quot;</span><span class="o">+</span><span class="n">jobsh</span>
+        
+    <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="c1">#                --------------- Execution time start</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">jobsh</span><span class="p">)</span>
+    <span class="n">end_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="c1">#                  --------------- Execution time stop</span>
+    
+    <span class="n">elapsed_time</span> <span class="o">=</span> <span class="n">end_time</span> <span class="o">-</span> <span class="n">start_time</span>
+
+   
+    
+    <span class="c1"># Retrive file (or delete if running in benchmarking mode)</span>
+    <span class="n">ret_start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">unsorted_suffix</span> <span class="o">=</span>  <span class="s2">&quot;_unsorted&quot;</span>
+    <span class="k">if</span> <span class="n">use_lustre_plugin</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">hadoop_dir</span> <span class="o">+</span> <span class="s2">&quot;bin/hdfs --config &quot;</span> <span class="o">+</span> <span class="n">hadoop_conf_dir</span> <span class="o">+</span> <span class="s2">&quot; dfs -getmerge &quot;</span> <span class="o">+</span> <span class="n">hdfs_output_file</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span>\
+                  <span class="n">output_dir</span> <span class="o">+</span> <span class="n">output_hadoop</span> <span class="o">+</span> <span class="n">unsorted_suffix</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">bm_delete_output</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">hadoop_dir</span> <span class="o">+</span> <span class="s2">&quot;bin/hadoop --config &quot;</span> <span class="o">+</span> <span class="n">hadoop_conf_dir</span> <span class="o">+</span> <span class="s2">&quot; fs -getmerge &quot;</span> <span class="o">+</span>\
+                      <span class="n">lustre_user_dir</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">hdfs_output_file</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">output_dir</span> <span class="o">+</span> <span class="n">output_hadoop</span> <span class="o">+</span> <span class="n">unsorted_suffix</span><span class="p">)</span>
+            <span class="c1">#os.system(&quot;cp &quot; + hdfs_output_file + &quot; &quot; + output_dir + output_hadoop + unsorted_suffix)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; (!!) Benchmarking mode, will not retrieve output)&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+                
+                <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;ls -l `ls -td -- &quot;</span><span class="o">+</span><span class="n">lustre_user_dir</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">hdfs_output_file</span> <span class="o">+</span><span class="s2">&quot;` &gt; &quot;</span> <span class="o">+</span> <span class="n">temp_log</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Output files:&quot;</span><span class="p">,</span><span class="n">end</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">temp_log</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f_tmp</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f_tmp</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  &quot;</span><span class="o">+</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span><span class="n">end</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; (!!) Benchmarking mode, deleting part* files...)&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;mv &quot;</span><span class="o">+</span><span class="n">lustre_user_dir</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">hdfs_output_file</span><span class="o">+</span><span class="s2">&quot;/part-00000 &quot;</span><span class="o">+</span><span class="n">lustre_user_dir</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">hdfs_output_file</span><span class="o">+</span><span class="s2">&quot;/only-saved-part-00000&quot;</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;rm &quot;</span><span class="o">+</span><span class="n">lustre_user_dir</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">hdfs_output_file</span><span class="o">+</span><span class="s2">&quot;/part*&quot;</span><span class="p">)</span>
+                
+    <span class="n">ret_end_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">ret_elapsed_time</span> <span class="o">=</span> <span class="n">ret_end_time</span> <span class="o">-</span> <span class="n">ret_start_time</span>
+    
+    
+    <span class="n">sort_start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="c1"># Show output files and delete them if benchmarking</span>
+    <span class="k">if</span> <span class="n">bm_delete_output</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">use_lustre_plugin</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; (!!) Benchmarking mode, output not retrieved)&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">sort_output</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Re-sorting output file (may be unsorted if using multiple reducers)&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span> 
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;sort -k1,1 &quot;</span> <span class="o">+</span> <span class="n">output_dir</span> <span class="o">+</span> <span class="n">output_hadoop</span> <span class="o">+</span> <span class="n">unsorted_suffix</span> <span class="o">+</span> <span class="s2">&quot;&gt;&quot;</span> <span class="o">+</span> <span class="n">output_dir</span> <span class="o">+</span> <span class="n">output_hadoop</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;rm &quot;</span> <span class="o">+</span> <span class="n">output_dir</span> <span class="o">+</span> <span class="n">output_hadoop</span> <span class="o">+</span> <span class="n">unsorted_suffix</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; No sorting of output!&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span> 
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;cp &quot;</span> <span class="o">+</span> <span class="n">output_dir</span> <span class="o">+</span> <span class="n">output_hadoop</span> <span class="o">+</span> <span class="n">unsorted_suffix</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">output_dir</span> <span class="o">+</span> <span class="n">output_hadoop</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;rm &quot;</span> <span class="o">+</span> <span class="n">output_dir</span> <span class="o">+</span> <span class="n">output_hadoop</span> <span class="o">+</span> <span class="n">unsorted_suffix</span><span class="p">)</span>
+        
+        <span class="n">command_mk</span> <span class="o">=</span> <span class="s2">&quot;mkdir &quot;</span><span class="o">+</span><span class="n">output_sym</span>
+        <span class="n">command_ln</span> <span class="o">=</span> <span class="s2">&quot;ln -s &quot;</span><span class="o">+</span><span class="n">output_dir</span><span class="o">+</span><span class="n">output_hadoop</span><span class="o">+</span><span class="s2">&quot; &quot;</span><span class="o">+</span><span class="n">output_sym</span><span class="o">+</span><span class="n">output_hadoop</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">command_mk</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">command_ln</span><span class="p">)</span>
+        
+    <span class="n">sort_end_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">sort_elapsed_time</span> <span class="o">=</span> <span class="n">sort_end_time</span> <span class="o">-</span> <span class="n">sort_start_time</span>
+
+    
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Output file: &quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">24</span><span class="p">)</span> <span class="o">+</span> <span class="n">output_dir</span> <span class="o">+</span> <span class="n">output_hadoop</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>  
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Elapsed time = &quot;</span><span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">elapsed_time</span><span class="p">)</span><span class="o">+</span> <span class="s2">&quot; s&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+        
+    <span class="c1"># Job id and status</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">hadoop_dir</span> <span class="o">+</span> <span class="s2">&quot;bin/hadoop job -list all &gt; &quot;</span> <span class="o">+</span> <span class="n">temp_log</span><span class="p">)</span>
+    <span class="n">max_lines</span><span class="o">=</span><span class="mi">3</span>
+    <span class="n">line_count</span><span class="o">=</span><span class="mi">0</span>
+    <span class="n">line_with_job_id</span><span class="o">=</span><span class="mi">3</span>
+    <span class="n">job_id</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Job summary:&quot;</span><span class="p">,</span><span class="n">end</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">temp_log</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f_tmp</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f_tmp</span><span class="p">:</span>
+                <span class="n">line_count</span><span class="o">+=</span><span class="mi">1</span>
+                <span class="k">if</span> <span class="n">line_count</span><span class="o">&lt;=</span><span class="n">max_lines</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  &quot;</span><span class="o">+</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span><span class="n">end</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+
+    <span class="c1"># Check nodes (in case some where unavailable)</span>
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Checking nodes after job...&quot;</span><span class="p">,</span><span class="n">end</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">hadoop_dir</span> <span class="o">+</span> <span class="s2">&quot;bin/yarn --config &quot;</span><span class="o">+</span> <span class="n">hadoop_conf_dir</span> <span class="o">+</span><span class="s2">&quot; node -list | grep Total &gt; &quot;</span> <span class="o">+</span> <span class="n">temp_log</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">temp_log</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f_tmp</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f_tmp</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  &quot;</span><span class="o">+</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span><span class="n">end</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+
+    <span class="k">return</span><span class="p">([</span><span class="n">start_time</span><span class="p">,</span><span class="n">end_time</span><span class="p">,</span><span class="n">elapsed_time</span><span class="p">,</span><span class="n">ret_start_time</span><span class="p">,</span><span class="n">ret_end_time</span><span class="p">,</span><span class="n">ret_elapsed_time</span><span class="p">,</span><span class="n">sort_start_time</span><span class="p">,</span><span class="n">sort_end_time</span><span class="p">,</span><span class="n">sort_elapsed_time</span><span class="p">])</span></div>
+
+
+<span class="c1"># &lt;codecell&gt;</span>
+
+
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Antonio Vazquez Alvarez, Victor Pankratius, and Pedro Elosegui.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

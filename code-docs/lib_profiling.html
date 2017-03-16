@@ -1,0 +1,158 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>lib_profiling module &#8212; CorrelX 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="lib_quant module" href="lib_quant.html" />
+    <link rel="prev" title="lib_pcal module" href="lib_pcal.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-lib_profiling">
+<span id="lib-profiling-module"></span><h1>lib_profiling module<a class="headerlink" href="#module-lib_profiling" title="Permalink to this headline">¶</a></h1>
+<p>Routines for profiling and generation of call graphs (using pycallgrah).</p>
+<dl class="function">
+<dt id="lib_profiling.get_include_functions">
+<code class="descclassname">lib_profiling.</code><code class="descname">get_include_functions</code><span class="sig-paren">(</span><em>input_py, avoid_v=['main'], plus_v=['lib_*'], exclude_v=['*.&lt;module&gt;'], profile_memory=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_profiling.html#get_include_functions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_profiling.get_include_functions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get str with include argument for pycallgraph.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>input_py <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>python script to scan functions in.</dd>
+<dt>avoid_v <span class="classifier-delimiter">:</span> <span class="classifier">list of str</span></dt>
+<dd>list of funcionts to be excluded.</dd>
+<dt>profile_memory <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>[0 by default] if 1 will include memory profiling information (see notes below).</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>i_args <span class="classifier-delimiter">:</span> <span class="classifier">str </span></dt>
+<dd>arguments on functions to be included in pycallgraph profiling.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>-Memory profiling (not used by default):</dt>
+<dd>Reported as experimental by pycallgrpah docs. 
+Install psutil and python-psutil, otherwise it will be slow.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_profiling.get_pycallgraph_str">
+<code class="descclassname">lib_profiling.</code><code class="descname">get_pycallgraph_str</code><span class="sig-paren">(</span><em>i_args</em>, <em>out_png</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_profiling.html#get_pycallgraph_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_profiling.get_pycallgraph_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get caller to pycallgraph.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>i_args <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>generated wit get_include_functions().</dd>
+<dt>out_png <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>output image (.png).</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>pycallgraph_str <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>caller.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_profiling.process_cprof_file">
+<code class="descclassname">lib_profiling.</code><code class="descname">process_cprof_file</code><span class="sig-paren">(</span><em>file_cprof</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_profiling.html#process_cprof_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_profiling.process_cprof_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert cProfile output file into text format, see Script section below for an usage example.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="lib_pcal.html" title="previous chapter">lib_pcal module</a></li>
+      <li>Next: <a href="lib_quant.html" title="next chapter">lib_quant module</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/lib_profiling.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Antonio Vazquez Alvarez, Victor Pankratius, and Pedro Elosegui.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/lib_profiling.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

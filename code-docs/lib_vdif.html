@@ -1,0 +1,541 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>lib_vdif module &#8212; CorrelX 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="mapred_cx module" href="mapred_cx.html" />
+    <link rel="prev" title="lib_quant module" href="lib_quant.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-lib_vdif">
+<span id="lib-vdif-module"></span><h1>lib_vdif module<a class="headerlink" href="#module-lib_vdif" title="Permalink to this headline">¶</a></h1>
+<p>Module with basic functions to read and write VDIF headers and data.</p>
+<div class="line-block">
+<div class="line">&#8211; VDIF Specification version [VD01]&#8211;</div>
+<div class="line-block">
+<div class="line">VLBI Data Interchange Format (VDIF) Specification</div>
+<div class="line-block">
+<div class="line">Release 1.0 (w/24 August 2009 corrections/clarifications highlighted)</div>
+<div class="line">Ratified 26 June 2009</div>
+<div class="line"><br /></div>
+</div>
+</div>
+</div>
+<div class="section" id="notes">
+<h2>Notes<a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h2>
+<div class="line-block">
+<div class="line">-bitarray library still used for VDIF file generation.</div>
+<div class="line-block">
+<div class="line">Updated 2015.10.15:</div>
+<div class="line">-frame length (//8 when writing header, <a href="#id1"><span class="problematic" id="id2">*</span></a>8 when reading header)</div>
+<div class="line">-changed endiannes to be correct</div>
+<div class="line">2015.12.03: changed bits2int(bitsin)</div>
+<div class="line">2015.12.03: read_samples is now more efficient, but may not work with numbers of bits per sample that do not divide 32.</div>
+<div class="line">TO DO: implement in &#8220;read_samples&#8221; the functionality to read bits per sample that do not divide 32.</div>
+<div class="line">TO DO: testing on epoch and seconds conversions.</div>
+<div class="line">2016.09.21: bitarray reader implementation removed in favor of raw which is faster.</div>
+</div>
+</div>
+<dl class="function">
+<dt id="lib_vdif.bits2int">
+<code class="descclassname">lib_vdif.</code><code class="descname">bits2int</code><span class="sig-paren">(</span><em>bitsin</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_vdif.html#bits2int"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_vdif.bits2int" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="lib_vdif.compute_range">
+<code class="descclassname">lib_vdif.</code><code class="descname">compute_range</code><span class="sig-paren">(</span><em>word_size</em>, <em>bits_per_sample</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_vdif.html#compute_range"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_vdif.compute_range" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get starting positions in word for groups of bits_per_sample bits.</p>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Example:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">word_size=32</div>
+<div class="line">bits_per_sample=4</div>
+<div class="line">list(compute_range(word_size,bits_per_sample))</div>
+<div class="line">&gt;&gt;&gt; [0, 4, 8, 12, 16, 20, 24, 28]</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_vdif.create_header_vdif">
+<code class="descclassname">lib_vdif.</code><code class="descname">create_header_vdif</code><span class="sig-paren">(</span><em>seconds_fr=17</em>, <em>invalid=False</em>, <em>legacy=True</em>, <em>ref_epoch=15</em>, <em>frame_num=1</em>, <em>vdif_version=1</em>, <em>log_2_channels=1</em>, <em>frame_length=20000</em>, <em>data_type=0</em>, <em>bits_per_sample=2</em>, <em>thread_id=1</em>, <em>station_id=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_vdif.html#create_header_vdif"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_vdif.create_header_vdif" title="Permalink to this definition">¶</a></dt>
+<dd><p>TO DO: check epoch...</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_vdif.date_to_vdif">
+<code class="descclassname">lib_vdif.</code><code class="descname">date_to_vdif</code><span class="sig-paren">(</span><em>year</em>, <em>month</em>, <em>day</em>, <em>hour</em>, <em>minute</em>, <em>second</em>, <em>offset_seconds=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_vdif.html#date_to_vdif"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_vdif.date_to_vdif" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute VDIF fields for epoch and seconds from date.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_vdif.disp_list">
+<code class="descclassname">lib_vdif.</code><code class="descname">disp_list</code><span class="sig-paren">(</span><em>a</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_vdif.html#disp_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_vdif.disp_list" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="lib_vdif.get_vdif_num_frames">
+<code class="descclassname">lib_vdif.</code><code class="descname">get_vdif_num_frames</code><span class="sig-paren">(</span><em>filename</em>, <em>packet_limit=-1</em>, <em>forced_packet_size=0</em>, <em>offset_bytes=0</em>, <em>only_offset_once=1</em>, <em>v=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_vdif.html#get_vdif_num_frames"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_vdif.get_vdif_num_frames" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get information from vdif file by processing headers. As many headers as packet_limit are processed.
+Each of the output parameters are vectors with all the possible values found.</p>
+<blockquote>
+<div>See get_vdif_stats().</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>num_frames <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of frames read.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">This is a modified version of get_vdif_stats(), merge with it.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_vdif.get_vdif_stats">
+<code class="descclassname">lib_vdif.</code><code class="descname">get_vdif_stats</code><span class="sig-paren">(</span><em>filename</em>, <em>packet_limit=-1</em>, <em>forced_packet_size=0</em>, <em>offset_bytes=0</em>, <em>only_offset_once=1</em>, <em>v=1</em>, <em>short_output=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_vdif.html#get_vdif_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_vdif.get_vdif_stats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get information from vdif file by processing headers. As many headers as packet_limit are processed.
+Each of the output parameters are vectors with all the possible values found.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>filename <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to VDIF file.</dd>
+<dt>packet_limit <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>[default -1] maximum number of packets, if -1 no limit.</dd>
+<dt>forced_packet_size <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>[default 0] if &gt;0 will read this number of bytes instead those in the VDIF header.</dd>
+<dt>offset_bytes <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>[default 0] skip this number of bytes before reading the first VDIF header.</dd>
+<dt>only_offset_once <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>[default 1] if ==0 will skip offset_bytes before every frame to be read.</dd>
+<dt>v <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>[default 1] verbose mode if 1.</dd>
+<dt>short_output <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>[default 0] group very long vector (frames) if 1.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>v_stations <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>list with unique ids found for stations in all frames read.</dd>
+<dt>v_seconds <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>list with unique seconds found for all frames read.</dd>
+<dt>v_frames <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>list with unique frame numbers for all frames read.</dd>
+<dt>v_sizes <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>list with unique frame sizes for all frames read.</dd>
+</dl>
+<p>total_size : int          total size for all frames read.</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_vdif.int2bits">
+<code class="descclassname">lib_vdif.</code><code class="descname">int2bits</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_vdif.html#int2bits"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_vdif.int2bits" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="lib_vdif.print_header_mark5">
+<code class="descclassname">lib_vdif.</code><code class="descname">print_header_mark5</code><span class="sig-paren">(</span><em>sync_word</em>, <em>years</em>, <em>user_data</em>, <em>bit_t</em>, <em>frame_num</em>, <em>time_code_w1</em>, <em>time_code_w2</em>, <em>crcc</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_vdif.html#print_header_mark5"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_vdif.print_header_mark5" title="Permalink to this definition">¶</a></dt>
+<dd><p>[DELETE]</p>
+<p>Untested. Consider deleting.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_vdif.print_header_vdif">
+<code class="descclassname">lib_vdif.</code><code class="descname">print_header_vdif</code><span class="sig-paren">(</span><em>seconds_fr=17</em>, <em>invalid=False</em>, <em>legacy=True</em>, <em>ref_epoch=15</em>, <em>frame_num=1</em>, <em>vdif_version=1</em>, <em>log_2_channels=1</em>, <em>frame_length=20000</em>, <em>data_type=0</em>, <em>bits_per_sample=2</em>, <em>thread_id=1</em>, <em>station_id=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_vdif.html#print_header_vdif"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_vdif.print_header_vdif" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show header of vdif frame, for logging.</p>
+<blockquote>
+<div>See read_header_vdif_from_raw() output.</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_vdif.print_header_vdif_info">
+<code class="descclassname">lib_vdif.</code><code class="descname">print_header_vdif_info</code><span class="sig-paren">(</span><em>brief</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_vdif.html#print_header_vdif_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_vdif.print_header_vdif_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show stats results header.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_vdif.print_header_vdif_row">
+<code class="descclassname">lib_vdif.</code><code class="descname">print_header_vdif_row</code><span class="sig-paren">(</span><em>id=0</em>, <em>seconds_fr=17</em>, <em>invalid=False</em>, <em>legacy=True</em>, <em>ref_epoch=15</em>, <em>frame_num=1</em>, <em>vdif_version=1</em>, <em>log_2_channels=1</em>, <em>frame_length=20000</em>, <em>data_type=0</em>, <em>bits_per_sample=2</em>, <em>thread_id=1</em>, <em>station_id=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_vdif.html#print_header_vdif_row"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_vdif.print_header_vdif_row" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="lib_vdif.read_bytes_offset_file">
+<code class="descclassname">lib_vdif.</code><code class="descname">read_bytes_offset_file</code><span class="sig-paren">(</span><em>f</em>, <em>n_bytes</em>, <em>v=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_vdif.html#read_bytes_offset_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_vdif.read_bytes_offset_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Used to skip some offset when reading a binary file.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>f <span class="classifier-delimiter">:</span> <span class="classifier">file handler</span></dt>
+<dd>(sys.stdin).</dd>
+<dt>n_words <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of words of type TYPE_WORD.</dd>
+<dt>v <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>[0 by default] verbose mode if 1.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_vdif.read_header_mark5">
+<code class="descclassname">lib_vdif.</code><code class="descname">read_header_mark5</code><span class="sig-paren">(</span><em>header</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_vdif.html#read_header_mark5"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_vdif.read_header_mark5" title="Permalink to this definition">¶</a></dt>
+<dd><p>[DELETE]</p>
+<p>Untested. Consider deleting.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_vdif.read_header_vdif_from_raw">
+<code class="descclassname">lib_vdif.</code><code class="descname">read_header_vdif_from_raw</code><span class="sig-paren">(</span><em>header</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_vdif.html#read_header_vdif_from_raw"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_vdif.read_header_vdif_from_raw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reader vdif header.</p>
+<blockquote>
+<div>header : numpy array with four np.unit32 words.</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>[seconds_fr,invalid,legacy,ref_epoch,frame_num,vdif_version,log_2_channels,</dt>
+<dd><p class="first">frame_length,data_type,bits_per_sample,thread_id,station_id]:
+where:</p>
+<blockquote class="last">
+<div><div class="line-block">
+<div class="line">seconds_fr:        VDIF frame seconds (integer).</div>
+<div class="line">invalid:           VDIF invalid bit.</div>
+<div class="line">legacy:            VDIF legacy bit.</div>
+<div class="line">ref_epoch:         VDIF frame epoch (float with MJD (TBC)).</div>
+<div class="line">frame_num:         VDIF frame number (integer).</div>
+<div class="line">vdif_version:      VDIF frame version (integer).</div>
+<div class="line">log_2_channels:    VDIF logarithm in base 2 of the number of channels in the frame.</div>
+<div class="line">frame_length:      VDIF frame length (integer with number of bytes).</div>
+<div class="line">data_type:         VDIF frame data type bit.</div>
+<div class="line">bits_per_sample:   number of bits per sample.</div>
+<div class="line">thread_id:         VDIF thread identifier field (integer).</div>
+<div class="line">station_id:        VDIF station id field (integer).</div>
+</div>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_vdif.read_samples_from_raw">
+<code class="descclassname">lib_vdif.</code><code class="descname">read_samples_from_raw</code><span class="sig-paren">(</span><em>words</em>, <em>bits_per_sample</em>, <em>word_size=32</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_vdif.html#read_samples_from_raw"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_vdif.read_samples_from_raw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract samples from unit32 words into numpy array of integers.</p>
+<blockquote>
+<div>words : numpy array of np.unit32.
+bits_per_sample : int
+word_size : int</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Limitations:</strong></div>
+<div class="line-block">
+<div class="line">bits per sample should be a divisor of word_size.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_vdif.read_vdif_frame">
+<code class="descclassname">lib_vdif.</code><code class="descname">read_vdif_frame</code><span class="sig-paren">(</span><em>f</em>, <em>show_errors=0</em>, <em>forced_frame_length=0</em>, <em>offset_bytes=0</em>, <em>v=0</em>, <em>return_raw_header=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_vdif.html#read_vdif_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_vdif.read_vdif_frame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Main routine for reading one VDIF frame.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>f <span class="classifier-delimiter">:</span> <span class="classifier">file handler</span></dt>
+<dd>input file handler (typically sys.stdin).</dd>
+<dt>show_errors <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>[0 by default] display information on errors if 1.</dd>
+<dt>forced_frame_length <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>[0 by default] number of bytes to read including header, if 0 will take value from header (recommended).</dd>
+<dt>offset_bytes <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>[0 by default] number of bytes to skip before reading header.</dd>
+<dt>v <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>[0 by default] verbosed mode if 1.</dd>
+<dt>return_raw_header <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>[0 by default] if 0 returns a list of integers with the header fields, if 1 returns bytes.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>header <span class="classifier-delimiter">:</span> <span class="classifier">list of int</span></dt>
+<dd><dl class="first last docutils">
+<dt>list of integers with the fields in the VDIF header:</dt>
+<dd><div class="first last line-block">
+<div class="line-block">
+<div class="line-block">
+<div class="line">[seconds_fr,invalid,legacy,ref_epoch,frame_num,vdif_version,log_2_channels,            |                     frame_length,data_type,bits_per_sample,thread_id,station_id]. </div>
+</div>
+<div class="line">See read_header_vdif_from_raw() for details.</div>
+</div>
+<div class="line">If errors, header is None.</div>
+</div>
+</dd>
+</dl>
+</dd>
+<dt>samples <span class="classifier-delimiter">:</span> <span class="classifier">1D numpy array of int </span></dt>
+<dd><dl class="first last docutils">
+<dt>sample components. E.g. for VDIF complex frame, [I0, Q0, I1, Q1, ...]</dt>
+<dd><div class="first last line-block">
+<div class="line">if errors, samples is None.</div>
+</div>
+</dd>
+</dl>
+</dd>
+<dt>check_size_samples <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>1 if read as many samples as expected from the frame length (and rest of metadata), 0 otherwise.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Configuration:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">HEADER_VDIF_WORDS</div>
+<div class="line">HEADER_BYTES</div>
+<div class="line">WORD_SIZE_BYTES</div>
+<div class="line"><br /></div>
+</div>
+<div class="line"><strong>Procedure:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">1. Read VDIF header.</div>
+<div class="line">2. Read rest of the frame based on frame length information in header.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_vdif.read_words_from_file_to_raw">
+<code class="descclassname">lib_vdif.</code><code class="descname">read_words_from_file_to_raw</code><span class="sig-paren">(</span><em>f</em>, <em>n_words</em>, <em>v=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_vdif.html#read_words_from_file_to_raw"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_vdif.read_words_from_file_to_raw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read binary file directly into numpy array.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>f <span class="classifier-delimiter">:</span> <span class="classifier">file handler</span></dt>
+<dd>(sys.stdin).</dd>
+<dt>n_words <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of words of type TYPE_WORD.</dd>
+<dt>v <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>[0 by default] verbose mode if 1.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div>words_array :  numpy array with number-&gt;n_words type-&gt;TYPE_WORD words.</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Configuration:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">TYPE_WORD:   [np.uint32 by default] type of words to read.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_vdif.reshape_samples">
+<code class="descclassname">lib_vdif.</code><code class="descname">reshape_samples</code><span class="sig-paren">(</span><em>allsamples</em>, <em>data_type</em>, <em>samples_in_frame</em>, <em>num_channels</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_vdif.html#reshape_samples"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_vdif.reshape_samples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Corner-turning.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>allsamples <span class="classifier-delimiter">:</span> <span class="classifier">1D array</span></dt>
+<dd>with all samples read from VDIF file.</dd>
+<dt>data_type <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>0 for real, 1 for complex.</dd>
+<dt>samples_in_frame <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of samples components per channel.</dd>
+<dt>num_channels <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of channels.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div>samples : 2D array with num_channels rows, with each row containing only its associated samples.</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Procedure:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line"># example</div>
+<div class="line">aa=list(range(0,20))</div>
+<div class="line">bb=np.reshape(aa,(-1,5,2))</div>
+<div class="line">cc=np.transpose(bb,(1,0,2))</div>
+<div class="line">dd=np.reshape(cc,(5,-1))</div>
+<div class="line">dd</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_vdif.show_headers_vdif">
+<code class="descclassname">lib_vdif.</code><code class="descname">show_headers_vdif</code><span class="sig-paren">(</span><em>filename</em>, <em>limit_frames=-1</em>, <em>skip_frames=-1</em>, <em>brief=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_vdif.html#show_headers_vdif"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_vdif.show_headers_vdif" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get tabulated information from vdif file headers. The first &#8220;limit_frames&#8221; after &#8220;skip_frames&#8221; are read.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>filename <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to file.</dd>
+<dt>limit_frames <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>maximum number of lines to display (-1 for no limit).</dd>
+<dt>skip_frames <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of frames to skip before starting displaying frames (default &lt;=0).</dd>
+<dt>brief <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>1 to avoid displaying descriptions for columns.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div>N/A</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_vdif.strbitarray2int">
+<code class="descclassname">lib_vdif.</code><code class="descname">strbitarray2int</code><span class="sig-paren">(</span><em>a</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_vdif.html#strbitarray2int"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_vdif.strbitarray2int" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="lib_vdif.vdif_epoch_seconds_to_epoch_seconds_datetime">
+<code class="descclassname">lib_vdif.</code><code class="descname">vdif_epoch_seconds_to_epoch_seconds_datetime</code><span class="sig-paren">(</span><em>epoch_six</em>, <em>tot_seconds</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_vdif.html#vdif_epoch_seconds_to_epoch_seconds_datetime"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_vdif.vdif_epoch_seconds_to_epoch_seconds_datetime" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute reference epoch and seconds from VDIF standard to MJD and seconds.
+Using datetime.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>epoch_six <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>epoch directly from VDIF header.</dd>
+<dt>tot_seconds <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>seconds directly from VDIF header.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>epoch</dt>
+<dd>epoch MJD.</dd>
+<dt>seconds</dt>
+<dd>epoch seconds.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_vdif.write_samples">
+<code class="descclassname">lib_vdif.</code><code class="descname">write_samples</code><span class="sig-paren">(</span><em>samples</em>, <em>bits_per_sample</em>, <em>word_size=32</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_vdif.html#write_samples"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_vdif.write_samples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write vdif samples. Used by vdif signal generator.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_vdif.write_samples_raw">
+<code class="descclassname">lib_vdif.</code><code class="descname">write_samples_raw</code><span class="sig-paren">(</span><em>samples</em>, <em>bits_per_sample</em>, <em>word_size=32</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_vdif.html#write_samples_raw"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_vdif.write_samples_raw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write vdif samples.</p>
+<p>Untested.
+Limited to bits_per_samples that are divisor of 8.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_vdif.write_words_to_file">
+<code class="descclassname">lib_vdif.</code><code class="descname">write_words_to_file</code><span class="sig-paren">(</span><em>f</em>, <em>words</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_vdif.html#write_words_to_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_vdif.write_words_to_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="lib_vdif.write_words_to_file_raw">
+<code class="descclassname">lib_vdif.</code><code class="descname">write_words_to_file_raw</code><span class="sig-paren">(</span><em>f</em>, <em>words</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_vdif.html#write_words_to_file_raw"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_vdif.write_words_to_file_raw" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">lib_vdif module</a><ul>
+<li><a class="reference internal" href="#notes">Notes</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="lib_quant.html" title="previous chapter">lib_quant module</a></li>
+      <li>Next: <a href="mapred_cx.html" title="next chapter">mapred_cx module</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/lib_vdif.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Antonio Vazquez Alvarez, Victor Pankratius, and Pedro Elosegui.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/lib_vdif.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

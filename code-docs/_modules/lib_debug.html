@@ -1,0 +1,369 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>lib_debug &#8212; CorrelX 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for lib_debug</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># &lt;nbformat&gt;3.0&lt;/nbformat&gt;</span>
+
+<span class="c1"># &lt;codecell&gt;</span>
+
+<span class="c1">#!/usr/bin/env python</span>
+<span class="c1">#</span>
+<span class="c1">#The MIT CorrelX Correlator</span>
+<span class="c1">#</span>
+<span class="c1">#https://github.com/MITHaystack/CorrelX</span>
+<span class="c1">#Contact: correlX@haystack.mit.edu</span>
+<span class="c1">#Project leads: Victor Pankratius, Pedro Elosegui Project developer: A.J. Vazquez Alvarez</span>
+<span class="c1">#</span>
+<span class="c1">#Copyright 2017 MIT Haystack Observatory</span>
+<span class="c1">#</span>
+<span class="c1">#Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the &quot;Software&quot;), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1">#The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</span>
+<span class="c1">#</span>
+<span class="c1">#THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#------------------------------</span>
+<span class="c1">#------------------------------</span>
+<span class="c1">#Project: CorrelX.</span>
+<span class="c1">#File: lib_debug.py.</span>
+<span class="c1">#Author: A.J. Vazquez Alvarez (ajvazquez@haystack.mit.edu)</span>
+<span class="c1">#Description: </span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Routines for displaying debug information.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="c1">#History:</span>
+<span class="c1">#initial version: 2016.10 ajva</span>
+<span class="c1">#MIT Haystack Observatory</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+<span class="kn">import</span> <span class="nn">imp</span>
+
+<span class="kn">import</span> <span class="nn">const_debug</span>
+<span class="n">imp</span><span class="o">.</span><span class="n">reload</span><span class="p">(</span><span class="n">const_debug</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">const_debug</span> <span class="k">import</span> <span class="o">*</span>
+
+
+    
+
+<span class="c1">###########################################</span>
+<span class="c1">#           Routines Mapper</span>
+<span class="c1">###########################################   </span>
+
+<span class="c1"># DEBUG_ALIGN</span>
+
+<div class="viewcode-block" id="print_debug_m_align_header"><a class="viewcode-back" href="../lib_debug.html#lib_debug.print_debug_m_align_header">[docs]</a><span class="k">def</span> <span class="nf">print_debug_m_align_header</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Debugging alignment computations msvf.&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; st:    Station&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; id:    Station id (stations.ini)&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; tsf:   Total sample components per channel in frame)&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; t:     Data type: 0 for real, 1 for complex&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; tsff:  Total samples per channel in frame&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; s_fr:  Seconds of frame in VDIF header&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; n_fr:  Number of frame in VDIF header&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; s_adj: Seconds corresponding to the first sample in this frame (based on VDIF header info)&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; r:     Delay corresponding to this frame&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; s_adj_r: Seconds corresponding to the first sample in this frame adjusted with the delay&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; rel_pol: Relative position for this frame into the accumulation period&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; ai:    Accumulation block index (i_front)&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; acc:   Accumulation block index (accu_block)&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; n_fr_ne: Number of frame adjusted with offset due to delay (may be negative)&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; f_fr_adj: Number of frame adjusted with offset due to delay (can not be negative)&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; sh:    Integer shift to be applied in this accumulation period&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; sh_fr: Integer shift to be applied to the first frame of the accumulation period&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; [frac|4]: Fractional sample correction for this accumulation block (showing only 4 decimal digits)&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; pf:    Process frame, 1 if frame will be processed&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; af:    Aligned frame, 0 if it corresponds to previous accumulation block (which has different delay parameters)&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; pp:    Previously printed, number lines printed in previous round&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; [N]:   Number of sample components to be potentially printed in this round&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; [s]:   Accumulation period corresponding to the generated line&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; [ofi]: Offset iterator, offset to the sample components to be taken from the frame&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; [ofs]: Offset signal, offset to the first sample number to be displayed in the geenrated line&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; [cs]:  Chunk size (by default same as N)&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; [acc]: Accumulation period (-1 if samples will be discarded)&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; [sf]: Superframe mode (0 deafult, 1 if grouping samples for multiple frames into one line&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; [sf_id]: Superframe id +1 (incremented before reporting)&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;zM&quot;</span><span class="o">+</span><span class="n">KEY_SEP</span><span class="o">+</span><span class="s2">&quot;a&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;st&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;id&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">+</span>\
+          <span class="s2">&quot;tsf&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span><span class="o">+</span>\
+          <span class="s2">&quot;t&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">+</span>\
+          <span class="s2">&quot;tsff&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span><span class="o">+</span>\
+          <span class="s2">&quot;s_fr&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;n_fr&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span><span class="o">+</span>\
+          <span class="s2">&quot;s_adj&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span><span class="o">+</span>\
+          <span class="s2">&quot;r&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">+</span>\
+          <span class="s2">&quot;s_adj_r&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">17</span><span class="p">)</span><span class="o">+</span>\
+          <span class="s2">&quot;rel_pos&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">+</span>\
+          <span class="s2">&quot;ai&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">+</span>\
+          <span class="s2">&quot;acc&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">+</span>\
+          <span class="s2">&quot;n_fr_ne&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">+</span>\
+          <span class="s2">&quot;n_fr_adj&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">+</span>\
+          <span class="s2">&quot;sh&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;sh_fr&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span><span class="o">+</span>\
+          <span class="s2">&quot;[fra|4]&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">+</span>\
+          <span class="s2">&quot;pf&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">+</span>\
+          <span class="s2">&quot;af&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">+</span>\
+          <span class="s2">&quot;pp&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">+</span>\
+          <span class="s2">&quot;[N]&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span><span class="o">+</span>\
+          <span class="s2">&quot;[s]&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span><span class="o">+</span>\
+          <span class="s2">&quot;[ofi]&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span><span class="o">+</span>\
+          <span class="s2">&quot;[ofs]&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span><span class="o">+</span>\
+          <span class="s2">&quot;[cs]&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span><span class="o">+</span>\
+          <span class="s2">&quot;[acc]&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span><span class="o">+</span>\
+          <span class="s2">&quot;[sf]&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span><span class="o">+</span>\
+          <span class="s2">&quot;[sf_id]&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">6</span><span class="p">))</span></div>
+    <span class="c1"># pp is for previous prints</span>
+
+
+<div class="viewcode-block" id="print_debug_m_align_no_end"><a class="viewcode-back" href="../lib_debug.html#lib_debug.print_debug_m_align_no_end">[docs]</a><span class="k">def</span> <span class="nf">print_debug_m_align_no_end</span><span class="p">(</span><span class="n">station_name</span><span class="p">,</span><span class="n">station_id</span><span class="p">,</span><span class="n">tot_samples_per_channel_and_frame</span><span class="p">,</span><span class="n">data_type</span><span class="p">,</span><span class="n">tot_samples_per_channel_and_frame_full</span><span class="p">,</span>\
+                             <span class="n">seconds_fr</span><span class="p">,</span><span class="n">frame_num</span><span class="p">,</span><span class="n">adjusted_frame_time</span><span class="p">,</span><span class="n">delay</span><span class="p">,</span><span class="n">actual_frame_time</span><span class="p">,</span><span class="n">rel_pos_frame</span><span class="p">,</span><span class="n">i_front</span><span class="p">,</span><span class="n">accu_block</span><span class="p">,</span>\
+                             <span class="n">frame_num_adjusted_neg</span><span class="p">,</span><span class="n">frame_num_adjusted</span><span class="p">,</span><span class="n">shift_int</span><span class="p">,</span><span class="n">adjusted_shift_inside_frame</span><span class="p">,</span><span class="n">fractional_sample_delay</span><span class="p">,</span>\
+                             <span class="n">process_frame</span><span class="p">,</span><span class="n">aligned_frame</span><span class="p">,</span><span class="n">count_print</span><span class="p">):</span>
+                                                 
+                                                 
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;zM&quot;</span><span class="o">+</span><span class="n">KEY_SEP</span><span class="o">+</span><span class="s2">&quot;a&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="n">station_name</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">station_id</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">+</span>\
+          <span class="nb">str</span><span class="p">(</span><span class="n">tot_samples_per_channel_and_frame</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span><span class="o">+</span>\
+          <span class="nb">str</span><span class="p">(</span><span class="n">data_type</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">+</span>\
+          <span class="nb">str</span><span class="p">(</span><span class="n">tot_samples_per_channel_and_frame_full</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span><span class="o">+</span>\
+          <span class="nb">str</span><span class="p">(</span><span class="n">seconds_fr</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">frame_num</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span><span class="o">+</span>\
+          <span class="nb">str</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{0:.7f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">adjusted_frame_time</span><span class="p">))</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span><span class="o">+</span>\
+          <span class="nb">str</span><span class="p">(</span><span class="n">delay</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">+</span>\
+          <span class="nb">str</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{0:.7f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">actual_frame_time</span><span class="p">))</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">17</span><span class="p">)</span><span class="o">+</span>\
+          <span class="nb">str</span><span class="p">(</span><span class="n">rel_pos_frame</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">+</span>\
+          <span class="nb">str</span><span class="p">(</span><span class="n">i_front</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">+</span>\
+          <span class="nb">str</span><span class="p">(</span><span class="n">accu_block</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">+</span>\
+          <span class="nb">str</span><span class="p">(</span><span class="n">frame_num_adjusted_neg</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">+</span>\
+          <span class="nb">str</span><span class="p">(</span><span class="n">frame_num_adjusted</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">+</span>\
+          <span class="nb">str</span><span class="p">(</span><span class="n">shift_int</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">adjusted_shift_inside_frame</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span><span class="o">+</span>\
+          <span class="nb">str</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{0:.4f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">fractional_sample_delay</span><span class="p">))</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">+</span>\
+          <span class="nb">str</span><span class="p">(</span><span class="n">process_frame</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">+</span>\
+          <span class="nb">str</span><span class="p">(</span><span class="n">aligned_frame</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">+</span>\
+          <span class="nb">str</span><span class="p">(</span><span class="n">count_print</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span><span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="print_debug_m_align_last"><a class="viewcode-back" href="../lib_debug.html#lib_debug.print_debug_m_align_last">[docs]</a><span class="k">def</span> <span class="nf">print_debug_m_align_last</span><span class="p">(</span><span class="n">tot_samples_v</span><span class="p">,</span><span class="n">seconds_v</span><span class="p">,</span><span class="n">offset_first_sample_iterator_v</span><span class="p">,</span><span class="n">offset_first_sample_signal_v</span><span class="p">,</span>\
+                                              <span class="n">chunk_size_v</span><span class="p">,</span><span class="n">acc_v</span><span class="p">,</span><span class="n">do_sup_frame</span><span class="p">,</span><span class="n">sup_frame_id</span><span class="p">):</span>
+                
+    <span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">tot_samples_v</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">seconds_v</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span><span class="o">+</span>\
+          <span class="nb">str</span><span class="p">(</span><span class="n">offset_first_sample_iterator_v</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span><span class="o">+</span>\
+          <span class="nb">str</span><span class="p">(</span><span class="n">offset_first_sample_signal_v</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span><span class="o">+</span>\
+          <span class="nb">str</span><span class="p">(</span><span class="n">chunk_size_v</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">acc_v</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span><span class="o">+</span>\
+          <span class="nb">str</span><span class="p">(</span><span class="n">do_sup_frame</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span><span class="o">+</span>\
+          <span class="nb">str</span><span class="p">(</span><span class="n">sup_frame_id</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">6</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="print_sup_frame"><a class="viewcode-back" href="../lib_debug.html#lib_debug.print_sup_frame">[docs]</a><span class="k">def</span> <span class="nf">print_sup_frame</span><span class="p">(</span><span class="n">sup_frame_id</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">58</span><span class="p">)</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">sup_frame_id</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">6</span><span class="p">))</span></div>
+
+<span class="c1">###########################################</span>
+<span class="c1">#           Routines Reducer</span>
+<span class="c1">###########################################   </span>
+
+<span class="c1"># DEBUG_DELAYS</span>
+
+<div class="viewcode-block" id="print_debug_r_delays_header"><a class="viewcode-back" href="../lib_debug.html#lib_debug.print_debug_r_delays_header">[docs]</a><span class="k">def</span> <span class="nf">print_debug_r_delays_header</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Debugging delay computations rsvf.&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; d/f:     Fringe rotation / fractional sample correction&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; i:       Index to F1 (new samples)&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; ref:     Index to F1_partial (stored samples)&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; sp:      Station.polarization&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; s_id:    First sample number&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; N:       Number of samples&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; n:       Length of timescale for calling compute_delay&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; 0:       First element of the timescale for calling compute_delay [s]&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; -1:      First element of the timescale for calling compute_delay [s]&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; s_off:   Time corresponding to the first sample [s]&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; r[0][s]: Delay for first sample&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; r[-1][s]:Delay for last sample&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; delta_r: Rate for this interval (linear)&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; fra_ini: Fractional sample correction (first one should match that in delays.ini)&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; fra_now_full: Full fractional sample correction (including shift if applicable)&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; fra_now: Fractional sample correction (between -0.5 and +0.5)&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; diff:    Differential delay between acc periods&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; C:       Computed (will be zero if taken rotation vectors from previous iteration)&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; R:       Rotated (will be zero if no rotation has been applied)&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;zR&quot;</span><span class="o">+</span><span class="n">KEY_SEP</span><span class="o">+</span><span class="s2">&quot;d/f&quot;</span><span class="o">+</span><span class="s2">&quot;i&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;ref&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;sp&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;s_id&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;N&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;n&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;0&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">16</span><span class="p">)</span><span class="o">+</span>\
+          <span class="s2">&quot;-1&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;s_off&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="s2">&quot;r[0] [s]&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="s2">&quot;r[-1] [s]&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">+</span>\
+          <span class="nb">str</span><span class="p">(</span><span class="s2">&quot;delta_r&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="s2">&quot;fra_ini&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="s2">&quot;fra_now_full&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="s2">&quot;fra_now&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="s2">&quot;diff&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="s2">&quot;C&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="s2">&quot;R&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="print_debug_r_delays_d"><a class="viewcode-back" href="../lib_debug.html#lib_debug.print_debug_r_delays_d">[docs]</a><span class="k">def</span> <span class="nf">print_debug_r_delays_d</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">F_refs_row</span><span class="p">,</span><span class="n">F_ind_row</span><span class="p">,</span><span class="n">first_sample</span><span class="p">,</span><span class="n">n_samples</span><span class="p">,</span><span class="n">timescale</span><span class="p">,</span><span class="n">timescale_0</span><span class="p">,</span><span class="n">timescale_last</span><span class="p">,</span>\
+                                     <span class="n">seconds_offset</span><span class="p">,</span><span class="n">first_delay</span><span class="p">,</span><span class="n">last_delay</span><span class="p">,</span><span class="n">rate_interval</span><span class="p">,</span><span class="n">fractional_sample_correction</span><span class="p">,</span>\
+                                     <span class="n">diff_frac</span><span class="p">,</span><span class="n">computed</span><span class="p">,</span><span class="n">nr</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fringe rotation delay computation debugging information.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;zR&quot;</span><span class="o">+</span><span class="n">KEY_SEP</span><span class="o">+</span><span class="s2">&quot;d  &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">F_refs_row</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span><span class="o">+</span><span class="n">F_ind_row</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span><span class="o">+</span>\
+          <span class="nb">str</span><span class="p">(</span><span class="n">first_sample</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">timescale</span><span class="p">))</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">timescale_0</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">16</span><span class="p">)</span><span class="o">+</span>\
+          <span class="nb">str</span><span class="p">(</span><span class="n">timescale_last</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">+</span>\
+          <span class="nb">str</span><span class="p">(</span><span class="n">seconds_offset</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">+</span>\
+          <span class="nb">str</span><span class="p">(</span><span class="n">first_delay</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">+</span>\
+          <span class="nb">str</span><span class="p">(</span><span class="n">last_delay</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">+</span>\
+          <span class="nb">str</span><span class="p">(</span><span class="n">rate_interval</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">+</span>\
+          <span class="nb">str</span><span class="p">(</span><span class="n">fractional_sample_correction</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">40</span><span class="p">)</span><span class="o">+</span>\
+          <span class="nb">str</span><span class="p">(</span><span class="n">diff_frac</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">computed</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="ow">not</span><span class="p">(</span><span class="n">nr</span><span class="p">)))</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="print_debug_r_delays_f"><a class="viewcode-back" href="../lib_debug.html#lib_debug.print_debug_r_delays_f">[docs]</a><span class="k">def</span> <span class="nf">print_debug_r_delays_f</span><span class="p">(</span><span class="n">stpol</span><span class="p">,</span><span class="n">F_refs_row</span><span class="p">,</span><span class="n">F_ind_row</span><span class="p">,</span><span class="n">fsr</span><span class="p">,</span><span class="n">num_samples</span><span class="p">,</span><span class="n">len_timescale</span><span class="p">,</span><span class="n">total_timescale_row</span><span class="p">,</span><span class="n">timescale_empty</span><span class="p">,</span>\
+                                     <span class="n">total_seconds_offset</span><span class="p">,</span><span class="n">r_recalc_row</span><span class="p">,</span><span class="n">r_unused</span><span class="p">,</span><span class="n">a_unused</span><span class="p">,</span><span class="n">fractional_sample_correction</span><span class="p">,</span>\
+                                     <span class="n">full_fractional_recalc_row</span><span class="p">,</span><span class="n">fractional_recalc_row</span><span class="p">,</span><span class="n">diff_frac</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fractional sample correction delay computation debugging information.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;zR&quot;</span><span class="o">+</span><span class="n">KEY_SEP</span><span class="o">+</span><span class="s2">&quot;f  &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">stpol</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">F_refs_row</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span><span class="o">+</span><span class="n">F_ind_row</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span><span class="o">+</span>\
+          <span class="nb">str</span><span class="p">(</span><span class="n">fsr</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">num_samples</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">len_timescale</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">+</span>\
+          <span class="nb">str</span><span class="p">(</span><span class="n">total_timescale_row</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">16</span><span class="p">)</span><span class="o">+</span>\
+          <span class="nb">str</span><span class="p">(</span><span class="n">timescale_empty</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">+</span>\
+          <span class="nb">str</span><span class="p">(</span><span class="n">total_seconds_offset</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">+</span>\
+          <span class="nb">str</span><span class="p">(</span><span class="n">r_recalc_row</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">+</span>\
+          <span class="nb">str</span><span class="p">(</span><span class="n">r_unused</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">+</span>\
+          <span class="nb">str</span><span class="p">(</span><span class="n">a_unused</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">fractional_sample_correction</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">+</span>\
+          <span class="nb">str</span><span class="p">(</span><span class="n">full_fractional_recalc_row</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">+</span>\
+          <span class="nb">str</span><span class="p">(</span><span class="n">fractional_recalc_row</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">+</span>\
+          <span class="nb">str</span><span class="p">(</span><span class="n">diff_frac</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">15</span><span class="p">))</span></div>
+
+
+
+
+
+
+<span class="c1"># DEBUG_HSTACK</span>
+
+<div class="viewcode-block" id="print_debug_r_hstack_header"><a class="viewcode-back" href="../lib_debug.html#lib_debug.print_debug_r_hstack_header">[docs]</a><span class="k">def</span> <span class="nf">print_debug_r_hstack_header</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Debugging hstack rsvf.&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; pc/f:         Phase calibration / FX processing&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; ip:           Index to F1_partial (stored samples)&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Fip[ip]:      Station.polarization in F1_partial, input of the function&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Fipo[ip]:     Station.polarization in F1_partial, output of the function&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; i:            Index to F_ind&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Fi[i]:        Station.polarization in F_ind&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; hstack line:  number of samples in F1_partial joined to number of samples in F1, totals and stats where&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;                F_lti: list with last sample (l), total number of samples processed (t), invalid samples (i), and&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;                adjuted samples for each stream.&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;zR&quot;</span><span class="o">+</span><span class="n">KEY_SEP</span><span class="o">+</span><span class="s2">&quot;pc/f&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;ip&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">+</span>\
+          <span class="s2">&quot;Fip[ip]&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">+</span>\
+          <span class="s2">&quot;Fipo[ip]&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">+</span>\
+          <span class="s2">&quot;i&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;Fi[i]&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="print_debug_r_hstack"><a class="viewcode-back" href="../lib_debug.html#lib_debug.print_debug_r_hstack">[docs]</a><span class="k">def</span> <span class="nf">print_debug_r_hstack</span><span class="p">(</span><span class="n">mode_str</span><span class="p">,</span><span class="n">idx_p</span><span class="p">,</span><span class="n">F_ind_partial_row</span><span class="p">,</span><span class="n">F_ind_partial_out_row</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">F_ind_row_i</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">F_ind_partial_row</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">F_ind_partial_row</span><span class="o">=</span><span class="s2">&quot;N/A&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;zR&quot;</span><span class="o">+</span><span class="n">KEY_SEP</span><span class="o">+</span><span class="n">mode_str</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">idx_p</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">+</span><span class="n">F_ind_partial_row</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">F_ind_partial_out_row</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">+</span>\
+                      <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">F_ind_row_i</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="print_debug_r_hstack_arrow"><a class="viewcode-back" href="../lib_debug.html#lib_debug.print_debug_r_hstack_arrow">[docs]</a><span class="k">def</span> <span class="nf">print_debug_r_hstack_arrow</span><span class="p">(</span><span class="n">F1_partial</span><span class="p">,</span><span class="n">F1</span><span class="p">,</span><span class="n">F1_partial_out</span><span class="p">,</span><span class="n">F_lti_out</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;zR&quot;</span><span class="o">+</span><span class="n">KEY_SEP</span><span class="o">+</span><span class="s2">&quot;hstack: &quot;</span><span class="o">+</span>\
+              <span class="s2">&quot; F1p (&quot;</span><span class="o">+</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,[</span><span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">F1_partial</span><span class="p">]))</span><span class="o">+</span><span class="s2">&quot;) U F1 (&quot;</span><span class="o">+</span>\
+              <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,[</span><span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">F1</span><span class="p">]))</span><span class="o">+</span><span class="s2">&quot;) -&gt; &quot;</span><span class="o">+</span>
+              <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,[</span><span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">F1_partial_out</span><span class="p">]))</span><span class="o">+</span><span class="s2">&quot; with F_lti=&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">list</span><span class="p">,</span><span class="n">F_lti_out</span><span class="p">)))</span></div>
+    
+<div class="viewcode-block" id="print_debug_r_hstack_separator"><a class="viewcode-back" href="../lib_debug.html#lib_debug.print_debug_r_hstack_separator">[docs]</a><span class="k">def</span> <span class="nf">print_debug_r_hstack_separator</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;zR&quot;</span><span class="o">+</span><span class="n">KEY_SEP</span><span class="o">+</span><span class="s2">&quot;------------------------------&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="c1">#DEBUG_FRAC_OVER</span>
+
+<div class="viewcode-block" id="print_debug_r_frac_over_header"><a class="viewcode-back" href="../lib_debug.html#lib_debug.print_debug_r_frac_over_header">[docs]</a><span class="k">def</span> <span class="nf">print_debug_r_frac_over_header</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;zR&quot;</span><span class="o">+</span><span class="n">KEY_SEP</span><span class="o">+</span><span class="s2">&quot;o/a/j&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;l_sta&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;l_adj&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;ref&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;sp&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;s_id&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;N&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">+</span>\
+          <span class="s2">&quot;n&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;ff&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">70</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;fi&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">15</span><span class="p">))</span></div>
+    
+    
+    
+    
+<div class="viewcode-block" id="print_key"><a class="viewcode-back" href="../lib_debug.html#lib_debug.print_key">[docs]</a><span class="k">def</span> <span class="nf">print_key</span><span class="p">(</span><span class="n">key_pair_accu</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Print key for the line processed for logging.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;zR&quot;</span><span class="o">+</span><span class="n">KEY_SEP</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;zR&quot;</span><span class="o">+</span><span class="n">KEY_SEP</span><span class="o">+</span><span class="s2">&quot;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;zR&quot;</span><span class="o">+</span><span class="n">KEY_SEP</span><span class="o">+</span><span class="s2">&quot;         &quot;</span><span class="o">+</span><span class="n">key_pair_accu</span><span class="o">+</span><span class="s2">&quot;         &quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;zR&quot;</span><span class="o">+</span><span class="n">KEY_SEP</span><span class="o">+</span><span class="s2">&quot;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;zR&quot;</span><span class="o">+</span><span class="n">KEY_SEP</span><span class="p">)</span></div>
+
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Antonio Vazquez Alvarez, Victor Pankratius, and Pedro Elosegui.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

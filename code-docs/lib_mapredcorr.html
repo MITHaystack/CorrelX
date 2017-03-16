@@ -1,0 +1,720 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>lib_mapredcorr module &#8212; CorrelX 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="lib_net_stats module" href="lib_net_stats.html" />
+    <link rel="prev" title="lib_ini_files module" href="lib_ini_files.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-lib_mapredcorr">
+<span id="lib-mapredcorr-module"></span><h1>lib_mapredcorr module<a class="headerlink" href="#module-lib_mapredcorr" title="Permalink to this headline">¶</a></h1>
+<p>Main functions for performing the mapreduce correlation through Hadoop (and pipeline).</p>
+<dl class="function">
+<dt id="lib_mapredcorr.create_inter_sh">
+<code class="descclassname">lib_mapredcorr.</code><code class="descname">create_inter_sh</code><span class="sig-paren">(</span><em>filename</em>, <em>python_x</em>, <em>command</em>, <em>temp_log</em>, <em>v=0</em>, <em>file_log=&lt;_io.TextIOWrapper name='&lt;stdout&gt;' mode='w' encoding='UTF-8'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_mapredcorr.html#create_inter_sh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_mapredcorr.create_inter_sh" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create script with python call for mapper/reducer.
+Devised to avoid issues with arguments.
+Currently used for creating the mapper and reducer scripts passed to hadoop.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>filename</dt>
+<dd>filename for resulting bash script with python call.</dd>
+<dt>python_x</dt>
+<dd>python executable.</dd>
+<dt>command</dt>
+<dd>python script plus arguments.</dd>
+<dt>temp_log</dt>
+<dd>path to temporary (buffer) file for system calls.</dd>
+<dt>v</dt>
+<dd>verbose if 1.</dd>
+<dt>file_log</dt>
+<dd>handler for log file.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div>N/A</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_mapredcorr.d_opt">
+<code class="descclassname">lib_mapredcorr.</code><code class="descname">d_opt</code><span class="sig-paren">(</span><em>param</em>, <em>value</em>, <em>extra_q=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_mapredcorr.html#d_opt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_mapredcorr.d_opt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create string &#8220;-D param=value&#8221;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_mapredcorr.get_mapper_params_str">
+<code class="descclassname">lib_mapredcorr.</code><code class="descname">get_mapper_params_str</code><span class="sig-paren">(</span><em>stations</em>, <em>num_pols</em>, <em>fft_size</em>, <em>accumulation_time</em>, <em>signal_start</em>, <em>signal_duration</em>, <em>first_frame_num</em>, <em>num_frames</em>, <em>codecs_serial</em>, <em>auto_stations</em>, <em>auto_pols</em>, <em>ini_stations</em>, <em>ini_media</em>, <em>ini_delays</em>, <em>fft_at_mapper</em>, <em>internal_log_mapper</em>, <em>ffts_per_chunk</em>, <em>windowing</em>, <em>one_baseline_per_task</em>, <em>phase_calibration</em>, <em>min_mapper_chunk</em>, <em>max_mapper_chunk</em>, <em>task_scaling_stations</em>, <em>single_precision</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_mapredcorr.html#get_mapper_params_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_mapredcorr.get_mapper_params_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns string with all the parameters to call the mapper.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>stations</dt>
+<dd>number of stations.</dd>
+<dt>num_pols</dt>
+<dd>[not used in all-baselines-per-task mode] number of polarizations.</dd>
+<dt>fft_size</dt>
+<dd>[not used if fft in reducer?] fft length from the configuration.</dd>
+<dt>accumulation_time</dt>
+<dd>duration of the accumulation period (float) [s] .</dd>
+<dt>signal_start</dt>
+<dd>start time for the experiment (float) [s] .</dd>
+<dt>signal_duration</dt>
+<dd>duration of the experiment (float) [s] .</dd>
+<dt>first_frame_num</dt>
+<dd>[only testing] -1 by default. Discard frames with id lesser than this value.</dd>
+<dt>num_frames</dt>
+<dd><dl class="first last docutils">
+<dt>[only testing] -1 by default. If &gt;0 discard frames with id greater than this value. </dt>
+<dd>If both first_frame_num and num_frames are &lt;0, all frames are processed.</dd>
+</dl>
+</dd>
+<dt>codecs_serial</dt>
+<dd>[only testing] &#8220;&#8221; by default. Serialized version of codecs used for comrpession.</dd>
+<dt>auto_stations</dt>
+<dd>[not used in all-baselines-per-task mode] controls pairs generation (see msvf.calculate_corr_pairs())</dd>
+<dt>auto_pols</dt>
+<dd>[not used in all-baselines-per-task mode] controls pairs generation (see msvf.calculate_corr_pairs())</dd>
+<dt>ini_stations</dt>
+<dd>string with stations ini file name.</dd>
+<dt>ini_media</dt>
+<dd>string with media ini file name.</dd>
+<dt>ini_delays</dt>
+<dd>string with delays ini file name.</dd>
+<dt>fft_at_mapper</dt>
+<dd>[0 by default]. Initially devised to allow configuration of FFT in mapper or reducer.</dd>
+<dt>internal_log_mapper</dt>
+<dd>[unused]</dd>
+<dt>ffts_per_chunk</dt>
+<dd><dl class="first last docutils">
+<dt>[-1 by default]. If -1, all the samples in the channel go into the same line. Other values allow to </dt>
+<dd>control the number of samples that go into the same line, but this feature is discontinued.</dd>
+</dl>
+</dd>
+<dt>windowing <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>window before FFT, default value is &#8220;square&#8221;.</dd>
+<dt>one_baseline_per_task: bool</dt>
+<dd>boolean to activate one-baseline-per-task mode.</dd>
+<dt>phase_calibration</dt>
+<dd>[unused].</dd>
+<dt>min_mapper_chunk</dt>
+<dd>[-1 by default]</dd>
+<dt>max_mapper_chunk</dt>
+<dd>[-1 by default]</dd>
+<dt>task_scaling_stations</dt>
+<dd>0 for all-baselines-per-task mode, 1 to activate linear scaling with number of stations.</dd>
+<dt>single_precision</dt>
+<dd>[unused]</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>mapper_params_str <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>parameters to call mapper.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Automate finding max number of polarizations.</div>
+<div class="line">Remove all unused arguments.</div>
+<div class="line">Consider adding paths for long ini files, currently this is done only for delays.ini.</div>
+<div class="line">Consider removing fft_size, fft always in reducer.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_mapredcorr.get_mr_command">
+<code class="descclassname">lib_mapredcorr.</code><code class="descname">get_mr_command</code><span class="sig-paren">(</span><em>app_dir</em>, <em>script</em>, <em>params</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_mapredcorr.html#get_mr_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_mapredcorr.get_mr_command" title="Permalink to this definition">¶</a></dt>
+<dd><p>Script for creating line with call to mapper/reducer with parameters.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_mapredcorr.get_options_custom_partitioner">
+<code class="descclassname">lib_mapredcorr.</code><code class="descname">get_options_custom_partitioner</code><span class="sig-paren">(</span><em>use_nohash_partitioner=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_mapredcorr.html#get_options_custom_partitioner"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_mapredcorr.get_options_custom_partitioner" title="Permalink to this definition">¶</a></dt>
+<dd><p>Options for custom partitioner.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_mapredcorr.get_options_fixed_length_records">
+<code class="descclassname">lib_mapredcorr.</code><code class="descname">get_options_fixed_length_records</code><span class="sig-paren">(</span><em>record_size</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_mapredcorr.html#get_options_fixed_length_records"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_mapredcorr.get_options_fixed_length_records" title="Permalink to this definition">¶</a></dt>
+<dd><p>Options for fixed length records as input, instead of text.</p>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">This needs work.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_mapredcorr.get_options_logging">
+<code class="descclassname">lib_mapredcorr.</code><code class="descname">get_options_logging</code><span class="sig-paren">(</span><em>log_properties</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_mapredcorr.html#get_options_logging"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_mapredcorr.get_options_logging" title="Permalink to this definition">¶</a></dt>
+<dd><p>Options for log4j logging.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>log_properties</dt>
+<dd>path to log4j.properties file.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Currently not working, and thus &#8220;log_properties&#8221; is copied to a specific folder (see un_mapreduce_sh()).</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_mapredcorr.get_options_lustre">
+<code class="descclassname">lib_mapredcorr.</code><code class="descname">get_options_lustre</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_mapredcorr.html#get_options_lustre"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_mapredcorr.get_options_lustre" title="Permalink to this definition">¶</a></dt>
+<dd><p>Options for lustre filesystem.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_mapredcorr.get_options_num_maps">
+<code class="descclassname">lib_mapredcorr.</code><code class="descname">get_options_num_maps</code><span class="sig-paren">(</span><em>num_maps</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_mapredcorr.html#get_options_num_maps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_mapredcorr.get_options_num_maps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Total number of mappers for this job.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_mapredcorr.get_options_num_reduces">
+<code class="descclassname">lib_mapredcorr.</code><code class="descname">get_options_num_reduces</code><span class="sig-paren">(</span><em>num_reduces</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_mapredcorr.html#get_options_num_reduces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_mapredcorr.get_options_num_reduces" title="Permalink to this definition">¶</a></dt>
+<dd><p>Total number of reducers for this job.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_mapredcorr.get_options_partitioning">
+<code class="descclassname">lib_mapredcorr.</code><code class="descname">get_options_partitioning</code><span class="sig-paren">(</span><em>field_sep</em>, <em>key_fields</em>, <em>key_field_sep</em>, <em>part_opts</em>, <em>comp_opts</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_mapredcorr.html#get_options_partitioning"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_mapredcorr.get_options_partitioning" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get partitioning options.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>field_sep</dt>
+<dd>field separator.</dd>
+<dt>key_fields</dt>
+<dd>number of key fields.</dd>
+<dt>key_field_sep</dt>
+<dd>key field separator.</dd>
+<dt>part_opts</dt>
+<dd>partitioning options.</dd>
+<dt>comp_opts</dt>
+<dd>comparator options.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>option1 <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>java options (relative to partitioning) for job submission.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_mapredcorr.get_options_text_delimiter">
+<code class="descclassname">lib_mapredcorr.</code><code class="descname">get_options_text_delimiter</code><span class="sig-paren">(</span><em>hadoop_text_delimiter</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_mapredcorr.html#get_options_text_delimiter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_mapredcorr.get_options_text_delimiter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Options for text delimiter.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_mapredcorr.get_reducer_params_str">
+<code class="descclassname">lib_mapredcorr.</code><code class="descname">get_reducer_params_str</code><span class="sig-paren">(</span><em>codecs_serial</em>, <em>fft_at_mapper</em>, <em>internal_log_reducer</em>, <em>fft_size</em>, <em>windowing</em>, <em>phase_calibration</em>, <em>single_precision</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_mapredcorr.html#get_reducer_params_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_mapredcorr.get_reducer_params_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns string with all the parameters to call the reducer.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>codecs_serial</dt>
+<dd>[only testing] &#8220;&#8221; by default. Serialized version of codecs used for comrpession.</dd>
+<dt>fft_at_mapper</dt>
+<dd>same variable used to call get_mapper_params_str(), inverted here.</dd>
+<dt>internal_log_reducer</dt>
+<dd>[unused]</dd>
+<dt>fft_size</dt>
+<dd>fft length from the configuration.</dd>
+<dt>windowing</dt>
+<dd>window type before FFT, &#8220;square&#8221; by default.</dd>
+<dt>phase_calibration</dt>
+<dd>if 1 phase calibration tones will be extracted.</dd>
+<dt>single_precision</dt>
+<dd>boolean to control data types for unpacked samples.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>reducer_params_str <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>parameters to call mapper.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><a href="#id1"><span class="problematic" id="id2">**</span></a>TO DO:</div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Remove unused parameters</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_mapredcorr.pipeline_app">
+<code class="descclassname">lib_mapredcorr.</code><code class="descname">pipeline_app</code><span class="sig-paren">(</span><em>python_x</em>, <em>stations</em>, <em>input_files</em>, <em>app_dir</em>, <em>mapper</em>, <em>reducer</em>, <em>fft_size</em>, <em>fft_at_mapper</em>, <em>accumulation_time</em>, <em>signal_start</em>, <em>signal_duration</em>, <em>first_frame_num</em>, <em>num_frames</em>, <em>data_dir</em>, <em>output_dir</em>, <em>output_sym</em>, <em>auto_stations</em>, <em>auto_pols</em>, <em>num_pols</em>, <em>codecs_serial</em>, <em>v=0</em>, <em>file_log=&lt;_io.TextIOWrapper name='&lt;stdout&gt;' mode='w' encoding='UTF-8'&gt;</em>, <em>file_out='vt4.txt'</em>, <em>ini_stations='none'</em>, <em>ini_media='none'</em>, <em>ini_delays='none'</em>, <em>internal_log_mapper=1</em>, <em>internal_log_reducer=1</em>, <em>ffts_per_chunk=1</em>, <em>windowing='square'</em>, <em>one_baseline_per_task=True</em>, <em>phase_calibration=0</em>, <em>min_mapper_chunk=-1</em>, <em>max_mapper_chunk=-1</em>, <em>task_scaling_stations=0</em>, <em>sort_output=1</em>, <em>single_precision=0</em>, <em>profile_map=0</em>, <em>profile_red=0</em>, <em>timestamp_str=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_mapredcorr.html#pipeline_app"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_mapredcorr.pipeline_app" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform correlation through pipeline execution (that is, without hadoop). All the data is passed through the mapper, 
+then the results are sorted and passed through the reducer.</p>
+<blockquote>
+<div>See table below.</div></blockquote>
+<blockquote>
+<div>list with start time, end time and duration of the execution in seconds.</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>Note that the environment variable map_input_file is modified for each processed file to emulate the hadoop behavior </dt>
+<dd>(and thus provide access to the mapper to the name of the file currently being processed.</dd>
+</dl>
+</div></blockquote>
+<table border="1" class="docutils">
+<colgroup>
+<col width="31%" />
+<col width="35%" />
+<col width="34%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">&#160;</th>
+<th class="head">get_mapper_params_str()</th>
+<th class="head">get_reducer_params_str()</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>stations</td>
+<td>x</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>fft_size</td>
+<td>x</td>
+<td>x</td>
+</tr>
+<tr class="row-even"><td>fft_at_mapper</td>
+<td>x</td>
+<td>x</td>
+</tr>
+<tr class="row-odd"><td>accumulation_time</td>
+<td>x</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>signal_start</td>
+<td>x</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>signal_duration</td>
+<td>x</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>first_frame_num</td>
+<td>x</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>num_frames</td>
+<td>x</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>auto_stations</td>
+<td>x</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>auto_pols</td>
+<td>x</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>num_pols</td>
+<td>x</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>codecs_serial</td>
+<td>x</td>
+<td>x</td>
+</tr>
+<tr class="row-even"><td>ini_stations</td>
+<td>x</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>ini_media</td>
+<td>x</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>ini_delays:</td>
+<td>x</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>internal_log_mapper:</td>
+<td>x</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>internal_log_reducer:</td>
+<td>&#160;</td>
+<td>x</td>
+</tr>
+<tr class="row-odd"><td>ffts_per_chunk:</td>
+<td>x</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>windowing:</td>
+<td>x</td>
+<td>x</td>
+</tr>
+<tr class="row-odd"><td>one_baseline_per_task:</td>
+<td>x</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>phase_calibration:</td>
+<td>x</td>
+<td>x</td>
+</tr>
+<tr class="row-odd"><td>min_mapper_chunk:</td>
+<td>x</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>max_mapper_chunk:</td>
+<td>x</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>task_scaling_stations:</td>
+<td>x</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>single_precision:</td>
+<td>x</td>
+<td>x</td>
+</tr>
+<tr class="row-odd"><td>python_x:</td>
+<td colspan="2">str with python executable.</td>
+</tr>
+<tr class="row-even"><td>input_files:</td>
+<td colspan="2">list with filenames for the media.</td>
+</tr>
+<tr class="row-odd"><td>app_dir:</td>
+<td colspan="2"><dl class="first last docutils">
+<dt>path with the location of the .py files for mapper,</dt>
+<dd>reducer and all their dependencies.</dd>
+</dl>
+</td>
+</tr>
+<tr class="row-even"><td>mapper:</td>
+<td colspan="2">mapper .py filename.</td>
+</tr>
+<tr class="row-odd"><td>reducer:</td>
+<td colspan="2">reducer .py filename.</td>
+</tr>
+<tr class="row-even"><td>data_dir:</td>
+<td colspan="2">path with the location for the media.</td>
+</tr>
+<tr class="row-odd"><td>output_dir:</td>
+<td colspan="2">path for the intermediate and output files.</td>
+</tr>
+<tr class="row-even"><td>output_sym:</td>
+<td colspan="2"><dl class="first last docutils">
+<dt>path for the symbolic link to the output file</dt>
+<dd>(typically sub-path in experiment folder).</dd>
+</dl>
+</td>
+</tr>
+<tr class="row-odd"><td>v:</td>
+<td colspan="2">boolean to activate verbose mode.</td>
+</tr>
+<tr class="row-even"><td>file_log:</td>
+<td colspan="2">file for logging.</td>
+</tr>
+<tr class="row-odd"><td>file_out:</td>
+<td colspan="2">output file.</td>
+</tr>
+<tr class="row-even"><td>sort_output:</td>
+<td colspan="2"><dl class="first last docutils">
+<dt>[0 by default] boolean to activate the sorting of the</dt>
+<dd>output.</dd>
+</dl>
+</td>
+</tr>
+<tr class="row-odd"><td>profile_map:</td>
+<td colspan="2"><dl class="first last docutils">
+<dt>[0 by default] 1 to profile mapper using pycallgraph,</dt>
+<dd>2 to profile using cProfile.</dd>
+</dl>
+</td>
+</tr>
+<tr class="row-even"><td>profile_red:</td>
+<td colspan="2"><dl class="first last docutils">
+<dt>[0 by default] 1 to profile reducer using pycallgraph,</dt>
+<dd>2 to profile using cProfile.</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_mapredcorr.run_mapreduce_sh">
+<code class="descclassname">lib_mapredcorr.</code><code class="descname">run_mapreduce_sh</code><span class="sig-paren">(</span><em>record_size</em>, <em>jobsh</em>, <em>mappersh</em>, <em>reducersh</em>, <em>app_dir</em>, <em>hadoop_dir</em>, <em>hadoop_conf_dir</em>, <em>folder_deps</em>, <em>files_deps</em>, <em>add_deps</em>, <em>mapper</em>, <em>reducer</em>, <em>hdfs_data_dir</em>, <em>hdfs_output_file</em>, <em>output_hadoop</em>, <em>text_mode</em>, <em>hadoop_text_delimiter</em>, <em>output_dir</em>, <em>output_sym</em>, <em>temp_log</em>, <em>packets_per_hdfs_block</em>, <em>total_frames</em>, <em>total_partitions</em>, <em>adjust_mappers</em>, <em>adjust_reducers</em>, <em>use_nohash_partitioner=1</em>, <em>use_lustre_plugin=0</em>, <em>lustre_user_dir='r/ajva/'</em>, <em>num_slaves=1</em>, <em>num_vcores=1</em>, <em>one_baseline_per_task=True</em>, <em>sort_output=1</em>, <em>bm_delete_output=0</em>, <em>bypass_reduce=0</em>, <em>v=0</em>, <em>file_log=&lt;_io.TextIOWrapper name='&lt;stdout&gt;' mode='w' encoding='UTF-8'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_mapredcorr.html#run_mapreduce_sh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_mapredcorr.run_mapreduce_sh" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform correlation through hadoop. Requires hadoop started (see lib_hadoop_hdfs.py).</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>record_size</dt>
+<dd>[0 by default] If 1 will use fixed length records in Hadoop, testing only.</dd>
+<dt>jobsh</dt>
+<dd>bash file to write complete call to hadoop for job submission.</dd>
+<dt>mappersh</dt>
+<dd>bash file with complete call to the mapper.</dd>
+<dt>reducersh</dt>
+<dd>bash file with complete call to the reducer.</dd>
+<dt>app_dir</dt>
+<dd>path to mapper and reducer .py files.</dd>
+<dt>hadoop_dir</dt>
+<dd>base path of the hadoop installation.</dd>
+<dt>hadoop_conf_dir</dt>
+<dd>path with hadoop configuration files.</dd>
+<dt>folder_deps</dt>
+<dd>path to the dependencies for the mapper and the reducer.</dd>
+<dt>files_deps</dt>
+<dd>list of strings with the filenames of the dependencies (.py files).</dd>
+<dt>add_deps</dt>
+<dd>list of strings with paths for additional dependencies (.ini files if applicable)</dd>
+<dt>mapper</dt>
+<dd>filename of the mapper (.py).</dd>
+<dt>reducer</dt>
+<dd>filename of the reducer (.py).</dd>
+<dt>hdfs_data_dir</dt>
+<dd>working path in HDFS or Lustre.</dd>
+<dt>hdfs_output_file</dt>
+<dd>filename of the output file in the working path (HDFS or Lustre).</dd>
+<dt>output_hadoop</dt>
+<dd>filename of the output file in a local folder (output_dir).</dd>
+<dt>text_mode</dt>
+<dd>[1 by default] 0 for binary, only testing.</dd>
+<dt>hadoop_text_delimiter</dt>
+<dd>text delimiter for input data at mapper, see notes below.</dd>
+<dt>output_dir</dt>
+<dd>output folder (local).</dd>
+<dt>output_sym</dt>
+<dd>path (local) for the symbolic link to the output file (typically sub-path in experiment folder).</dd>
+<dt>temp_log</dt>
+<dd>filename for temporary logging.</dd>
+<dt>packets_per_hdfs_block</dt>
+<dd>number of frames per mapper.</dd>
+<dt>total_frames</dt>
+<dd>total number of frames in all the VDIF files to be processed.</dd>
+<dt>total_partitions</dt>
+<dd>maximum number of reducers.</dd>
+<dt>adjust_mappers</dt>
+<dd>force the calculated number of mappers to be multiplied by this factor.</dd>
+<dt>adjust_reducers</dt>
+<dd>force the calculated number of reducers to be multiplied by this factor.</dd>
+<dt>use_nohash_partitioner</dt>
+<dd>0 for default partitioner, 1 for nohash partitioner (better load balancing).</dd>
+<dt>use_lustre_plugin</dt>
+<dd>boolean to allow Hadoop to work directly in Lustre instead of HDFS.</dd>
+<dt>lustre_user_dir</dt>
+<dd>absolute path for the Lustre working path.</dd>
+<dt>num_slaves</dt>
+<dd>[unused] included to have the option to control the number of mappers reducers based on this.</dd>
+<dt>num_vcores</dt>
+<dd>[unused] included to have the option to control the number of mappers reducers based on this</dd>
+</dl>
+<p>one_baseline_per_task [0 by default]
+sort_output</p>
+<blockquote>
+<div>[0 by default]</div></blockquote>
+<dl class="docutils">
+<dt>bm_delete_output</dt>
+<dd>delete ouput file if 1 (only for benchmarking).</dd>
+<dt>bypass_reduce</dt>
+<dd>do not run reduce phase if 1 (so that output is directly that of the mappers), use only for debugging.</dd>
+<dt>v</dt>
+<dd>0 by default, 1 for verbose mode.</dd>
+<dt>file_log</dt>
+<dd>logging file.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>start_time</dt>
+<dd>number of seconds when the job is launched.</dd>
+<dt>end_time</dt>
+<dd>number of seconds when the job finishes.</dd>
+<dt>elapsed_time</dt>
+<dd>duration of the execution of the job [s].</dd>
+<dt>ret_start_time</dt>
+<dd>number of seconds when the output file is requested to the working filesystem (HDFS/Lustre).</dd>
+<dt>ret_end_time</dt>
+<dd>number of seconds when the output file gets to the local output folder.</dd>
+<dt>ret_elapsed_time</dt>
+<dd>duration of the retrieval of the output file from HDFS/Lustre to the local output folder [s].</dd>
+<dt>sort_start_time</dt>
+<dd>number of seconds when the output file sort starts.</dd>
+<dt>sort_end_time</dt>
+<dd>number of seconds when the output file sort starts.</dd>
+<dt>sort_elapsed_time</dt>
+<dd>duration of the output file sort [s].</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Configuration:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">-Controling the number of mappers and reducers:</div>
+<div class="line-block">
+<div class="line">packets_per_hdfs_block and total frames control the number of mappers.</div>
+<div class="line">total_partitions controls the number of reducers.</div>
+<div class="line">adjust_mappers and adjust_reducers allow to modify the number or mappers/reducers.</div>
+<div class="line"><a href="#id3"><span class="problematic" id="id4">*</span></a>The number of reducers allows finer tunning:</div>
+<div class="line-block">
+<div class="line">-if adjust_reducers==0, the reducer phase is bypassed.</div>
+<div class="line">-if adjust_reducers&lt;0, the number of reducers is fixed to the absolute value of the integer given.</div>
+</div>
+</div>
+<div class="line">-Configuration of the input reader:</div>
+<div class="line-block">
+<div class="line">Hadoop is currently used in text mode to process binary data. Until an implementation with full binary support,</div>
+<div class="line-block">
+<div class="line">the text mode is used. In this mode Hadoop splits the input blocks if it finds this delimiter, so it has to </div>
+<div class="line">be configured to minimize its probability. Need to find a more elegant solution.</div>
+</div>
+</div>
+<div class="line">-Configuration files:</div>
+<div class="line-block">
+<div class="line">Use a different hadoop_conf_dir for each node, otherwise there will be conflicts in clusters with shared filesystems.</div>
+</div>
+<div class="line">-Filesystem:</div>
+<div class="line-block">
+<div class="line">Use Lustre if possible.</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="line"><strong>Dependencies:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">-Lustre:</div>
+<div class="line-block">
+<div class="line">Lustre support based on the pluging in <a class="reference external" href="https://github.com/Seagate/lustrefs">https://github.com/Seagate/lustrefs</a>.</div>
+</div>
+<div class="line">-Partitioner:</div>
+<div class="line-block">
+<div class="line">The custom partitioner KeyFieldBasedPartitionerNH (NH for no hash) has to be used to avoid unbalanced loads on the reducers,</div>
+<div class="line-block">
+<div class="line">due to the default behavior by hashing the keys.</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+</div>
+</div>
+<div class="line"><strong>Notes:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Note that in this case if  adjust_mappers and adjust_reducers are -1 that does not mean that are computed</div>
+<div class="line-block">
+<div class="line">automatically (this is the usual convention in the code), but however that only 1 mapper or 1 reducer are used </div>
+<div class="line">(see &#8220;Configuration&#8221; for more details).</div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line">Implement native binary support, instead of using text mode.</div>
+<div class="line">Document sorting.</div>
+</div>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="lib_ini_files.html" title="previous chapter">lib_ini_files module</a></li>
+      <li>Next: <a href="lib_net_stats.html" title="next chapter">lib_net_stats module</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/lib_mapredcorr.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Antonio Vazquez Alvarez, Victor Pankratius, and Pedro Elosegui.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/lib_mapredcorr.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

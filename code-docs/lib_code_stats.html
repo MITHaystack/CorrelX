@@ -1,0 +1,198 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>lib_code_stats module &#8212; CorrelX 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="lib_config module" href="lib_config.html" />
+    <link rel="prev" title="lib_acc_comp module" href="lib_acc_comp.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-lib_code_stats">
+<span id="lib-code-stats-module"></span><h1>lib_code_stats module<a class="headerlink" href="#module-lib_code_stats" title="Permalink to this headline">¶</a></h1>
+<p>CorrelX line counter tools.</p>
+<div class="section" id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div>get_cx_code_stats()</div></blockquote>
+<dl class="function">
+<dt id="lib_code_stats.get_cx_code_stats">
+<code class="descclassname">lib_code_stats.</code><code class="descname">get_cx_code_stats</code><span class="sig-paren">(</span><em>filelist_v=[['Launcher and Filesystem Management', 'mapred_cx.py,lib_mapredcorr.py,lib_profiling.py,lib_net_stats.py,lib_ini_exper.py,lib_hadoop_hdfs.py,lib_config.py,const_config.py,const_hadoop.py'], ['Application', 'msvf.py,rsvf.py'], ['Libraries', 'const_mapred.py,const_quant.py,lib_quant.py,lib_vdif.py,const_ini_files.py,lib_ini_files.py,lib_acc_comp.py,lib_delay_model.py,lib_fx_stack.py,lib_pcal.py,const_debug.py,const_performance.py,lib_debug.py'], ['Tools', 'lib_code_stats.py,vdif_info.py,vdif_generator.py,vis_compare.py,cx2d_lib.py,convert_im_cx.py,process_zoom.py,convert_cx2d.py']], p='./', output_file='stats_code', debug_doc_file='stats_code_debug'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_code_stats.html#get_cx_code_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_code_stats.get_cx_code_stats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate statistics for CorrelX source code.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>filelist_v</dt>
+<dd>list of lists following the format [&#8220;group identifier&#8221;, &#8220;lib1.py,lib2.py,...,libN.py&#8221;]</dd>
+<dt>p <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to source file.</dd>
+<dt>output_file <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>prefix for output file.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div>None</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_code_stats.get_file_stats">
+<code class="descclassname">lib_code_stats.</code><code class="descname">get_file_stats</code><span class="sig-paren">(</span><em>full_input_file</em>, <em>full_debug_file</em>, <em>debug_doc=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_code_stats.html#get_file_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_code_stats.get_file_stats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get statistics for a single file.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>full_input_file <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to file to process (.py).</dd>
+<dt>full_debug_file <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to file to debug doc section.</dd>
+<dt>debug_doc <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>1 to debug.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>c_line <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of lines (total).</dd>
+<dt>c_code <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of lines with code.</dd>
+<dt>c_comment <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of comment-only lines.</dd>
+<dt>c_empty <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of blank lines.</dd>
+<dt>c_ne <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of non-blank lines.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Assumptions:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">It is assumed that the three quotations marks are only used to delimit </div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<div class="line"><strong>Notes:</strong></div>
+<div class="line"><br /></div>
+<div class="line">All non-empty lines in the doc section of the functions is accounted as comments.</div>
+<div class="line">Lines of code containing both code and comment are counted as code only</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_code_stats.get_out_line_stats">
+<code class="descclassname">lib_code_stats.</code><code class="descname">get_out_line_stats</code><span class="sig-paren">(</span><em>str_v</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_code_stats.html#get_out_line_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_code_stats.get_out_line_stats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate output line with statistics.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>str_v <span class="classifier-delimiter">:</span> <span class="classifier">list of str</span></dt>
+<dd>[&#8220;str_identifier&#8221;, str1, str2, ...] or [&#8220;str_identifier&#8221;, int1, int2, ...]</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>str</dt>
+<dd>tabulated output line.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div>lines_out.append(&#8221; &#8220;+&#8221;[File]&#8221;.ljust(20)+str(&#8220;[Total]&#8221;).rjust(WIDTH_NUM)+              str(&#8220;[Code]&#8221;).rjust(WIDTH_NUM)+              str(&#8220;[Comments]&#8221;).rjust(WIDTH_NUM)+              str(&#8220;[Empty]&#8221;).rjust(WIDTH_NUM)+              str(&#8220;[Non-empty]&#8221;).rjust(WIDTH_NUM))</div></blockquote>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">lib_code_stats module</a><ul>
+<li><a class="reference internal" href="#usage">Usage</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="lib_acc_comp.html" title="previous chapter">lib_acc_comp module</a></li>
+      <li>Next: <a href="lib_config.html" title="next chapter">lib_config module</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/lib_code_stats.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Antonio Vazquez Alvarez, Victor Pankratius, and Pedro Elosegui.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/lib_code_stats.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

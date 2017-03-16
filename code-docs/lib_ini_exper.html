@@ -1,0 +1,426 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>lib_ini_exper module &#8212; CorrelX 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="lib_ini_files module" href="lib_ini_files.html" />
+    <link rel="prev" title="lib_hadoop_hdfs module" href="lib_hadoop_hdfs.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-lib_ini_exper">
+<span id="lib-ini-exper-module"></span><h1>lib_ini_exper module<a class="headerlink" href="#module-lib_ini_exper" title="Permalink to this headline">¶</a></h1>
+<p>Routines for processing the experiment configuration.</p>
+<dl class="function">
+<dt id="lib_ini_exper.check_errors_ini_exper">
+<code class="descclassname">lib_ini_exper.</code><code class="descname">check_errors_ini_exper</code><span class="sig-paren">(</span><em>data_dir</em>, <em>ini_folder</em>, <em>ini_stations</em>, <em>ini_sources</em>, <em>ini_delay_model</em>, <em>ini_media</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_ini_exper.html#check_errors_ini_exper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_ini_exper.check_errors_ini_exper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check experiment configuration for errors. Currently simply checking existence of paths and files.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>data_dir <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to media folder.</dd>
+<dt>ini_folder <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to experiment folder.</dd>
+<dt>ini_stations <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to stations.ini (absolute).</dd>
+<dt>ini_sources <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to sources.ini (absolute).</dd>
+<dt>ini_delay_model <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to delay_model.ini (absolute).</dd>
+<dt>ini_media <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to media.ini (absolute)</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>init_success <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>0 if errors, 1 otherwise.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Add more checks. Consider checking ini files syntax, range of values, etc.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_ini_exper.gen_delays_ini_file">
+<code class="descclassname">lib_ini_exper.</code><code class="descname">gen_delays_ini_file</code><span class="sig-paren">(</span><em>file_stations_ini</em>, <em>params_array_stations</em>, <em>file_sources_ini</em>, <em>params_array_sources</em>, <em>file_delay_model_ini</em>, <em>params_array_delay_model</em>, <em>file_delays_ini</em>, <em>mjd_start</em>, <em>seconds_ref</em>, <em>tot_steps</em>, <em>step_seconds=1</em>, <em>seconds_offset=0</em>, <em>v=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_ini_exper.html#gen_delays_ini_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_ini_exper.gen_delays_ini_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate file with delay polynomials from delay model.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>file_stations_ini <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to stations.ini.</dd>
+<dt>params_array_stations <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>configuration of stations.ini.</dd>
+<dt>file_sources_ini <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to sources.ini.</dd>
+<dt>params_array_sources <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>configuration of sources.ini.</dd>
+<dt>file_delay_model_ini <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to delay_model.ini.</dd>
+<dt>params_array_delay_model <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>configuration of delay_mode.ini.</dd>
+<dt>file_delays_ini <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to delays.ini [will write].</dd>
+<dt>mjd_start <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>MJD for the start of the scan.</dd>
+<dt>seconds_ref <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>seconds in MJD for the start of the scan.</dd>
+<dt>tot_steps <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of accumulation periods in the scan.</dd>
+<dt>step_seconds <span class="classifier-delimiter">:</span> <span class="classifier">str(float)</span></dt>
+<dd>accumulation period [s].</dd>
+<dt>seconds_offset</dt>
+<dd>0</dd>
+<dt>v <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>verbose if 1.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>s_delay</dt>
+<dd>None if error, ini configuration to write if successful.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_ini_exper.get_num_partitions_red">
+<code class="descclassname">lib_ini_exper.</code><code class="descname">get_num_partitions_red</code><span class="sig-paren">(</span><em>one_baseline_per_task</em>, <em>accumulation_time</em>, <em>signal_duration</em>, <em>stations</em>, <em>auto_stations</em>, <em>max_num_channels</em>, <em>max_num_pols</em>, <em>v</em>, <em>file_log</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_ini_exper.html#get_num_partitions_red"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_ini_exper.get_num_partitions_red" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get number of reducers based on the experiment configuration.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>one_baseline_per_task <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>[default 0] 0 for all baselines per task, 1 for single baseline per task.</dd>
+<dt>accumulation_time <span class="classifier-delimiter">:</span> <span class="classifier">str(float)</span></dt>
+<dd>accumulation period in seconds.</dd>
+<dt>signal_duration <span class="classifier-delimiter">:</span> <span class="classifier">str(float)</span></dt>
+<dd>signal duration in seconds.</dd>
+<dt>stations <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of stations.</dd>
+<dt>auto_stations <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>1 if compute autocorrelations, 0 otherwise.</dd>
+<dt>max_num_channels <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>maximum number of channels per media file.</dd>
+<dt>max_num_pol <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>maximum number of polarizations per media file.</dd>
+<dt>v <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>verbose if 1.</dd>
+<dt>file_log <span class="classifier-delimiter">:</span> <span class="classifier">file handler</span></dt>
+<dd>handler to log file.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>total_partitions <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of reducers.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>This function is critical (together with the custom partitioner) to parallelize the </dt>
+<dd>reduce phase and  keep a well balanced load among the reducers.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_ini_exper.process_ini_correlation">
+<code class="descclassname">lib_ini_exper.</code><code class="descname">process_ini_correlation</code><span class="sig-paren">(</span><em>params_array_corr</em>, <em>file_log</em>, <em>v=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_ini_exper.html#process_ini_correlation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_ini_exper.process_ini_correlation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process correlation.ini file.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>params_array_corr</dt>
+<dd>list with correlation configuration.</dd>
+<dt>file_log</dt>
+<dd>handler for log file.</dd>
+<dt>v</dt>
+<dd>verbose if 1.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>stations <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of stations.</dd>
+<dt>fft_size <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of coefficients in DFT.</dd>
+<dt>accumulation_time <span class="classifier-delimiter">:</span> <span class="classifier">str(float)</span></dt>
+<dd>accumulation time in seconds.</dd>
+<dt>windowing <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>window type to be applied before DFT.</dd>
+<dt>mjd_start <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>MJD for the start of the scan.</dd>
+<dt>seconds_start <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of seconds in MJD for the start of the scan.</dd>
+<dt>seconds_duration <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>duration of the scan in seconds.</dd>
+<dt>phase_calibration <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>1 if phase calibration tones will be extracted, 0 otherwise.</dd>
+<dt>auto_stations <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>1 if compute autocorrelations, 0 otherwise.</dd>
+<dt>auto_pols <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>1 if crosspolarizations (see msvf.py).</dd>
+<dt>first_frame_num <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>[testing only] start reading after this frame id (-1 to read from first frame).</dd>
+<dt>num_frames <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>[testing only] read this number of frames per second (-1 to read all frames)</dd>
+<dt>num_pols <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>[testing only] default -1.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_ini_exper.process_ini_files">
+<code class="descclassname">lib_ini_exper.</code><code class="descname">process_ini_files</code><span class="sig-paren">(</span><em>data_dir</em>, <em>ini_stations</em>, <em>ini_sources</em>, <em>ini_delay_model</em>, <em>ini_delays</em>, <em>ini_media</em>, <em>ini_correlation</em>, <em>one_baseline_per_task</em>, <em>v=1</em>, <em>file_log=&lt;_io.TextIOWrapper name='&lt;stdout&gt;' mode='w' encoding='UTF-8'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_ini_exper.html#process_ini_files"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_ini_exper.process_ini_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process .ini files.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>data_dir <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to folder with media files.</dd>
+<dt>ini_stations <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to stations.ini.</dd>
+<dt>ini_sources <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to sources.ini.</dd>
+<dt>ini_delay_model <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to delay_model.ini.</dd>
+<dt>ini_delays <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to delays.ini.</dd>
+<dt>ini_media <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to media.ini.</dd>
+<dt>ini_correlation <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>path to correlation.ini.</dd>
+<dt>one_baseline_per_task <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>default 0.</dd>
+<dt>v <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>verbose if 1.</dd>
+<dt>file_log <span class="classifier-delimiter">:</span> <span class="classifier">file handler</span></dt>
+<dd>handler for log file.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>stations_serial_str <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>serialized version of stations.ini.</dd>
+<dt>media_serial_str <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>serialized version of media.ini.</dd>
+<dt>correlation_serial_str <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>serialized version of correlation.ini.</dd>
+<dt>delays_serial_str <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>serialized version of delays.ini.</dd>
+<dt>auto_stations <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>1 if compute autocorrelations, 0 otherwise.</dd>
+<dt>auto_pols <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>1 if compute cross-polarization correlations, 2 if only same-polarization correlations (see msvf.py).</dd>
+<dt>fft_size <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>requested number of coefficients in the FFT.</dd>
+<dt>accumulation_time <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>integration period duration [s].</dd>
+<dt>stations <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of stations (it will be used to compute number of mappers...).</dd>
+<dt>ref_epoch <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>MJD for the start of the scan.</dd>
+<dt>signal_start <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>seconds after MJD for the start of the scan.</dd>
+<dt>signal_duration <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>duration of the scan [s].</dd>
+<dt>input_files <span class="classifier-delimiter">:</span> <span class="classifier">list of str</span></dt>
+<dd>filenames for media files.</dd>
+<dt>first_frame_num <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>[default -1] This can be used to force the mapper to start reading frames after this id.</dd>
+<dt>num_frames <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>[default -1] This can be used to force the mapper to read only this number of frames for each second.</dd>
+<dt>codecs_serial <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>[default &#8220;0&#8221;] Serialized version of the codebook if using compression.</dd>
+<dt>max_packet_size <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of bytes in the largest frame of the media files.</dd>
+<dt>total_frames <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of frames in all the media files.</dd>
+<dt>total_partitions <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of reducer tasks.</dd>
+<dt>windowing <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>windowing as defined in correlation.ini.</dd>
+<dt>phase_calibration <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>1 if extract phase calibration tones, 0 otherwise.</dd>
+<dt>delay_error <span class="classifier-delimiter">:</span> <span class="classifier">None or str</span></dt>
+<dd>None if no errors during delay computations, str with error otherwise.</dd>
+<dt>error_str_v <span class="classifier-delimiter">:</span> <span class="classifier"></span></dt>
+<dd>list of str with errors for media files not existing.</dd>
+<dt>num_pols <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>-1</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Remove num_pols.</div>
+<div class="line">Remove vq.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_ini_exper.process_ini_media">
+<code class="descclassname">lib_ini_exper.</code><code class="descname">process_ini_media</code><span class="sig-paren">(</span><em>params_array_media</em>, <em>data_dir</em>, <em>v</em>, <em>file_log</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_ini_exper.html#process_ini_media"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_ini_exper.process_ini_media" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process media.ini file.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>params_array_corr <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>list with media configuration.</dd>
+<dt>data_dir <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>folder with media files.</dd>
+<dt>v <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>verbose if 1.</dd>
+<dt>file_log <span class="classifier-delimiter">:</span> <span class="classifier">file handler</span></dt>
+<dd>handler for log file.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>v_stations <span class="classifier-delimiter">:</span> <span class="classifier">list of str</span></dt>
+<dd>all stations ids corresponding to all the media files listed.</dd>
+<dt>max_num_channels <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>maximum number of channels per media file.</dd>
+<dt>max_num_pols <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>maximum number of polarizations per media file.</dd>
+<dt>input_files <span class="classifier-delimiter">:</span> <span class="classifier">list of str</span></dt>
+<dd>filenames for media files.</dd>
+<dt>total_frames <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>total frames considering all media files.</dd>
+<dt>max_packet_size <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>maximum frame size per media file.</dd>
+<dt>error_str_v <span class="classifier-delimiter">:</span> <span class="classifier">list of str</span></dt>
+<dd>errors on missing media files ([] if no errors).</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Considerations:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Currently assuming that all the media files have frames with the same size.</div>
+<div class="line">Currently assuming that all the files listed are processed, and that there is a section for each</div>
+<div class="line-block">
+<div class="line">of the listed files.</div>
+</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_ini_exper.process_ini_stations">
+<code class="descclassname">lib_ini_exper.</code><code class="descname">process_ini_stations</code><span class="sig-paren">(</span><em>params_array_stations</em>, <em>v_stations</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_ini_exper.html#process_ini_stations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_ini_exper.process_ini_stations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process stations.ini file.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>params_array_corr</dt>
+<dd>list with stations configuration.</dd>
+<dt>v_stations</dt>
+<dd>list of str with all stations ids corresponding to all the media files listed (from media).</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>v_id_stations</dt>
+<dd>list of int with the ids corresponding to v_stations.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="lib_hadoop_hdfs.html" title="previous chapter">lib_hadoop_hdfs module</a></li>
+      <li>Next: <a href="lib_ini_files.html" title="next chapter">lib_ini_files module</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/lib_ini_exper.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Antonio Vazquez Alvarez, Victor Pankratius, and Pedro Elosegui.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/lib_ini_exper.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

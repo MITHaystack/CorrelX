@@ -1,0 +1,327 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>lib_acc_comp module &#8212; CorrelX 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="lib_code_stats module" href="lib_code_stats.html" />
+    <link rel="prev" title="cx2d_lib module" href="cx2d_lib.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-lib_acc_comp">
+<span id="lib-acc-comp-module"></span><h1>lib_acc_comp module<a class="headerlink" href="#module-lib_acc_comp" title="Permalink to this headline">¶</a></h1>
+<p>Functions for accumulation period management: computations of identifiers based on timestamps, etc.</p>
+<dl class="function">
+<dt id="lib_acc_comp.adjust_seconds_fr">
+<code class="descclassname">lib_acc_comp.</code><code class="descname">adjust_seconds_fr</code><span class="sig-paren">(</span><em>samples_per_channel_in_frame</em>, <em>fs</em>, <em>seconds_fr</em>, <em>num_frame</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_acc_comp.html#adjust_seconds_fr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_acc_comp.adjust_seconds_fr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the timestamp for the first sample in this frame.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>samples_per_channel_in_frame <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of sample components per channel.</dd>
+<dt>fs <span class="classifier-delimiter">:</span> <span class="classifier">int or float</span></dt>
+<dd>sampling frequency.</dd>
+<dt>seconds_fr <span class="classifier-delimiter">:</span> <span class="classifier">int or float</span></dt>
+<dd>seconds for this frame (from frame header)</dd>
+<dt>num_frame <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>frame number (from frame header).</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>time_first_frame <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>timestamp [s] corresponding to the first sample of this frame.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_acc_comp.get_acc_block">
+<code class="descclassname">lib_acc_comp.</code><code class="descname">get_acc_block</code><span class="sig-paren">(</span><em>seconds_fr</em>, <em>seconds_ref</em>, <em>acc_time_str</em>, <em>tot_samples</em>, <em>num_channels</em>, <em>fs</em>, <em>frame_num</em>, <em>datatype='c'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_acc_comp.html#get_acc_block"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_acc_comp.get_acc_block" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get acc_block id for this frame.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>seconds_fr</dt>
+<dd>seconds in the header of the processed frame.</dd>
+<dt>seconds_ref <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>seconds corresponding to the start of the current accumulation period.</dd>
+<dt>acc_time_str <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>accumualation time. Expected format is a string from a float.</dd>
+<dt>tot_samples</dt>
+<dd>total number of sample components in the frame (for all the channels).</dd>
+<dt>num_channels</dt>
+<dd>number of channels in this frame.</dd>
+<dt>fs</dt>
+<dd>sampling frequency.</dd>
+<dt>frame_num</dt>
+<dd>frame number in the header of the processed frame.</dd>
+<dt>datatype: {&#8216;r&#8217; , &#8216;c&#8217;}</dt>
+<dd>&#8216;r&#8217; for real, &#8216;c&#8217; for complex.</dd>
+</dl>
+<div class="line-block">
+<div class="line">datatype is required for computing the number of sample components per sample (2 for complex, 1 for real).</div>
+<div class="line">acc_time str was initially devised to support fractions (e.g. &#8220;1/3&#8221;) before supporting float accumulation times (e.g. 0.32), </div>
+<div class="line-block">
+<div class="line">but this feature (fractions) is no longer needed.</div>
+</div>
+</div>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_acc_comp.get_acc_block_for_time">
+<code class="descclassname">lib_acc_comp.</code><code class="descname">get_acc_block_for_time</code><span class="sig-paren">(</span><em>time_first_sample</em>, <em>list_acc_frontiers</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_acc_comp.html#get_acc_block_for_time"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_acc_comp.get_acc_block_for_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get accumulation block id.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>time_first_sample <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>[s].</dd>
+<dt>list_acc_frontiers <span class="classifier-delimiter">:</span> <span class="classifier">list of floats</span></dt>
+<dd>generated with get_list_acc_frontiers().</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>index_front</dt>
+<dd>accumulation block id.</dd>
+<dt>i</dt>
+<dd>list_acc_frontiers[index_front].</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_acc_comp.get_acc_float">
+<code class="descclassname">lib_acc_comp.</code><code class="descname">get_acc_float</code><span class="sig-paren">(</span><em>acc_time_str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_acc_comp.html#get_acc_float"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_acc_comp.get_acc_float" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a fraction of integers into a float. Initially devised to support fractions in accumulation time, no longer needed.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>acc_time_str <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>accumulation time as str of float (e.g. &#8220;0.25&#8221;) or fraction (e.g. &#8220;1/4&#8221;).</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>acc_float <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>accumulation time (e.g. 0.25).</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Consider removing along with get_num_den_accs(), initially devised to support fractions as integration times.</div>
+<div class="line">To be replaced with simply float(acc_time_str).</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_acc_comp.get_frame_acc">
+<code class="descclassname">lib_acc_comp.</code><code class="descname">get_frame_acc</code><span class="sig-paren">(</span><em>seconds_fr</em>, <em>num_frame</em>, <em>fs</em>, <em>samples_per_channel_in_frame</em>, <em>list_acc_frontiers</em>, <em>acc_time</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_acc_comp.html#get_frame_acc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_acc_comp.get_frame_acc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the index of the accumulation period corresponding to this frame, the relative number of the frame into the acc period,
+and the seconds corresponding to the first sample.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>seconds_fr</dt>
+<dd>seconds for this frame (from frame header)</dd>
+<dt>num_frame</dt>
+<dd>frame number (from frame header).</dd>
+<dt>fs</dt>
+<dd>sampling frequency.</dd>
+<dt>samples_per_channel_in_frame</dt>
+<dd>number of sample components per channel.</dd>
+<dt>list_acc_frontiers</dt>
+<dd>list generated with get_list_acc_frontiers().</dd>
+<dt>acc_time</dt>
+<dd>accumulation time.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>index_front</dt>
+<dd>index to the list of accumulation period frontiers.</dd>
+<dt>frame_rel_pos_time</dt>
+<dd>number of frame relative to the accumulation period.</dd>
+<dt>time_first_sample</dt>
+<dd>timestamp for the first sample of this frame.</dd>
+<dt>seconds_previous frame</dt>
+<dd>timestamp for the first sample of the previous frame.</dd>
+<dt>frames_per_acc</dt>
+<dd>number of frames per accumulation period.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Merge with get_acc_block_for_time(), avoid repeated code.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_acc_comp.get_list_acc_frontiers">
+<code class="descclassname">lib_acc_comp.</code><code class="descname">get_list_acc_frontiers</code><span class="sig-paren">(</span><em>acc_time</em>, <em>signal_duration</em>, <em>seconds_ref</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_acc_comp.html#get_list_acc_frontiers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_acc_comp.get_list_acc_frontiers" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Returns list of times of separators for accumulation periods, i.e. start times of the accumulation periods, </dt>
+<dd>plus another float with the end time of the last accumulation period.</dd>
+</dl>
+<blockquote>
+<div><dl class="docutils">
+<dt>acc_time <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>accumulation period duration [s].</dd>
+<dt>signal_duration <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>duration of the experiment [s].</dd>
+<dt>seconds_ref <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>number of seconds corresponding to the start of the experiment [s].</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>out <span class="classifier-delimiter">:</span> <span class="classifier">list of float</span></dt>
+<dd>timestamps [s] from 0 to signal_duration with separators for acc periods.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_acc_comp.get_num_den_accs">
+<code class="descclassname">lib_acc_comp.</code><code class="descname">get_num_den_accs</code><span class="sig-paren">(</span><em>acc_time_str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_acc_comp.html#get_num_den_accs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_acc_comp.get_num_den_accs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get num and den for accumulation period.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>acc_time_str <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>accumulation time (e.g. &#8220;1/3&#8221;).</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>num <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>numerator of the fraction.</dd>
+<dt>den <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>denominator of the fraction.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Consider removing along with get_acc_float(), initially devised to support fractions as integration times.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_acc_comp.get_tot_acc_blocks">
+<code class="descclassname">lib_acc_comp.</code><code class="descname">get_tot_acc_blocks</code><span class="sig-paren">(</span><em>acc_time_str</em>, <em>signal_duration</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_acc_comp.html#get_tot_acc_blocks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_acc_comp.get_tot_acc_blocks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns number of accumulation blocks.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>acc_time_str <span class="classifier-delimiter">:</span> <span class="classifier">str(float)</span></dt>
+<dd>accumulation time.</dd>
+<dt>signal_duration <span class="classifier-delimiter">:</span> <span class="classifier">str(float)</span></dt>
+<dd>duration of the scan.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>tot_acc_blocks <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>number of accumulation periods within the scan.</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="cx2d_lib.html" title="previous chapter">cx2d_lib module</a></li>
+      <li>Next: <a href="lib_code_stats.html" title="next chapter">lib_code_stats module</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/lib_acc_comp.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Antonio Vazquez Alvarez, Victor Pankratius, and Pedro Elosegui.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/lib_acc_comp.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

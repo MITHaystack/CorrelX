@@ -1,0 +1,1489 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>rsvf &#8212; CorrelX 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for rsvf</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># &lt;nbformat&gt;3.0&lt;/nbformat&gt;</span>
+
+<span class="c1"># &lt;codecell&gt;</span>
+
+<span class="c1">#!/usr/bin/env python</span>
+<span class="c1">#</span>
+<span class="c1">#The MIT CorrelX Correlator</span>
+<span class="c1">#</span>
+<span class="c1">#https://github.com/MITHaystack/CorrelX</span>
+<span class="c1">#Contact: correlX@haystack.mit.edu</span>
+<span class="c1">#Project leads: Victor Pankratius, Pedro Elosegui Project developer: A.J. Vazquez Alvarez</span>
+<span class="c1">#</span>
+<span class="c1">#Copyright 2017 MIT Haystack Observatory</span>
+<span class="c1">#</span>
+<span class="c1">#Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the &quot;Software&quot;), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1">#The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</span>
+<span class="c1">#</span>
+<span class="c1">#THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#------------------------------</span>
+<span class="c1">#------------------------------</span>
+<span class="c1">#Project: CorrelX.</span>
+<span class="c1">#File: rsvf.py.</span>
+<span class="c1">#Author: A.J. Vazquez Alvarez (ajvazquez@haystack.mit.edu)</span>
+<span class="c1">#Description: </span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Reducer: performs VLBI correlation from a text file with the lines for all the stations, </span>
+<span class="sd">      sorted as defined in const_mapred.py based on the key and format defined in msvf.get_pair_str().</span>
+
+<span class="sd">Parameters</span>
+<span class="sd">----------</span>
+<span class="sd"> See lib_mapredcorr.get_reducer_params_str()</span>
+<span class="sd">    </span>
+<span class="sd">Returns</span>
+<span class="sd">-------</span>
+<span class="sd"> See rsvf.get_lines_out_for_all() for visibilities.</span>
+<span class="sd"> See rsvf.get_lines_stats() for statistics.</span>
+
+<span class="sd">Notes</span>
+<span class="sd">-----</span>
+<span class="sd">|</span>
+<span class="sd">| **Reader:</span>
+<span class="sd">|</span>
+<span class="sd">|  Expecting lines with </span>
+<span class="sd">|  See rsvf.split_input_line()</span>
+<span class="sd">     </span>
+<span class="sd">&quot;&quot;&quot;</span>   
+<span class="c1">#History:</span>
+<span class="c1">#initial version: 2015.12 ajva</span>
+<span class="c1">#MIT Haystack Observatory</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span><span class="p">,</span><span class="n">division</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">base64</span>
+<span class="kn">import</span> <span class="nn">imp</span>
+
+<span class="kn">import</span> <span class="nn">lib_quant</span>
+<span class="n">imp</span><span class="o">.</span><span class="n">reload</span><span class="p">(</span><span class="n">lib_quant</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">lib_quant</span> <span class="k">import</span> <span class="o">*</span>
+
+
+
+<span class="kn">import</span> <span class="nn">lib_fx_stack</span>
+<span class="n">imp</span><span class="o">.</span><span class="n">reload</span><span class="p">(</span><span class="n">lib_fx_stack</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">lib_fx_stack</span> <span class="k">import</span> <span class="o">*</span>
+
+<span class="c1"># Constants for mapper and reducer</span>
+<span class="kn">import</span> <span class="nn">const_mapred</span>
+<span class="n">imp</span><span class="o">.</span><span class="n">reload</span><span class="p">(</span><span class="n">const_mapred</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">const_mapred</span> <span class="k">import</span> <span class="o">*</span>
+
+<span class="kn">import</span> <span class="nn">lib_pcal</span>
+<span class="n">imp</span><span class="o">.</span><span class="n">reload</span><span class="p">(</span><span class="n">lib_pcal</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">lib_pcal</span> <span class="k">import</span> <span class="o">*</span>
+
+<span class="c1"># Vector quantization                           # VQ disabled</span>
+<span class="c1">#import lib_vq</span>
+<span class="c1">#imp.reload(lib_vq)</span>
+<span class="c1">#from lib_vq import *</span>
+
+<span class="kn">import</span> <span class="nn">lib_debug</span>
+<span class="n">imp</span><span class="o">.</span><span class="n">reload</span><span class="p">(</span><span class="n">lib_debug</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">lib_debug</span> <span class="k">import</span> <span class="o">*</span>
+
+<span class="kn">import</span> <span class="nn">const_performance</span>
+<span class="n">imp</span><span class="o">.</span><span class="n">reload</span><span class="p">(</span><span class="n">const_performance</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">const_performance</span> <span class="k">import</span> <span class="o">*</span>
+
+<span class="kn">from</span> <span class="nn">const_ini_files</span> <span class="k">import</span> <span class="o">*</span>
+
+<span class="c1">#import bitarray</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>    
+
+
+
+<span class="c1"># -Debugging-</span>
+<span class="c1">#    By default: 0</span>
+<span class="c1">#    If 1: inputs are by-passed to the output</span>
+<span class="n">DEBUGGING</span> <span class="o">=</span> <span class="n">BYPASS_REDUCER</span> <span class="c1"># 0</span>
+
+
+<span class="c1">###########################################</span>
+<span class="c1">#           Input</span>
+<span class="c1">###########################################</span>
+
+
+<div class="viewcode-block" id="split_input_line"><a class="viewcode-back" href="../rsvf.html#rsvf.split_input_line">[docs]</a><span class="k">def</span> <span class="nf">split_input_line</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get sub-keys from read line.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     line : str</span>
+<span class="sd">         whole line read from input. </span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     key_pair_accu : str</span>
+<span class="sd">         part of the key with pair (station-pol A and station-pol B) and accumulation period.</span>
+<span class="sd">     key_sample : str</span>
+<span class="sd">         part of they key with sample number.</span>
+<span class="sd">     key_station</span>
+<span class="sd">         station identifier</span>
+<span class="sd">     vector_split</span>
+<span class="sd">         second part of the header with information necessary for the processing of the samples.</span>
+<span class="sd">     is_autocorr</span>
+<span class="sd">         used in one-baseline-per-task mode, indicates that this pair is an autocorrelation and therefore</span>
+<span class="sd">                      these samples will be correlated with themselves.</span>
+<span class="sd">     key_station_pol</span>
+<span class="sd">         station-polarization identifier.</span>
+<span class="sd">     char_type</span>
+<span class="sd">         identifies the mode of operation, as defined in the mapper:</span>
+<span class="sd">            |      &#39;x&#39; for all-baselines-per-task,</span>
+<span class="sd">            |      &#39;r&#39; for linear scaling with the number of stations,</span>
+<span class="sd">            |      &#39;y&#39; for one-baseline-per-task.</span>
+<span class="sd">     accu_block</span>
+<span class="sd">         integration period number.</span>
+<span class="sd">    </span>
+<span class="sd">    </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    |</span>
+<span class="sd">    | **TO DO:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  Move char_type (char_p in mapper) to constants section.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Multi-key separator into common format (Hadoop will change last FIELD_SEP of key into KEY_SEP</span>
+    <span class="n">line</span><span class="o">=</span><span class="n">line</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">FIELD_SEP</span><span class="o">+</span><span class="n">KEY_SEP</span><span class="p">,</span><span class="n">KEY_SEP</span><span class="p">)</span>
+    <span class="n">line</span><span class="o">=</span><span class="n">line</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">KEY_SEP</span><span class="o">+</span><span class="n">KEY_SEP</span><span class="p">,</span><span class="n">KEY_SEP</span><span class="p">)</span>
+    
+    <span class="n">key</span><span class="p">,</span> <span class="n">vector</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">KEY_SEP</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">key_pair_accu_sample</span><span class="p">,</span> <span class="n">key_station_pol</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;s&#39;</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">key_station</span> <span class="o">=</span> <span class="n">key_station_pol</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">SF_SEP</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">key_pair_accu</span><span class="p">,</span> <span class="n">key_sample</span> <span class="o">=</span> <span class="n">key_pair_accu_sample</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;f&#39;</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">vector_split</span> <span class="o">=</span> <span class="n">vector</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+    <span class="n">key_pair_accu_split</span> <span class="o">=</span> <span class="n">key_pair_accu</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">FIELD_SEP</span><span class="p">)</span>
+    <span class="n">is_autocorr</span><span class="o">=</span><span class="mi">0</span>
+    <span class="k">if</span> <span class="n">key_pair_accu_split</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">==</span><span class="n">key_pair_accu_split</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span>
+        <span class="n">is_autocorr</span><span class="o">=</span><span class="mi">1</span>
+    <span class="n">char_type</span><span class="o">=</span><span class="n">key</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">accu_block</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">key_pair_accu_split</span><span class="p">[</span><span class="mi">5</span><span class="p">])</span>
+    
+    <span class="k">return</span><span class="p">([</span><span class="n">key_pair_accu</span><span class="p">,</span> <span class="n">key_sample</span><span class="p">,</span> <span class="n">key_station</span><span class="p">,</span> <span class="n">vector_split</span><span class="p">,</span><span class="n">is_autocorr</span><span class="p">,</span><span class="n">key_station_pol</span><span class="p">,</span><span class="n">char_type</span><span class="p">,</span><span class="n">accu_block</span><span class="p">])</span></div>
+
+
+
+<div class="viewcode-block" id="extract_params_split"><a class="viewcode-back" href="../rsvf.html#rsvf.extract_params_split">[docs]</a><span class="k">def</span> <span class="nf">extract_params_split</span><span class="p">(</span><span class="n">vector_split</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get paramters from line header (header of the data, not part of the key).</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     vector_split : str</span>
+<span class="sd">         second part of the header with all the parameters provided by the mapper, </span>
+<span class="sd">                      associated to the samples to be processed.</span>
+<span class="sd">                      </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    bits_per_sample</span>
+<span class="sd">        number of bits for each component of the sample.</span>
+<span class="sd">    block_first_sample</span>
+<span class="sd">        accumulation period. TO DO: check this.</span>
+<span class="sd">    data_type</span>
+<span class="sd">        sample type, &#39;r&#39; for real, &#39;c&#39; for complex.</span>
+<span class="sd">    encoding</span>
+<span class="sd">        [unused] initially used for introducing compression in the data (VQ), currently not used.</span>
+<span class="sd">    encoding_width</span>
+<span class="sd">        [unused] also associated to compression.</span>
+<span class="sd">    n_bins_pcal</span>
+<span class="sd">        number of samples for the windows to be accumulated for the pcal signal.</span>
+<span class="sd">    num_samples</span>
+<span class="sd">        number of samples in this line.</span>
+<span class="sd">    abs_delay</span>
+<span class="sd">        absolute delay.</span>
+<span class="sd">    rate_delay</span>
+<span class="sd">        delay information corresponding these samples (polynomials, etc).</span>
+<span class="sd">    fs</span>
+<span class="sd">        sampling frequency.</span>
+<span class="sd">    fs_pcal</span>
+<span class="sd">        [unused] phase calibration signal frequency spacing.</span>
+<span class="sd">    freq_channel</span>
+<span class="sd">        sky frequency.</span>
+<span class="sd">    first_sample</span>
+<span class="sd">        first sample number (integer starting at 0).</span>
+<span class="sd">    fractional_sample_delay</span>
+<span class="sd">        fractional sample delay corresponding to the sample 0 of this stream.</span>
+<span class="sd">    accumulation_time</span>
+<span class="sd">        time duration of the integration period.</span>
+<span class="sd">    shift_delay</span>
+<span class="sd">        integer number of samples offset for the sample 0 of this stream.</span>
+<span class="sd">    sideband</span>
+<span class="sd">        single side band side, &#39;l&#39; for LSB, &#39;u&#39; for USB.</span>
+<span class="sd">    </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    |</span>
+<span class="sd">    | **Conventions:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  See const_mapred.py for constants positions and descriptions.  </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">shift_delay</span><span class="o">=</span>               <span class="nb">int</span><span class="p">(</span><span class="n">vector_split</span><span class="p">[</span><span class="n">INDEX_SHIFT_DELAY</span><span class="p">])</span>
+    <span class="n">fractional_sample_delay</span><span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">vector_split</span><span class="p">[</span><span class="n">INDEX_FRAC_DELAY</span><span class="p">])</span>
+    <span class="n">abs_delay</span><span class="o">=</span>               <span class="nb">float</span><span class="p">(</span><span class="n">vector_split</span><span class="p">[</span><span class="n">INDEX_ABS_DELAY</span><span class="p">])</span>
+    <span class="n">rate_delay</span><span class="o">=</span>             <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">vector_split</span><span class="p">[</span><span class="n">INDEX_RATE_DELAY_0</span><span class="p">]),</span>\
+                             <span class="nb">float</span><span class="p">(</span><span class="n">vector_split</span><span class="p">[</span><span class="n">INDEX_RATE_DELAY_1</span><span class="p">]),</span>\
+                             <span class="nb">float</span><span class="p">(</span><span class="n">vector_split</span><span class="p">[</span><span class="n">INDEX_RATE_DELAY_2</span><span class="p">]),</span>\
+                             <span class="nb">float</span><span class="p">(</span><span class="n">vector_split</span><span class="p">[</span><span class="n">INDEX_RATE_DELAY_REF</span><span class="p">]),</span>\
+                             <span class="nb">float</span><span class="p">(</span><span class="n">vector_split</span><span class="p">[</span><span class="n">INDEX_RATE_CLOCK_0</span><span class="p">]),</span>\
+                             <span class="nb">float</span><span class="p">(</span><span class="n">vector_split</span><span class="p">[</span><span class="n">INDEX_RATE_CLOCK_1</span><span class="p">]),</span>\
+                             <span class="nb">float</span><span class="p">(</span><span class="n">vector_split</span><span class="p">[</span><span class="n">INDEX_RATE_ZC_0</span><span class="p">]),</span>\
+                             <span class="nb">float</span><span class="p">(</span><span class="n">vector_split</span><span class="p">[</span><span class="n">INDEX_RATE_ZC_1</span><span class="p">]),</span>\
+                             <span class="nb">float</span><span class="p">(</span><span class="n">vector_split</span><span class="p">[</span><span class="n">INDEX_RATE_CLOCK_REF</span><span class="p">]),</span>\
+                             <span class="nb">float</span><span class="p">(</span><span class="n">vector_split</span><span class="p">[</span><span class="n">INDEX_RATE_M_ONLY</span><span class="p">]),</span>\
+                             <span class="nb">float</span><span class="p">(</span><span class="n">vector_split</span><span class="p">[</span><span class="n">INDEX_RATE_C_ONLY</span><span class="p">]),</span>
+                             <span class="nb">float</span><span class="p">(</span><span class="n">vector_split</span><span class="p">[</span><span class="n">INDEX_RATE_DIFF_FRAC</span><span class="p">])]</span> 
+    <span class="n">num_samples</span><span class="o">=</span>               <span class="nb">int</span><span class="p">(</span><span class="n">vector_split</span><span class="p">[</span><span class="n">INDEX_NUM_SAMPLES</span><span class="p">])</span>
+    <span class="n">fs</span><span class="o">=</span>                      <span class="nb">float</span><span class="p">(</span><span class="n">vector_split</span><span class="p">[</span><span class="n">INDEX_FS</span><span class="p">])</span>
+    <span class="n">bits_per_sample</span> <span class="o">=</span>          <span class="nb">int</span><span class="p">(</span><span class="n">vector_split</span><span class="p">[</span><span class="n">INDEX_BITS_PER_SAMPLE</span><span class="p">])</span>
+    <span class="n">first_sample</span><span class="o">=</span>              <span class="nb">int</span><span class="p">(</span><span class="n">vector_split</span><span class="p">[</span><span class="n">INDEX_FIRST_SAMPLE</span><span class="p">])</span>
+    <span class="n">data_type</span> <span class="o">=</span>                    <span class="n">vector_split</span><span class="p">[</span><span class="n">INDEX_DATA_TYPE</span><span class="p">]</span>
+    <span class="n">n_bins_pcal</span> <span class="o">=</span>              <span class="nb">int</span><span class="p">(</span><span class="n">vector_split</span><span class="p">[</span><span class="n">INDEX_NBINS_PCAL</span><span class="p">])</span>
+    <span class="n">fs_pcal</span><span class="o">=</span>                 <span class="nb">float</span><span class="p">(</span><span class="n">vector_split</span><span class="p">[</span><span class="n">INDEX_PCAL_FREQ</span><span class="p">])</span>
+    <span class="n">channel_index_str</span> <span class="o">=</span>            <span class="n">vector_split</span><span class="p">[</span><span class="n">INDEX_CHANNEL_INDEX</span><span class="p">]</span>
+    <span class="n">freq_channel</span> <span class="o">=</span>           <span class="nb">float</span><span class="p">(</span><span class="n">vector_split</span><span class="p">[</span><span class="n">INDEX_CHANNEL_FREQ</span><span class="p">])</span>
+    <span class="n">accumulation_time</span> <span class="o">=</span>      <span class="nb">float</span><span class="p">(</span><span class="n">vector_split</span><span class="p">[</span><span class="n">INDEX_ACC_TIME</span><span class="p">])</span>
+    <span class="n">encoding</span> <span class="o">=</span>                     <span class="n">vector_split</span><span class="p">[</span><span class="n">INDEX_ENCODING</span><span class="p">]</span>
+    <span class="n">sideband</span><span class="o">=</span>                      <span class="n">vector_split</span><span class="p">[</span><span class="n">INDEX_SIDEBAND</span><span class="p">]</span>
+    
+    
+    <span class="n">block_first_sample</span> <span class="o">=</span> <span class="n">vector_split</span><span class="p">[</span><span class="n">INDEX_FIRST_SAMPLE</span><span class="p">]</span><span class="o">+</span><span class="n">SF_SEP</span><span class="o">+</span><span class="n">channel_index_str</span>
+    
+
+    <span class="k">if</span> <span class="n">data_type</span><span class="o">==</span><span class="s1">&#39;c&#39;</span><span class="p">:</span>
+        <span class="n">num_samples</span><span class="o">=</span><span class="n">num_samples</span><span class="o">//</span><span class="mi">2</span>
+        <span class="n">shift_delay</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">shift_delay</span><span class="o">//</span><span class="mi">2</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="n">encoding</span> <span class="o">==</span> <span class="n">C_INI_MEDIA_C_VQ</span><span class="p">:</span>
+        <span class="n">encoding_width</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">vector_split</span><span class="p">[</span><span class="n">META_LEN</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">encoding_width</span><span class="o">=</span><span class="mi">0</span>
+    <span class="k">return</span><span class="p">([</span><span class="n">bits_per_sample</span><span class="p">,</span><span class="n">block_first_sample</span><span class="p">,</span><span class="n">data_type</span><span class="p">,</span><span class="n">encoding</span><span class="p">,</span> <span class="n">encoding_width</span><span class="p">,</span><span class="n">n_bins_pcal</span><span class="p">,</span><span class="n">num_samples</span><span class="p">,</span><span class="n">abs_delay</span><span class="p">,</span><span class="n">rate_delay</span><span class="p">,</span><span class="n">fs</span><span class="p">,</span><span class="n">fs_pcal</span><span class="p">,</span><span class="n">freq_channel</span><span class="p">,</span><span class="n">first_sample</span><span class="p">,</span><span class="n">fractional_sample_delay</span><span class="p">,</span><span class="n">accumulation_time</span><span class="p">,</span><span class="n">shift_delay</span><span class="p">,</span><span class="n">sideband</span><span class="p">])</span></div>
+
+
+
+<div class="viewcode-block" id="decode_samples_b64"><a class="viewcode-back" href="../rsvf.html#rsvf.decode_samples_b64">[docs]</a><span class="k">def</span> <span class="nf">decode_samples_b64</span><span class="p">(</span><span class="n">vector_split_samples</span><span class="p">,</span><span class="n">vector_split_encoding</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Decode base64.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     vector_split_samples</span>
+<span class="sd">         string with the samples (that is a component of the list vector_split).</span>
+<span class="sd">     vector_split_encoding</span>
+<span class="sd">         compression (VQ) encoding, disabled by default.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     out: 1D numpy array</span>
+<span class="sd">         samples (components if complex), packed in binary format (uint8). Samples still need to be &quot;dequantized&quot;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">if</span> <span class="p">(</span><span class="n">ENCODE_B64</span><span class="o">==</span><span class="mi">1</span><span class="p">)</span><span class="ow">and</span><span class="p">(</span><span class="n">vector_split_encoding</span><span class="o">==</span><span class="n">C_INI_MEDIA_C_NO</span><span class="p">):</span>
+        <span class="k">return</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">base64</span><span class="o">.</span><span class="n">b64decode</span><span class="p">(</span><span class="n">vector_split_samples</span><span class="p">),</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span><span class="p">([])</span></div>
+
+
+
+<span class="c1">###########################################</span>
+<span class="c1">#           Output</span>
+<span class="c1">###########################################</span>
+
+<div class="viewcode-block" id="get_key_all_out"><a class="viewcode-back" href="../rsvf.html#rsvf.get_key_all_out">[docs]</a><span class="k">def</span> <span class="nf">get_key_all_out</span><span class="p">(</span><span class="n">char_type</span><span class="p">,</span><span class="n">F_ind_s0</span><span class="p">,</span><span class="n">F_ind_s1</span><span class="p">,</span><span class="n">acc_str</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get key for reducer output.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ------</span>
+<span class="sd">     char_type : char</span>
+<span class="sd">         operation mode (see split_input_line())</span>
+<span class="sd">     F_ind_s0</span>
+<span class="sd">         first station-polarization for this baseline.</span>
+<span class="sd">     F_ind_s1</span>
+<span class="sd">         second station-polarization for this baseline.</span>
+<span class="sd">     acc_str : str</span>
+<span class="sd">         multi-key for output line.</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     output : str</span>
+<span class="sd">         key for output line.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span><span class="p">(</span><span class="s2">&quot;p&quot;</span><span class="o">+</span><span class="n">char_type</span><span class="o">+</span><span class="n">FIELD_SEP</span><span class="o">+</span><span class="n">F_ind_s0</span><span class="o">+</span><span class="n">FIELD_SEP</span><span class="o">+</span><span class="n">F_ind_s1</span><span class="o">+</span><span class="n">FIELD_SEP</span><span class="o">+</span><span class="n">acc_str</span><span class="o">+</span><span class="n">FIELD_SEP</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="get_str_r_out"><a class="viewcode-back" href="../rsvf.html#rsvf.get_str_r_out">[docs]</a><span class="k">def</span> <span class="nf">get_str_r_out</span><span class="p">(</span><span class="n">current_key_pair_accu</span><span class="p">,</span><span class="n">count_acc</span><span class="p">,</span><span class="n">current_vector_split</span><span class="p">,</span><span class="n">current_block_first_sample</span><span class="p">,</span><span class="n">accu_prod_div</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get output string for reducer.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     current_key_pair_accu</span>
+<span class="sd">         part of the key with the baseline and the accumulation multi-key.</span>
+<span class="sd">     count_acc</span>
+<span class="sd">         number of accumulations.</span>
+<span class="sd">     current_vector_split</span>
+<span class="sd">         list with metadata.</span>
+<span class="sd">     current_block_first_sample</span>
+<span class="sd">         &lt;first_sample&gt;.&lt;channel_index&gt;</span>
+<span class="sd">     accu_prod_div : complex 1D np.array</span>
+<span class="sd">         visibilities for one baseline, one band and one accumulation period.</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     str_print : str</span>
+<span class="sd">         output line with visibilities.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">current_vector_split_sub_print</span> <span class="o">=</span> <span class="n">current_vector_split</span><span class="p">[:(</span><span class="n">META_LEN</span><span class="o">-</span><span class="mi">1</span><span class="p">)]</span>
+    <span class="n">current_vector_split_sub_print</span><span class="p">[</span><span class="n">INDEX_PCAL_FREQ</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">current_vector_split_sub_print</span><span class="p">[</span><span class="n">INDEX_NBINS_PCAL</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>                    
+    <span class="n">str_print</span> <span class="o">=</span> <span class="n">current_key_pair_accu</span><span class="o">+</span><span class="s1">&#39;sxa&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">count_acc</span><span class="p">)</span><span class="o">+</span><span class="n">KEY_SEP</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">current_vector_split_sub_print</span><span class="p">)</span><span class="o">+</span>\
+          <span class="s1">&#39; &#39;</span><span class="o">+</span><span class="n">current_block_first_sample</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">accu_prod_div</span><span class="p">))</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">str_print</span><span class="p">)</span></div>
+                        
+
+<div class="viewcode-block" id="get_str_pcal_out"><a class="viewcode-back" href="../rsvf.html#rsvf.get_str_pcal_out">[docs]</a><span class="k">def</span> <span class="nf">get_str_pcal_out</span><span class="p">(</span><span class="n">acc_pcal</span><span class="p">,</span><span class="n">current_n_bins_pcal</span><span class="p">,</span><span class="n">count_acc_pcal</span><span class="p">,</span><span class="n">current_key_pair_accu</span><span class="p">,</span><span class="n">current_vector_split</span><span class="p">,</span><span class="n">current_block_first_sample</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    [Only used in one-baseline-per-task mode]</span>
+<span class="sd">    Get output string for phase calibration.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     acc_pcal : complex 1D np.array</span>
+<span class="sd">         phase calibration results for one baseline, one band and one accumulation period.</span>
+<span class="sd">     current_n_bins_pcal</span>
+<span class="sd">         number of bins (number of elements in acc_pcal).</span>
+<span class="sd">     count_acc_pcal</span>
+<span class="sd">         number of accumulations performed to get pcal results.</span>
+<span class="sd">     current_key_pair_accu</span>
+<span class="sd">         part of the key with the baseline and the accumulation multi-key.</span>
+<span class="sd">     current_vector_split</span>
+<span class="sd">         metadata as in the input line.</span>
+<span class="sd">     current_block_first_sample</span>
+<span class="sd">         &lt;first_sample&gt;.&lt;channel_index&gt;.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     str_print : str</span>
+<span class="sd">         output line with phase calibration results.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">str_print</span> <span class="o">=</span> <span class="s2">&quot;pcal&quot;</span><span class="o">+</span><span class="n">current_key_pair_accu</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span><span class="o">+</span><span class="s1">&#39;sxa&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">count_acc_pcal</span><span class="p">)</span><span class="o">+</span><span class="n">KEY_SEP</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">current_vector_split</span><span class="p">[:(</span><span class="n">META_LEN</span><span class="o">-</span><span class="mi">1</span><span class="p">)])</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="o">+</span><span class="n">current_block_first_sample</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">acc_pcal</span><span class="p">))</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">str_print</span><span class="p">)</span>                      </div>
+
+<div class="viewcode-block" id="get_str_pcal_out_all"><a class="viewcode-back" href="../rsvf.html#rsvf.get_str_pcal_out_all">[docs]</a><span class="k">def</span> <span class="nf">get_str_pcal_out_all</span><span class="p">(</span><span class="n">sp</span><span class="p">,</span><span class="n">acc_pcal</span><span class="p">,</span><span class="n">current_n_bins_pcal</span><span class="p">,</span><span class="n">count_acc_pcal</span><span class="p">,</span><span class="n">current_key_pair_accu</span><span class="p">,</span><span class="n">current_vector_split</span><span class="p">,</span><span class="n">current_block_first_sample</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get output string for phase calibration (all-baselines-per-task).</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ------</span>
+<span class="sd">     sp</span>
+<span class="sd">         station-polarization</span>
+<span class="sd">     acc_pcal : complex 1D np.array</span>
+<span class="sd">         phase calibration results for one baseline, one band and one accumulation period.</span>
+<span class="sd">     current_n_bins_pcal</span>
+<span class="sd">         number of bins (number of elements in acc_pcal).</span>
+<span class="sd">     count_acc_pcal</span>
+<span class="sd">         number of accumulations performed to get pcal results.</span>
+<span class="sd">     current_key_pair_accu</span>
+<span class="sd">         part of the key with the baseline and the accumulation multi-key.</span>
+<span class="sd">     current_vector_split</span>
+<span class="sd">         metadata as in the input line.</span>
+<span class="sd">     current_block_first_sample</span>
+<span class="sd">         &lt;first_sample&gt;.&lt;channel_index&gt;.</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     str_print : str</span>
+<span class="sd">         output line with phase calibration results.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">str_print</span> <span class="o">=</span> <span class="s2">&quot;pcal&quot;</span><span class="o">+</span><span class="n">FIELD_SEP</span><span class="o">+</span><span class="n">sp</span><span class="o">+</span><span class="n">FIELD_SEP</span><span class="o">+</span><span class="n">sp</span><span class="o">+</span><span class="n">FIELD_SEP</span><span class="o">+</span><span class="n">current_key_pair_accu</span><span class="o">+</span><span class="n">FIELD_SEP</span><span class="o">+</span><span class="s1">&#39;sxa&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">count_acc_pcal</span><span class="p">)</span><span class="o">+</span><span class="n">KEY_SEP</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">current_vector_split</span><span class="p">[:(</span><span class="n">META_LEN</span><span class="o">-</span><span class="mi">1</span><span class="p">)])</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="o">+</span><span class="n">current_block_first_sample</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">acc_pcal</span><span class="p">))</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">str_print</span><span class="p">)</span>                      </div>
+
+
+<div class="viewcode-block" id="get_lines_out_for_all"><a class="viewcode-back" href="../rsvf.html#rsvf.get_lines_out_for_all">[docs]</a><span class="k">def</span> <span class="nf">get_lines_out_for_all</span><span class="p">(</span><span class="n">char_type</span><span class="p">,</span><span class="n">n_sp</span><span class="p">,</span><span class="n">F_ind</span><span class="p">,</span><span class="n">current_acc_str</span><span class="p">,</span><span class="n">count_acc</span><span class="p">,</span><span class="n">acc_mat</span><span class="p">,</span><span class="n">current_block_first_sample</span><span class="p">,</span><span class="n">current_vector_split</span><span class="p">,</span>\
+                          <span class="n">acc_pcal</span><span class="p">,</span><span class="n">count_acc_pcal</span><span class="p">,</span><span class="n">scaling_pair</span><span class="o">=</span><span class="s2">&quot;A.A&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get output lines for all results in accumulation matrix.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     char_type</span>
+<span class="sd">         operation mode (see split_input_line()).</span>
+<span class="sd">     n_sp</span>
+<span class="sd">         number of station-polarizations.</span>
+<span class="sd">     F_ind</span>
+<span class="sd">         structure with ids for station-polarizations.</span>
+<span class="sd">     current_acc_str</span>
+<span class="sd">         multi-key</span>
+<span class="sd">     count_acc</span>
+<span class="sd">         number of accumulations for the visibilities.</span>
+<span class="sd">     acc_mat : complex 3D array</span>
+<span class="sd">         visibilities for all baselines for this acc period and band. See lib_fx_stack.compute_x_all() for more info.</span>
+<span class="sd">     current_block_first_sample</span>
+<span class="sd">         &lt;first_sample&gt;.&lt;channel_index&gt;.</span>
+<span class="sd">     current_vector_split</span>
+<span class="sd">         metadata as in the input line.</span>
+<span class="sd">     acc_pcal : complex 2D array</span>
+<span class="sd">         phase calibration results for all stations for this acc period and band. See lib_pcal.accumulate_pcal_all() for more info.</span>
+<span class="sd">     count_acc_pcal</span>
+<span class="sd">         number of accumulations for the phase calibration results.</span>
+<span class="sd">     scaling_pair</span>
+<span class="sd">         station-polarization for this task (used in linear-scaling, &quot;A.A&quot; by default (all-baseslines-per-task).</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     lines_out</span>
+<span class="sd">         list of lines with output results (visibilities and phase calibration).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="c1"># TO DO: need more elegant solution to get key, currently hardcoded.</span>
+    <span class="n">current_acc_str</span><span class="o">=</span><span class="n">SF_SEP</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">current_acc_str</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">7</span><span class="p">])</span>
+    <span class="n">lines_out</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">if</span> <span class="n">acc_mat</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">scaling_pair</span><span class="o">==</span><span class="s2">&quot;A.A&quot;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">s0</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_sp</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">s1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">s0</span><span class="p">,</span><span class="n">n_sp</span><span class="p">):</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">new_key_pair_accu</span><span class="o">=</span><span class="n">get_key_all_out</span><span class="p">(</span><span class="n">char_type</span><span class="p">,</span><span class="n">F_ind</span><span class="p">[</span><span class="n">s0</span><span class="p">],</span><span class="n">F_ind</span><span class="p">[</span><span class="n">s1</span><span class="p">],</span><span class="n">current_acc_str</span><span class="p">)</span>
+                        <span class="n">str_print</span> <span class="o">=</span> <span class="n">get_str_r_out</span><span class="p">(</span><span class="n">new_key_pair_accu</span><span class="p">,</span><span class="n">count_acc</span><span class="p">,</span><span class="n">current_vector_split</span><span class="p">,</span>\
+                                                  <span class="n">current_block_first_sample</span><span class="p">,</span><span class="n">acc_mat</span><span class="p">[</span><span class="n">s0</span><span class="p">,</span><span class="n">s1</span><span class="p">])</span>
+                    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                        <span class="n">str_print</span> <span class="o">=</span> <span class="s2">&quot;zR</span><span class="se">\t</span><span class="s2">Error getting output data for &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">s0</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;/&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">s1</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot; in &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">current_acc_str</span><span class="p">)</span>
+                    <span class="n">lines_out</span><span class="o">+=</span><span class="p">[</span><span class="n">str_print</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">s0</span> <span class="o">=</span> <span class="n">F_ind</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">scaling_pair</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">s1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_sp</span><span class="p">):</span>
+                <span class="n">new_key_pair_accu</span><span class="o">=</span><span class="n">get_key_all_out</span><span class="p">(</span><span class="n">char_type</span><span class="p">,</span><span class="n">F_ind</span><span class="p">[</span><span class="n">s0</span><span class="p">],</span><span class="n">F_ind</span><span class="p">[</span><span class="n">s1</span><span class="p">],</span><span class="n">current_acc_str</span><span class="p">)</span>
+                <span class="n">str_print</span> <span class="o">=</span> <span class="n">get_str_r_out</span><span class="p">(</span><span class="n">new_key_pair_accu</span><span class="p">,</span><span class="n">count_acc</span><span class="p">,</span><span class="n">current_vector_split</span><span class="p">,</span>\
+                                              <span class="n">current_block_first_sample</span><span class="p">,</span><span class="n">acc_mat</span><span class="p">[</span><span class="n">s1</span><span class="p">])</span>
+                <span class="n">lines_out</span><span class="o">+=</span><span class="p">[</span><span class="n">str_print</span><span class="p">]</span>
+        
+        <span class="k">if</span> <span class="n">acc_pcal</span><span class="o">!=</span><span class="p">[]:</span>
+            <span class="n">current_n_bins_pcal</span><span class="o">=</span><span class="n">acc_pcal</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">pcal_fft</span> <span class="o">=</span> <span class="n">window_and_fft</span><span class="p">(</span><span class="n">acc_pcal</span><span class="p">,</span><span class="n">current_n_bins_pcal</span><span class="p">,</span><span class="n">C_INI_CR_WINDOW_SQUARE</span><span class="p">,</span><span class="n">flatten_chunks</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            
+            <span class="c1"># TO DO: check</span>
+            <span class="n">acc_pcal_div</span> <span class="o">=</span> <span class="n">normalize_pcal</span><span class="p">(</span><span class="n">pcal_fft</span><span class="p">,</span><span class="n">count_acc_pcal</span><span class="p">)</span>
+            
+            <span class="k">for</span> <span class="n">sp</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_sp</span><span class="p">):</span>
+                <span class="n">str_print</span> <span class="o">=</span> <span class="n">get_str_pcal_out_all</span><span class="p">(</span><span class="n">F_ind</span><span class="p">[</span><span class="n">sp</span><span class="p">],</span><span class="n">acc_pcal_div</span><span class="p">[</span><span class="n">sp</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span><span class="n">current_n_bins_pcal</span><span class="p">,</span><span class="n">count_acc_pcal</span><span class="p">,</span><span class="n">current_acc_str</span><span class="p">,</span><span class="n">current_vector_split</span><span class="p">,</span><span class="n">current_block_first_sample</span><span class="p">)</span>
+                <span class="n">lines_out</span><span class="o">+=</span><span class="p">[</span><span class="n">str_print</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">str_print</span> <span class="o">=</span> <span class="s2">&quot;zR</span><span class="se">\t</span><span class="s2">Empty acc mat in &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">current_acc_str</span><span class="p">)</span>
+        <span class="n">lines_out</span><span class="o">+=</span><span class="p">[</span><span class="n">str_print</span><span class="p">]</span>
+    
+    <span class="k">return</span><span class="p">(</span><span class="n">lines_out</span><span class="p">)</span></div>
+
+    
+    
+<span class="c1">###########################################</span>
+<span class="c1">#       Data structures storage/mgmt</span>
+<span class="c1">###########################################</span>
+
+
+<div class="viewcode-block" id="update_stored_samples"><a class="viewcode-back" href="../rsvf.html#rsvf.update_stored_samples">[docs]</a><span class="k">def</span> <span class="nf">update_stored_samples</span><span class="p">(</span><span class="n">v_dequant</span><span class="p">,</span><span class="n">F1</span><span class="p">,</span><span class="n">F_ind</span><span class="p">,</span><span class="n">key_station_pol</span><span class="p">,</span><span class="n">F_delays</span><span class="p">,</span><span class="n">F_rates</span><span class="p">,</span><span class="n">F_fs</span><span class="p">,</span><span class="n">F_fs_pcal</span><span class="p">,</span><span class="n">abs_delay</span><span class="p">,</span><span class="n">rate_delay</span><span class="p">,</span>\
+                          <span class="n">fs</span><span class="p">,</span><span class="n">fs_pcal</span><span class="p">,</span><span class="n">F_first_sample</span><span class="p">,</span><span class="n">first_sample</span><span class="p">,</span><span class="n">data_type</span><span class="p">,</span><span class="n">F_frac</span><span class="p">,</span><span class="n">fractional_sample_delay</span><span class="p">,</span>\
+                          <span class="n">shift_delay</span><span class="p">,</span><span class="n">F_side</span><span class="p">,</span><span class="n">sideband</span><span class="p">,</span><span class="n">fft_size_in</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Store samples and metadata, to be processed later.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     *For data structures see output below.</span>
+<span class="sd">     *For metadata parameters see extract_params_split().</span>
+<span class="sd">     v_dequant :numpy 1D array of complex</span>
+<span class="sd">         dequantized samples.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     F_*: lists where each element correspond to one read line. All these lists are related, i.e. the n-th element</span>
+<span class="sd">                      of all lists correspond to the same read line.</span>
+<span class="sd">    </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    |</span>
+<span class="sd">    | **TO DO:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  Add checks.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="c1"># TO DO: move to extract_params</span>
+    <span class="k">if</span> <span class="n">data_type</span><span class="o">==</span><span class="s1">&#39;c&#39;</span><span class="p">:</span>
+        <span class="n">first_sample_adjusted</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">first_sample</span><span class="o">//</span><span class="mi">2</span><span class="p">)</span>
+        <span class="c1">#TO DO: need more elegant solution to support real and complex...</span>
+        <span class="n">fft_size_out</span><span class="o">=</span><span class="n">fft_size_in</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">first_sample_adjusted</span><span class="o">=</span><span class="n">first_sample</span>
+        <span class="c1">#TO DO: need more elegant solution to support real and complex...</span>
+        <span class="n">fft_size_out</span><span class="o">=</span><span class="mi">2</span><span class="o">*</span><span class="n">fft_size_in</span>
+    
+    
+    <span class="k">if</span> <span class="n">F1</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">F1</span><span class="o">=</span><span class="p">[</span><span class="n">v_dequant</span><span class="p">]</span>
+        <span class="n">F_ind</span><span class="o">=</span><span class="p">[</span><span class="n">key_station_pol</span><span class="p">]</span>
+        <span class="n">F_delays</span><span class="o">=</span><span class="p">[</span><span class="n">abs_delay</span><span class="p">]</span>
+        <span class="n">F_rates</span><span class="o">=</span><span class="p">[</span><span class="n">rate_delay</span><span class="p">]</span>
+        <span class="n">F_frac</span><span class="o">=</span><span class="p">[[</span><span class="n">fractional_sample_delay</span><span class="p">,</span><span class="n">shift_delay</span><span class="p">]]</span>
+        <span class="n">F_fs</span><span class="o">=</span><span class="p">[</span><span class="n">fs</span><span class="p">]</span>
+        <span class="n">F_fs_pcal</span><span class="o">=</span><span class="p">[</span><span class="n">fs_pcal</span><span class="p">]</span>
+        <span class="n">F_first_sample</span><span class="o">=</span><span class="p">[</span><span class="n">first_sample_adjusted</span><span class="p">]</span>
+        <span class="n">F_side</span><span class="o">=</span><span class="p">[[</span><span class="n">sideband</span><span class="p">,</span><span class="n">data_type</span><span class="p">]]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">F1</span><span class="o">+=</span><span class="p">[</span><span class="n">v_dequant</span><span class="p">]</span>
+        <span class="n">F_ind</span><span class="o">+=</span><span class="p">[</span><span class="n">key_station_pol</span><span class="p">]</span>
+        <span class="n">F_delays</span><span class="o">+=</span><span class="p">[</span><span class="n">abs_delay</span><span class="p">]</span>
+        <span class="n">F_rates</span><span class="o">+=</span><span class="p">[</span><span class="n">rate_delay</span><span class="p">]</span>
+        <span class="n">F_frac</span><span class="o">+=</span><span class="p">[[</span><span class="n">fractional_sample_delay</span><span class="p">,</span><span class="n">shift_delay</span><span class="p">]]</span>
+        <span class="n">F_fs</span><span class="o">+=</span><span class="p">[</span><span class="n">fs</span><span class="p">]</span>
+        <span class="n">F_fs_pcal</span><span class="o">+=</span><span class="p">[</span><span class="n">fs_pcal</span><span class="p">]</span>
+        <span class="n">F_first_sample</span><span class="o">+=</span><span class="p">[</span><span class="n">first_sample_adjusted</span><span class="p">]</span>
+        <span class="n">F_side</span><span class="o">+=</span><span class="p">[[</span><span class="n">sideband</span><span class="p">,</span><span class="n">data_type</span><span class="p">]]</span>
+
+    <span class="k">return</span><span class="p">([</span><span class="n">F1</span><span class="p">,</span><span class="n">F_ind</span><span class="p">,</span><span class="n">F_delays</span><span class="p">,</span><span class="n">F_rates</span><span class="p">,</span><span class="n">F_fs</span><span class="p">,</span><span class="n">F_fs_pcal</span><span class="p">,</span><span class="n">F_first_sample</span><span class="p">,</span><span class="n">F_frac</span><span class="p">,</span><span class="n">F_side</span><span class="p">,</span><span class="n">fft_size_out</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="restore_Fs"><a class="viewcode-back" href="../rsvf.html#rsvf.restore_Fs">[docs]</a><span class="k">def</span> <span class="nf">restore_Fs</span><span class="p">(</span><span class="n">last_F_delays</span><span class="p">,</span><span class="n">last_F_rates</span><span class="p">,</span><span class="n">last_F_frac</span><span class="p">,</span><span class="n">last_F_fs</span><span class="p">,</span><span class="n">last_F_fs_pcal</span><span class="p">,</span><span class="n">last_F_side</span><span class="p">,</span><span class="n">last_F_first_sample</span><span class="p">,</span>\
+               <span class="n">F_delays</span><span class="p">,</span><span class="n">F_rates</span><span class="p">,</span><span class="n">F_frac</span><span class="p">,</span><span class="n">F_fs</span><span class="p">,</span><span class="n">F_fs_pcal</span><span class="p">,</span><span class="n">F_side</span><span class="p">,</span><span class="n">F_first_sample</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Keep previous structures in case there is no data for all stationpols.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="c1">#if len(last_F_delays)&gt;len(F_delays):</span>
+    <span class="k">if</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span><span class="p">([</span><span class="n">last_F_delays</span><span class="p">,</span><span class="n">last_F_rates</span><span class="p">,</span><span class="n">last_F_frac</span><span class="p">,</span><span class="n">last_F_fs</span><span class="p">,</span><span class="n">last_F_fs_pcal</span><span class="p">,</span><span class="n">last_F_side</span><span class="p">,</span><span class="n">last_F_first_sample</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span><span class="p">([</span><span class="n">F_delays</span><span class="p">,</span><span class="n">F_rates</span><span class="p">,</span><span class="n">F_frac</span><span class="p">,</span><span class="n">F_fs</span><span class="p">,</span><span class="n">F_fs_pcal</span><span class="p">,</span><span class="n">F_side</span><span class="p">,</span><span class="n">F_first_sample</span><span class="p">])</span></div>
+
+
+
+<span class="c1">###########################################</span>
+<span class="c1">#          Data structures display</span>
+<span class="c1">###########################################</span>
+
+
+<div class="viewcode-block" id="get_shapes_F1"><a class="viewcode-back" href="../rsvf.html#rsvf.get_shapes_F1">[docs]</a><span class="k">def</span> <span class="nf">get_shapes_F1</span><span class="p">(</span><span class="n">F1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get string showing shapes of F1.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     F1:    list of multidimensional np.arrays</span>
+<span class="sd">         (each elment has the samples for each station-poliarization.</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     out : str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span><span class="p">(</span><span class="nb">str</span><span class="p">([(</span><span class="n">F1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">F1</span><span class="p">))]))</span></div>
+
+
+<div class="viewcode-block" id="str_list"><a class="viewcode-back" href="../rsvf.html#rsvf.str_list">[docs]</a><span class="k">def</span> <span class="nf">str_list</span><span class="p">(</span><span class="n">F_list</span><span class="p">,</span><span class="n">sep_c</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get string with representation of list.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span><span class="p">(</span><span class="s2">&quot;[&quot;</span><span class="o">+</span><span class="n">sep_c</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span><span class="n">F_list</span><span class="p">))</span><span class="o">+</span><span class="s2">&quot;]&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_lines_stats"><a class="viewcode-back" href="../rsvf.html#rsvf.get_lines_stats">[docs]</a><span class="k">def</span> <span class="nf">get_lines_stats</span><span class="p">(</span><span class="n">current_key_pair_accu</span><span class="p">,</span><span class="n">F_stack_shift</span><span class="p">,</span><span class="n">F_adj_shift_partial</span><span class="p">,</span><span class="n">F_lti</span><span class="p">,</span><span class="n">F_ind</span><span class="p">,</span><span class="n">failed_acc_count</span><span class="p">,</span>\
+                                            <span class="n">current_block_first_sample</span><span class="p">,</span><span class="n">dismissed_acc_count</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get list of lines with stats for this accumulation period including:</span>
+<span class="sd">    -Number of dropped/added samples (for fractional sample overflows) (stack)</span>
+<span class="sd">    -Number of fractional sample overflows (shift)</span>
+<span class="sd">    -For each stationpol: last sample, total samples, missing/invalid samples (lti)</span>
+<span class="sd">    -Number of failed accumulations (will be one if some data is uncorrelated, which may be </span>
+<span class="sd">       simply due to missalignment from delays.</span>
+<span class="sd">       </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ------</span>
+<span class="sd">     current_key_pair_accu</span>
+<span class="sd">         part of the key with pair (station-pol A and station-pol B) and accumulation period.</span>
+<span class="sd">     F_stack_shift</span>
+<span class="sd">         [unused?] see lib_fx_stack().</span>
+<span class="sd">     F_adj_shift_partial</span>
+<span class="sd">         [unused?] see lib_fx_stack().</span>
+<span class="sd">     F_lti</span>
+<span class="sd">         list with last sample (l), total number of samples processed (t), invalid samples (i), and </span>
+<span class="sd">             adjuted samples for each stream.</span>
+<span class="sd">     F_ind</span>
+<span class="sd">         list with station-polarizations.</span>
+<span class="sd">     failed_acc_count</span>
+<span class="sd">         number of failed accumulations.</span>
+<span class="sd">     current_block_first_sample</span>
+<span class="sd">         &lt;first_sample&gt;.&lt;channel_index&gt;</span>
+<span class="sd">     dismissed_acc_count</span>
+<span class="sd">         number of dismissed accumulations.</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     lines_stats : list of str</span>
+<span class="sd">         lines with stats.</span>
+<span class="sd">     </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    |</span>
+<span class="sd">    | **TO DO:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  Remove unused.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">lines_stats</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">lines_stats</span><span class="o">+=</span><span class="p">[</span><span class="s2">&quot;zR&quot;</span><span class="o">+</span><span class="n">KEY_SEP</span><span class="o">+</span><span class="s2">&quot;kpa=&quot;</span><span class="o">+</span><span class="n">current_key_pair_accu</span><span class="o">+</span><span class="s2">&quot;,Adjusted stack=&quot;</span><span class="o">+</span><span class="n">str_list</span><span class="p">(</span><span class="n">F_stack_shift</span><span class="p">)]</span>
+    <span class="n">lines_stats</span><span class="o">+=</span><span class="p">[</span><span class="s2">&quot;zR&quot;</span><span class="o">+</span><span class="n">KEY_SEP</span><span class="o">+</span><span class="s2">&quot;kpa=&quot;</span><span class="o">+</span><span class="n">current_key_pair_accu</span><span class="o">+</span><span class="s2">&quot;,Adjusted shifts=&quot;</span><span class="o">+</span><span class="n">str_list</span><span class="p">(</span><span class="n">F_adj_shift_partial</span><span class="p">)]</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">i_lti</span><span class="p">,</span><span class="n">i_ind</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">F_lti</span><span class="p">,</span><span class="n">F_ind</span><span class="p">):</span>
+        <span class="n">lines_stats</span><span class="o">+=</span><span class="p">[</span><span class="s2">&quot;zR&quot;</span><span class="o">+</span><span class="n">KEY_SEP</span><span class="o">+</span><span class="s2">&quot;st=&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">i_ind</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;,lti_stats=&quot;</span><span class="o">+</span><span class="n">str_list</span><span class="p">(</span><span class="n">i_lti</span><span class="p">)]</span>
+        
+    <span class="k">if</span> <span class="p">(</span><span class="n">failed_acc_count</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)</span><span class="ow">or</span><span class="p">(</span><span class="n">dismissed_acc_count</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">):</span>
+        <span class="n">lines_stats</span><span class="o">+=</span><span class="p">[</span><span class="s2">&quot;zR&quot;</span><span class="o">+</span><span class="n">KEY_SEP</span><span class="o">+</span><span class="s2">&quot;Failed accs=&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">failed_acc_count</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;,dismissed accs=&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">dismissed_acc_count</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;,in=a&quot;</span><span class="o">+</span><span class="n">current_block_first_sample</span><span class="p">]</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">lines_stats</span><span class="p">)</span></div>
+
+
+
+<span class="c1">###########################################</span>
+<span class="c1">#                   Main</span>
+<span class="c1">###########################################</span>
+
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../rsvf.html#rsvf.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    
+    <span class="n">no_data</span><span class="o">=</span><span class="mi">1</span>
+    
+    <span class="c1"># Moved into lib_fx_stack</span>
+    <span class="c1">#if use_fftw:</span>
+    <span class="c1">#    pyfftw.interfaces.cache.enable()</span>
+    <span class="c1">#    pyfftw.interfaces.cache.set_keepalive_time(20)</span>
+    
+    
+    <span class="c1"># Read parameters                       # See lib_mapredcorr.get_reducer_params_str() for interface documentation.</span>
+    <span class="n">codecs_serial</span><span class="o">=</span>        <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">FFT_HERE</span><span class="o">=</span>         <span class="nb">int</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="n">INTERNAL_LOG</span><span class="o">=</span>     <span class="nb">int</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+    <span class="n">FFT_SIZE_IN</span><span class="o">=</span>      <span class="nb">int</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span>         
+    <span class="n">WINDOWING</span><span class="o">=</span>            <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>
+    <span class="n">PHASE_CALIBRATION</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">6</span><span class="p">])</span>
+    <span class="n">SINGLE_PRECISION</span><span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">7</span><span class="p">])</span>
+    
+    <span class="c1"># FFT size</span>
+    <span class="n">FFT_SIZE</span><span class="o">=</span><span class="n">FFT_SIZE_IN</span>                    <span class="c1"># For real data will use 2x fft_size, assuming all data is real xor complex</span>
+    <span class="c1">#                                         See update_stored_samples where this is overriden</span>
+    
+    <span class="c1"># Precision (Approximation) configurable</span>
+    <span class="c1"># TO DO: currently always double precision, change.</span>
+    <span class="n">DTYPE_COMPLEX</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex64</span> <span class="k">if</span> <span class="n">SINGLE_PRECISION</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">complex128</span>
+
+
+    <span class="n">last_F_delays</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">last_F_rates</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">last_F_frac</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">last_F_fs</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">last_F_fs_pcal</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">last_F_side</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">last_F_first_sample</span><span class="o">=</span><span class="p">[]</span>
+
+
+    <span class="n">F1</span><span class="o">=</span><span class="kc">None</span>
+    <span class="n">F_ind</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">F_delays</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">F_rates</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">F_fs</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">F1_partial</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+    <span class="n">F_lti</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">F_ind_partial</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">F_first_sample</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">F_first_sample_partial</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">F_frac</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">F_adj_shift_partial</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">F_adj_shift_pcal</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">F_stack_shift</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">F_stack_shift_pcal</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">F_pcal_fix</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">F_fs_pcal</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">F_side</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">F_first_sample</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">acc_mat</span><span class="o">=</span><span class="kc">None</span>
+    <span class="n">last_F_ind</span><span class="o">=</span><span class="kc">None</span>
+    <span class="n">n_sp</span><span class="o">=</span><span class="mi">0</span>
+    <span class="n">failed_acc_count</span><span class="o">=</span><span class="mi">0</span>
+    <span class="n">dismissed_acc_count</span><span class="o">=</span><span class="mi">0</span>
+    
+    <span class="c1"># Debugging headers</span>
+    <span class="k">if</span> <span class="n">DEBUG_DELAYS</span><span class="p">:</span>
+        <span class="n">print_debug_r_delays_header</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">DEBUG_HSTACK</span><span class="p">:</span>
+        <span class="n">print_debug_r_hstack_header</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">DEBUG_FRAC_OVER</span><span class="p">:</span>
+        <span class="n">print_debug_r_frac_over_header</span><span class="p">()</span>
+   
+
+    
+    <span class="c1"># Default: use stdin</span>
+    <span class="n">f_in</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdin</span>
+    
+    <span class="n">counter_sub_acc</span><span class="o">=</span><span class="mi">0</span>
+
+    <span class="c1">#Variables for storing key, and metadata plus samples</span>
+    <span class="n">current_key_pair_accu</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">current_key_sample</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">current_vector_split</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">current_block_first_sample</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">current_bits_per_sample</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">current_data_type</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">current_encoding</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">current_block_time</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">current_freq_channel</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">count_acc</span><span class="o">=</span><span class="mi">0</span>
+    <span class="n">count_acc_pcal</span><span class="o">=</span><span class="mi">0</span>
+    
+    <span class="c1"># Define constants for these</span>
+    <span class="n">scaling_pair</span><span class="o">=</span><span class="s2">&quot;A.A&quot;</span>
+    <span class="n">current_scaling_pair</span><span class="o">=</span><span class="s2">&quot;A.A&quot;</span>
+    
+    <span class="c1"># Saved samples for next iteration</span>
+    <span class="n">pre_pcal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+    <span class="c1"># Accumulated pcal results</span>
+    <span class="n">acc_pcal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+    
+    
+    <span class="c1"># List of codebooks to avoid decoding every time</span>
+    <span class="n">codebook_list</span> <span class="o">=</span> <span class="p">[]</span>
+    
+           
+    <span class="c1">#For debugging, just copy lines to output file</span>
+    <span class="k">if</span> <span class="n">DEBUGGING</span><span class="p">:</span>
+        
+        <span class="c1">#####################</span>
+        <span class="c1">#   Debugging mode</span>
+        <span class="c1">#####################</span>
+    
+        <span class="c1"># Just bypass lines into output and exit</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f_in</span><span class="p">:</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>  
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;zR-Debug mode&quot;</span><span class="o">+</span><span class="n">KEY_SEP</span><span class="o">+</span><span class="n">line</span><span class="p">)</span>
+    
+    
+    <span class="k">else</span><span class="p">:</span>
+        
+        <span class="c1">#########################</span>
+        <span class="c1">#   Process input lines</span>
+        <span class="c1">#########################</span>
+        
+       
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f_in</span><span class="p">:</span>
+            
+            
+            <span class="c1">#########################</span>
+            <span class="c1">#   Bypass logging</span>
+            <span class="c1">#########################</span>
+        
+            <span class="c1"># Process line</span>
+            <span class="c1"># Checks for bypassing previous log/error lines</span>
+            <span class="k">if</span> <span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;z&#39;</span><span class="p">:</span>
+                <span class="c1"># Error Message, just copy to output and keep processing</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+                <span class="k">continue</span>
+            <span class="k">elif</span> <span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">!=</span><span class="s1">&#39;p&#39;</span><span class="p">:</span>
+                <span class="c1"># Ignore line</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;zRz&quot;</span><span class="o">+</span><span class="n">KEY_SEP</span><span class="o">+</span><span class="s2">&quot;Ignored line:&quot;</span><span class="o">+</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+                <span class="k">continue</span>
+            
+
+            <span class="c1">#########################</span>
+            <span class="c1">#      Decode line</span>
+            <span class="c1">#########################</span>
+
+            <span class="c1"># Decode line</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="p">[</span><span class="n">key_pair_accu</span><span class="p">,</span> <span class="n">key_sample</span><span class="p">,</span> <span class="n">key_station</span><span class="p">,</span> <span class="n">vector_split</span><span class="p">,</span><span class="n">is_autocorr</span><span class="p">,</span><span class="n">key_station_pol</span><span class="p">,</span><span class="n">char_type</span><span class="p">,</span><span class="n">accu_block</span><span class="p">]</span> <span class="o">=</span> <span class="n">split_input_line</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                <span class="n">samples_quant</span> <span class="o">=</span> <span class="n">decode_samples_b64</span><span class="p">(</span><span class="n">vector_split</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span><span class="n">vector_split</span><span class="p">[</span><span class="n">INDEX_ENCODING</span><span class="p">])</span>
+    
+                
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="c1"># Error in key</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;zRz&quot;</span><span class="o">+</span><span class="n">KEY_SEP</span><span class="o">+</span><span class="s2">&quot;Value error (kv):&quot;</span><span class="o">+</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+                <span class="k">continue</span>
+            <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                <span class="c1"># Error in base64 decoding</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;zRz&quot;</span><span class="o">+</span><span class="n">KEY_SEP</span><span class="o">+</span><span class="s2">&quot;Type error (b64):&quot;</span><span class="o">+</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+                <span class="k">continue</span>
+            
+           
+            <span class="n">no_data</span><span class="o">=</span><span class="mi">0</span>
+            
+
+            <span class="c1">#########################</span>
+            <span class="c1">#      Get metadata</span>
+            <span class="c1">#########################</span>
+
+            <span class="c1"># Extract parameters from key</span>
+            <span class="p">[</span><span class="n">bits_per_sample</span><span class="p">,</span><span class="n">block_first_sample</span><span class="p">,</span><span class="n">data_type</span><span class="p">,</span><span class="n">encoding</span><span class="p">,</span>\
+                 <span class="n">encoding_width</span><span class="p">,</span><span class="n">n_bins_pcal</span><span class="p">,</span><span class="n">num_samples</span><span class="p">,</span><span class="n">abs_delay</span><span class="p">,</span>\
+                 <span class="n">rate_delay</span><span class="p">,</span><span class="n">fs</span><span class="p">,</span><span class="n">fs_pcal</span><span class="p">,</span><span class="n">freq_channel</span><span class="p">,</span><span class="n">first_sample</span><span class="p">,</span>\
+                 <span class="n">fractional_sample_delay</span><span class="p">,</span><span class="n">accumulation_time</span><span class="p">,</span><span class="n">shift_delay</span><span class="p">,</span><span class="n">sideband</span><span class="p">]</span> <span class="o">=</span> <span class="n">extract_params_split</span><span class="p">(</span><span class="n">vector_split</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">block_time</span><span class="o">=</span><span class="n">accu_block</span><span class="o">*</span><span class="n">accumulation_time</span>
+            <span class="c1"># Get pair associated to this line</span>
+            
+            <span class="n">pairs</span><span class="o">=</span><span class="n">key_pair_accu</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">FIELD_SEP</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">current_key_pair_accu</span><span class="o">!=</span><span class="kc">None</span><span class="p">:</span>
+                <span class="n">current_pairs</span><span class="o">=</span><span class="n">current_key_pair_accu</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">FIELD_SEP</span><span class="p">)</span>
+            
+            <span class="c1"># Check mode for this line</span>
+            <span class="k">if</span> <span class="n">pairs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">==</span><span class="s2">&quot;A.A&quot;</span><span class="p">:</span> 
+                
+                
+                <span class="c1"># Multiple baselines in the same task</span>
+                <span class="k">if</span> <span class="n">pairs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">==</span><span class="s2">&quot;A.A&quot;</span><span class="p">:</span>
+                    <span class="c1"># All-baselines-per-task</span>
+                    <span class="n">TASK_SCALING_STATIONS</span><span class="o">=</span><span class="mi">0</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># Linear scaling stations</span>
+                    <span class="n">TASK_SCALING_STATIONS</span><span class="o">=</span><span class="mi">1</span>
+                <span class="n">scaling_pair</span><span class="o">=</span><span class="n">pairs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                
+
+                <span class="k">if</span> <span class="n">key_pair_accu</span><span class="o">!=</span><span class="n">current_key_pair_accu</span><span class="p">:</span>
+                    
+                    <span class="c1">######################################</span>
+                    <span class="c1">#   New accumulation period and band</span>
+                    <span class="c1">######################################</span>
+                    <span class="c1">#</span>
+                    <span class="c1"># Thus no more samples for current processing, process stored data, then store new samples</span>
+                    
+                    <span class="k">if</span> <span class="n">current_key_pair_accu</span><span class="o">!=</span><span class="kc">None</span><span class="p">:</span>
+
+                        <span class="c1">######################################</span>
+                        <span class="c1">#   This is not the first iteration</span>
+                        <span class="c1">######################################</span>
+                        <span class="c1">#</span>
+                        <span class="c1"># (This should be equivalent to &quot;Last write&quot; below).</span>
+                        <span class="c1"># Write accumulated products to file (if it&#39;s not the first block, i.e., there&#39;s no data yet)</span>
+                        
+                        <span class="p">[</span><span class="n">F_delays</span><span class="p">,</span><span class="n">F_rates</span><span class="p">,</span><span class="n">F_frac</span><span class="p">,</span><span class="n">F_fs</span><span class="p">,</span><span class="n">F_fs_pcal</span><span class="p">,</span><span class="n">F_side</span><span class="p">,</span><span class="n">F_first_sample</span><span class="p">]</span><span class="o">=</span><span class="n">restore_Fs</span><span class="p">(</span><span class="n">last_F_delays</span><span class="p">,</span><span class="n">last_F_rates</span><span class="p">,</span><span class="n">last_F_frac</span><span class="p">,</span><span class="n">last_F_fs</span><span class="p">,</span><span class="n">last_F_fs_pcal</span><span class="p">,</span><span class="n">last_F_side</span><span class="p">,</span><span class="n">last_F_first_sample</span><span class="p">,</span><span class="n">F_delays</span><span class="p">,</span><span class="n">F_rates</span><span class="p">,</span><span class="n">F_frac</span><span class="p">,</span><span class="n">F_fs</span><span class="p">,</span><span class="n">F_fs_pcal</span><span class="p">,</span><span class="n">F_side</span><span class="p">,</span><span class="n">F_first_sample</span><span class="p">)</span>
+
+                        <span class="c1">########</span>
+                        <span class="c1">#  FX</span>
+                        <span class="c1">########</span>
+                        <span class="n">normalize_after_compute</span><span class="o">=</span><span class="kc">True</span>
+                        <span class="p">[</span><span class="n">acc_mat</span><span class="p">,</span><span class="n">count_acc</span><span class="p">,</span><span class="n">count_sub_acc</span><span class="p">,</span><span class="n">n_sp</span><span class="p">,</span><span class="n">last_F_ind</span><span class="p">,</span>\
+                         <span class="n">failed_acc_count</span><span class="p">,</span><span class="n">dismissed_acc_count</span><span class="p">,</span><span class="n">F1_partial</span><span class="p">,</span><span class="n">F_ind_partial</span><span class="p">,</span>\
+                         <span class="n">acc_pcal</span><span class="p">,</span><span class="n">pre_pcal</span><span class="p">,</span><span class="n">count_acc_pcal</span><span class="p">,</span><span class="n">F_first_sample_partial</span><span class="p">,</span>\
+                         <span class="n">F_adj_shift_partial</span><span class="p">,</span><span class="n">F_stack_shift</span><span class="p">,</span><span class="n">F_adj_shift_pcal</span><span class="p">,</span><span class="n">F_stack_shift_pcal</span><span class="p">,</span><span class="n">F_pcal_fix</span><span class="p">,</span><span class="n">F_lti</span><span class="p">]</span> <span class="o">=</span> <span class="n">compute_fx_for_all</span><span class="p">(</span><span class="n">F1_partial</span><span class="p">,</span><span class="n">F_ind_partial</span><span class="p">,</span><span class="n">F1</span><span class="p">,</span>\
+                                                                                         <span class="n">FFT_SIZE</span><span class="p">,</span><span class="n">WINDOWING</span><span class="p">,</span><span class="n">acc_mat</span><span class="p">,</span><span class="n">count_acc</span><span class="p">,</span>\
+                                                                                         <span class="n">normalize_after_compute</span><span class="p">,</span><span class="n">F_ind</span><span class="p">,</span>\
+                                                                                         <span class="n">last_F_ind</span><span class="p">,</span><span class="n">n_sp</span><span class="p">,</span><span class="n">failed_acc_count</span><span class="p">,</span>\
+                                                                                         <span class="n">dismissed_acc_count</span><span class="p">,</span>\
+                                                                                         <span class="n">current_scaling_pair</span><span class="p">,</span><span class="n">DTYPE_COMPLEX</span><span class="p">,</span>\
+                                                                                         <span class="n">acc_pcal</span><span class="p">,</span><span class="n">pre_pcal</span><span class="p">,</span><span class="n">n_bins_pcal</span><span class="p">,</span>\
+                                                                                         <span class="n">count_acc_pcal</span><span class="p">,</span><span class="n">PHASE_CALIBRATION</span><span class="p">,</span>\
+                                                                                         <span class="mi">0</span><span class="p">,</span><span class="n">F_delays</span><span class="p">,</span><span class="n">F_rates</span><span class="p">,</span><span class="n">F_fs</span><span class="p">,</span><span class="n">current_freq_channel</span><span class="p">,</span>\
+                                                                                         <span class="n">F_first_sample</span><span class="p">,</span><span class="n">F_first_sample_partial</span><span class="p">,</span>\
+                                                                                         <span class="n">F_frac</span><span class="p">,</span><span class="n">current_block_time</span><span class="p">,</span><span class="n">F_adj_shift_partial</span><span class="p">,</span>\
+                                                                                         <span class="n">F_stack_shift</span><span class="p">,</span><span class="n">F_adj_shift_pcal</span><span class="p">,</span><span class="n">F_stack_shift_pcal</span><span class="p">,</span>\
+                                                                                         <span class="n">F_pcal_fix</span><span class="p">,</span><span class="n">F_side</span><span class="p">,</span><span class="n">F_lti</span><span class="p">)</span>
+
+                    
+                        <span class="c1">#########</span>
+                        <span class="c1">#  Pcal</span>
+                        <span class="c1">#########</span>
+                        <span class="k">if</span> <span class="n">PHASE_CALIBRATION</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+                            <span class="n">acc_pcal</span> <span class="o">=</span> <span class="n">adjust_shift_acc_pcal</span><span class="p">(</span><span class="n">acc_pcal</span><span class="p">,</span><span class="n">F_pcal_fix</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="n">DEBUG_GENERAL_R</span><span class="p">)</span>
+
+                        
+                        <span class="c1">#########</span>
+                        <span class="c1">#  Out</span>
+                        <span class="c1">#########</span>
+                        <span class="n">lines_out</span> <span class="o">=</span> <span class="n">get_lines_out_for_all</span><span class="p">(</span><span class="n">char_type</span><span class="p">,</span><span class="n">n_sp</span><span class="p">,</span><span class="n">last_F_ind</span><span class="p">,</span><span class="n">current_pairs</span><span class="p">,</span><span class="n">count_acc</span><span class="p">,</span><span class="n">acc_mat</span><span class="p">,</span>\
+                                                          <span class="n">current_block_first_sample</span><span class="p">,</span><span class="n">current_vector_split</span><span class="p">,</span><span class="n">acc_pcal</span><span class="p">,</span>\
+                                                          <span class="n">count_acc_pcal</span><span class="p">,</span><span class="n">current_scaling_pair</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">lines_out</span><span class="o">!=</span><span class="p">[]:</span>
+                            <span class="k">for</span> <span class="n">line_out</span> <span class="ow">in</span> <span class="n">lines_out</span><span class="p">:</span>
+                                <span class="nb">print</span><span class="p">(</span><span class="n">line_out</span><span class="p">)</span>
+                        
+                        
+                        <span class="c1">##########</span>
+                        <span class="c1">#  Stats</span>
+                        <span class="c1">##########</span>
+                        <span class="c1"># If stored samples left unprocessed count them as failure</span>
+                        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">F1_partial</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+                            <span class="n">failed_acc_count</span><span class="o">+=</span><span class="mi">1</span>
+                        <span class="n">lines_stats</span> <span class="o">=</span> <span class="n">get_lines_stats</span><span class="p">(</span><span class="n">current_key_pair_accu</span><span class="p">,</span><span class="n">F_stack_shift</span><span class="p">,</span>\
+                                            <span class="n">F_adj_shift_partial</span><span class="p">,</span><span class="n">F_lti</span><span class="p">,</span><span class="n">last_F_ind</span><span class="p">,</span><span class="n">failed_acc_count</span><span class="p">,</span>\
+                                            <span class="n">current_block_first_sample</span><span class="p">,</span><span class="n">dismissed_acc_count</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">lines_stats</span><span class="o">!=</span><span class="p">[]:</span>
+                            <span class="k">for</span> <span class="n">line_stats</span> <span class="ow">in</span> <span class="n">lines_stats</span><span class="p">:</span>
+                                <span class="nb">print</span><span class="p">(</span><span class="n">line_stats</span><span class="p">)</span>
+                        
+   
+                        <span class="n">failed_acc_count</span><span class="o">=</span><span class="mi">0</span>
+                        <span class="n">dismissed_acc_count</span><span class="o">=</span><span class="mi">0</span>
+                        <span class="n">acc_mat</span><span class="o">=</span><span class="kc">None</span>
+                        <span class="n">last_F_ind</span><span class="o">=</span><span class="kc">None</span>
+                    
+      
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">last_F_delays</span><span class="p">)</span><span class="o">&lt;=</span><span class="nb">len</span><span class="p">(</span><span class="n">F_delays</span><span class="p">):</span>
+                        <span class="n">last_F_delays</span><span class="o">=</span><span class="n">F_delays</span><span class="p">[:]</span>
+                        <span class="n">last_F_rates</span><span class="o">=</span><span class="n">F_rates</span><span class="p">[:]</span>
+                        <span class="n">last_F_frac</span><span class="o">=</span><span class="n">F_frac</span><span class="p">[:]</span>
+                        <span class="n">last_F_fs</span><span class="o">=</span><span class="n">F_fs</span><span class="p">[:]</span>
+                        <span class="n">last_F_fs_pcal</span><span class="o">=</span><span class="n">F_fs_pcal</span><span class="p">[:]</span>
+                        <span class="n">last_F_side</span><span class="o">=</span><span class="n">F_side</span><span class="p">[:]</span>
+                        <span class="n">last_F_first_sample</span><span class="o">=</span><span class="n">F_first_sample</span><span class="p">[:]</span>
+                    
+                    
+                    <span class="c1">######################################</span>
+                    <span class="c1">#       Restart data structures</span>
+                    <span class="c1">######################################</span>
+                    <span class="c1"># TO DO: Missing: print phase calibration results</span>
+                    <span class="n">current_scaling_pair</span> <span class="o">=</span> <span class="n">scaling_pair</span>
+                    <span class="n">current_key_pair_accu</span> <span class="o">=</span> <span class="n">key_pair_accu</span>
+                    <span class="n">current_block_first_sample</span> <span class="o">=</span> <span class="n">block_first_sample</span>
+                    <span class="n">current_data_type</span> <span class="o">=</span> <span class="n">data_type</span>
+                    <span class="n">current_encoding</span> <span class="o">=</span> <span class="n">encoding</span>
+                    <span class="n">current_freq_channel</span> <span class="o">=</span> <span class="n">freq_channel</span>
+                    <span class="n">count_acc</span><span class="o">=</span><span class="mi">0</span>
+                    <span class="n">count_acc_pcal</span> <span class="o">=</span> <span class="mi">0</span>
+                    <span class="n">current_key_sample</span> <span class="o">=</span> <span class="n">key_sample</span>
+                    <span class="n">current_vector_split</span> <span class="o">=</span> <span class="n">vector_split</span>
+                    <span class="n">current_block_time</span> <span class="o">=</span> <span class="n">block_time</span>
+                    <span class="n">F1</span><span class="o">=</span><span class="kc">None</span>
+                    <span class="n">F_ind</span><span class="o">=</span><span class="p">[]</span>
+                                       
+                    <span class="n">F_delays</span><span class="o">=</span><span class="p">[]</span>
+                    <span class="n">F_Frac</span><span class="o">=</span><span class="p">[]</span>
+                    <span class="n">F_rates</span><span class="o">=</span><span class="p">[]</span>
+                    <span class="n">F_fs</span><span class="o">=</span><span class="p">[]</span>
+                    <span class="n">F_fs_pcal</span><span class="o">=</span><span class="p">[]</span>
+                    <span class="n">F_stack_shift</span><span class="o">=</span><span class="p">[]</span>
+                    <span class="n">F_adj_shift_partial</span><span class="o">=</span><span class="p">[]</span>
+                    <span class="n">F_adj_shift_pcal</span><span class="o">=</span><span class="p">[]</span>
+                    <span class="n">F_pcal_fix</span><span class="o">=</span><span class="p">[]</span>
+                    <span class="n">F_side</span><span class="o">=</span><span class="p">[]</span>
+
+                    <span class="c1">#last_F_delays=[]</span>
+                    <span class="c1">#last_F_rates=[]</span>
+                    <span class="c1">#last_F_frac=[]</span>
+                    <span class="c1">#last_F_fs=[]</span>
+                    <span class="c1">#last_F_fs_pcal=[]</span>
+                    <span class="c1">#last_F_side=[]</span>
+                    <span class="c1">#last_F_first_sample=[]</span>
+
+                    <span class="c1">#Also stored samples since results have been written</span>
+                    <span class="n">F1_partial</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+                    <span class="n">F_lti</span><span class="o">=</span><span class="p">[]</span>
+                    <span class="n">F_first_sample_partial</span><span class="o">=</span><span class="p">[]</span>
+                    <span class="n">F_ind_partial</span><span class="o">=</span><span class="p">[]</span>
+                    <span class="c1">#pcal</span>
+                    <span class="n">pre_pcal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+                    <span class="n">acc_pcal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+                    
+                    <span class="c1"># Read data</span>
+                    <span class="c1"># TODO: VQ (vector quantization) not supported yet for all baselines in same task        </span>
+                    
+                    <span class="k">if</span> <span class="n">DEBUG_DELAYS</span> <span class="ow">or</span> <span class="n">DEBUG_HSTACK</span> <span class="ow">or</span> <span class="n">DEBUG_FRAC_OVER</span><span class="p">:</span>
+                        <span class="n">print_key</span><span class="p">(</span><span class="n">key_pair_accu</span><span class="p">)</span>
+                        
+                    <span class="c1">######################################</span>
+                    <span class="c1">#       Update data structures</span>
+                    <span class="c1">######################################</span>
+                    <span class="c1">#</span>
+                    <span class="c1"># No processing yet, simply store samples</span>
+                    <span class="n">v_dequant</span> <span class="o">=</span> <span class="n">get_samples</span><span class="p">(</span><span class="n">samples_quant</span><span class="p">,</span><span class="n">bits_per_sample</span><span class="p">,</span><span class="n">data_type</span><span class="p">,</span><span class="n">num_samples</span><span class="p">,</span><span class="n">SINGLE_PRECISION</span><span class="p">)</span>
+                    <span class="p">[</span><span class="n">F1</span><span class="p">,</span><span class="n">F_ind</span><span class="p">,</span><span class="n">F_delays</span><span class="p">,</span><span class="n">F_rates</span><span class="p">,</span>\
+                        <span class="n">F_fs</span><span class="p">,</span><span class="n">F_fs_pcal</span><span class="p">,</span><span class="n">F_first_sample</span><span class="p">,</span>\
+                        <span class="n">F_frac</span><span class="p">,</span><span class="n">F_side</span><span class="p">,</span><span class="n">FFT_SIZE</span><span class="p">]</span><span class="o">=</span><span class="n">update_stored_samples</span><span class="p">(</span><span class="n">v_dequant</span><span class="p">,</span><span class="n">F1</span><span class="p">,</span><span class="n">F_ind</span><span class="p">,</span><span class="n">key_station_pol</span><span class="p">,</span>\
+                                                            <span class="n">F_delays</span><span class="p">,</span><span class="n">F_rates</span><span class="p">,</span><span class="n">F_fs</span><span class="p">,</span><span class="n">F_fs_pcal</span><span class="p">,</span>\
+                                                            <span class="n">abs_delay</span><span class="p">,</span><span class="n">rate_delay</span><span class="p">,</span><span class="n">fs</span><span class="p">,</span><span class="n">fs_pcal</span><span class="p">,</span>\
+                                                            <span class="n">F_first_sample</span><span class="p">,</span><span class="n">first_sample</span><span class="p">,</span><span class="n">data_type</span><span class="p">,</span>\
+                                                            <span class="n">F_frac</span><span class="p">,</span><span class="n">fractional_sample_delay</span><span class="p">,</span><span class="n">shift_delay</span><span class="p">,</span>\
+                                                            <span class="n">F_side</span><span class="p">,</span><span class="n">sideband</span><span class="p">,</span><span class="n">FFT_SIZE_IN</span><span class="p">)</span>
+                        
+                       
+                    
+                <span class="k">else</span><span class="p">:</span>
+                    
+                    <span class="c1">######################################</span>
+                    <span class="c1">#   Same accumulation period and band</span>
+                    <span class="c1">######################################</span>
+                    <span class="c1">#</span>
+                    <span class="c1"># There will be one line per station. If the station for this line already has data, append it.</span>
+                    
+                    <span class="k">if</span> <span class="n">key_station_pol</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">F_ind</span><span class="p">:</span>
+                        
+                        <span class="c1">######################################</span>
+                        <span class="c1">#        Update data structures</span>
+                        <span class="c1">######################################</span>
+                        <span class="c1"># TODO: vector quantization not supported yet for all baselines in same task        </span>
+                        <span class="n">v_dequant</span> <span class="o">=</span> <span class="n">get_samples</span><span class="p">(</span><span class="n">samples_quant</span><span class="p">,</span><span class="n">bits_per_sample</span><span class="p">,</span><span class="n">data_type</span><span class="p">,</span><span class="n">num_samples</span><span class="p">,</span><span class="n">SINGLE_PRECISION</span><span class="p">)</span>    
+                        <span class="p">[</span><span class="n">F1</span><span class="p">,</span><span class="n">F_ind</span><span class="p">,</span><span class="n">F_delays</span><span class="p">,</span><span class="n">F_rates</span><span class="p">,</span><span class="n">F_fs</span><span class="p">,</span><span class="n">F_fs_pcal</span><span class="p">,</span>\
+                         <span class="n">F_first_sample</span><span class="p">,</span><span class="n">F_frac</span><span class="p">,</span><span class="n">F_side</span><span class="p">,</span><span class="n">FFT_SIZE</span><span class="p">]</span><span class="o">=</span><span class="n">update_stored_samples</span><span class="p">(</span><span class="n">v_dequant</span><span class="p">,</span><span class="n">F1</span><span class="p">,</span><span class="n">F_ind</span><span class="p">,</span>\
+                                                                             <span class="n">key_station_pol</span><span class="p">,</span><span class="n">F_delays</span><span class="p">,</span><span class="n">F_rates</span><span class="p">,</span>\
+                                                                             <span class="n">F_fs</span><span class="p">,</span><span class="n">F_fs_pcal</span><span class="p">,</span><span class="n">abs_delay</span><span class="p">,</span><span class="n">rate_delay</span><span class="p">,</span><span class="n">fs</span><span class="p">,</span>\
+                                                                             <span class="n">fs_pcal</span><span class="p">,</span><span class="n">F_first_sample</span><span class="p">,</span><span class="n">first_sample</span><span class="p">,</span>\
+                                                                             <span class="n">data_type</span><span class="p">,</span><span class="n">F_frac</span><span class="p">,</span><span class="n">fractional_sample_delay</span><span class="p">,</span>\
+                                                                             <span class="n">shift_delay</span><span class="p">,</span><span class="n">F_side</span><span class="p">,</span><span class="n">sideband</span><span class="p">,</span><span class="n">FFT_SIZE_IN</span><span class="p">)</span>
+                        <span class="n">current_vector_split</span> <span class="o">=</span> <span class="n">vector_split</span>
+                        <span class="n">current_block_time</span> <span class="o">=</span> <span class="n">block_time</span>
+ 
+                    <span class="k">else</span><span class="p">:</span>
+                        
+                        <span class="c1">######################################</span>
+                        <span class="c1">#         Append new samples</span>
+                        <span class="c1">######################################</span>
+                        <span class="c1"># new sub-accumulation period, multiply accumulate data and restart data structures</span>
+                        <span class="c1">#removed this call</span>
+                        <span class="c1">#[F_delays,F_rates,F_frac,F_fs,F_fs_pcal,F_side,F_first_sample]=restore_Fs(last_F_delays,last_F_rates,last_F_frac,last_F_fs,last_F_fs_pcal,last_F_side,last_F_first_sample,F_delays,F_rates,F_frac,F_fs,F_fs_pcal,F_side,F_first_sample)</span>
+                        <span class="c1"># This call includes not(COMPUTE_FOR_SUB_ACC_PERIOD) to bypass fx, so fx is only done before writting output</span>
+                        
+                        <span class="c1">#compute_for_sub_acc_period=not(COMPUTE_FOR_SUB_ACC_PERIOD)</span>
+                        <span class="k">if</span> <span class="n">COMPUTE_FOR_SUB_ACC_PERIOD</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+                            <span class="n">counter_sub_acc</span><span class="o">+=</span><span class="mi">1</span>
+                            <span class="n">compute_for_sub_acc_period_check</span><span class="o">=</span><span class="n">counter_sub_acc</span><span class="o">%</span><span class="n">COMPUTE_FOR_SUB_ACC_PERIOD</span>
+                            <span class="n">compute_for_sub_acc_period</span><span class="o">=</span><span class="kc">True</span>
+                            <span class="k">if</span> <span class="n">compute_for_sub_acc_period_check</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+                                <span class="n">compute_for_sub_acc_period</span><span class="o">=</span><span class="kc">False</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">compute_for_sub_acc_period</span><span class="o">=</span><span class="kc">False</span>
+
+                        <span class="c1">######################################</span>
+                        <span class="c1">#  Process samples in data structures</span>
+                        <span class="c1">######################################</span>
+                        <span class="c1">#</span>
+                        <span class="c1"># Note that FX computations are bypassed</span>
+                        <span class="p">[</span><span class="n">acc_mat</span><span class="p">,</span><span class="n">count_acc</span><span class="p">,</span><span class="n">count_sub_acc</span><span class="p">,</span><span class="n">n_sp</span><span class="p">,</span><span class="n">last_F_ind</span><span class="p">,</span>\
+                         <span class="n">failed_acc_count</span><span class="p">,</span><span class="n">dismissed_acc_count</span><span class="p">,</span><span class="n">F1_partial</span><span class="p">,</span><span class="n">F_ind_partial</span><span class="p">,</span>\
+                         <span class="n">acc_pcal</span><span class="p">,</span><span class="n">pre_pcal</span><span class="p">,</span><span class="n">count_acc_pcal</span><span class="p">,</span><span class="n">F_first_sample_partial</span><span class="p">,</span>\
+                         <span class="n">F_adj_shift_partial</span><span class="p">,</span><span class="n">F_stack_shift</span><span class="p">,</span><span class="n">F_adj_shift_pcal</span><span class="p">,</span><span class="n">F_stack_shift_pcal</span><span class="p">,</span><span class="n">F_pcal_fix</span><span class="p">,</span><span class="n">F_lti</span><span class="p">]</span> <span class="o">=</span> <span class="n">compute_fx_for_all</span><span class="p">(</span><span class="n">F1_partial</span><span class="p">,</span><span class="n">F_ind_partial</span><span class="p">,</span><span class="n">F1</span><span class="p">,</span>\
+                                                                                         <span class="n">FFT_SIZE</span><span class="p">,</span><span class="n">WINDOWING</span><span class="p">,</span><span class="n">acc_mat</span><span class="p">,</span><span class="n">count_acc</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span>\
+                                                                                         <span class="n">F_ind</span><span class="p">,</span><span class="n">last_F_ind</span><span class="p">,</span><span class="n">n_sp</span><span class="p">,</span><span class="n">failed_acc_count</span><span class="p">,</span>\
+                                                                                         <span class="n">dismissed_acc_count</span><span class="p">,</span>\
+                                                                                         <span class="n">current_scaling_pair</span><span class="p">,</span><span class="n">DTYPE_COMPLEX</span><span class="p">,</span>\
+                                                                                         <span class="n">acc_pcal</span><span class="p">,</span><span class="n">pre_pcal</span><span class="p">,</span><span class="n">n_bins_pcal</span><span class="p">,</span>\
+                                                                                         <span class="n">count_acc_pcal</span><span class="p">,</span><span class="n">PHASE_CALIBRATION</span><span class="p">,</span>\
+                                                                                         <span class="n">compute_for_sub_acc_period</span><span class="p">,</span>\
+                                                                                         <span class="n">F_delays</span><span class="p">,</span><span class="n">F_rates</span><span class="p">,</span><span class="n">F_fs</span><span class="p">,</span><span class="n">current_freq_channel</span><span class="p">,</span>\
+                                                                                         <span class="n">F_first_sample</span><span class="p">,</span><span class="n">F_first_sample_partial</span><span class="p">,</span>\
+                                                                                         <span class="n">F_frac</span><span class="p">,</span><span class="n">current_block_time</span><span class="p">,</span><span class="n">F_adj_shift_partial</span><span class="p">,</span>\
+                                                                                         <span class="n">F_stack_shift</span><span class="p">,</span><span class="n">F_adj_shift_pcal</span><span class="p">,</span>\
+                                                                                         <span class="n">F_stack_shift_pcal</span><span class="p">,</span><span class="n">F_pcal_fix</span><span class="p">,</span><span class="n">F_side</span><span class="p">,</span><span class="n">F_lti</span><span class="p">)</span>
+
+
+                        
+                        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">last_F_delays</span><span class="p">)</span><span class="o">&lt;=</span><span class="nb">len</span><span class="p">(</span><span class="n">F_delays</span><span class="p">):</span>
+                            <span class="n">last_F_delays</span><span class="o">=</span><span class="n">F_delays</span><span class="p">[:]</span>
+                            <span class="n">last_F_rates</span><span class="o">=</span><span class="n">F_rates</span><span class="p">[:]</span>
+                            <span class="n">last_F_frac</span><span class="o">=</span><span class="n">F_frac</span><span class="p">[:]</span>
+                            <span class="n">last_F_fs</span><span class="o">=</span><span class="n">F_fs</span><span class="p">[:]</span>
+                            <span class="n">last_F_fs_pcal</span><span class="o">=</span><span class="n">F_fs_pcal</span><span class="p">[:]</span>
+                            <span class="n">last_F_side</span><span class="o">=</span><span class="n">F_side</span><span class="p">[:]</span>
+                            <span class="n">last_F_first_sample</span><span class="o">=</span><span class="n">F_first_sample</span><span class="p">[:]</span>
+
+                        
+                        <span class="c1"># Reinitialize variables</span>
+                        <span class="n">F_ind</span><span class="o">=</span><span class="p">[]</span>
+                        <span class="n">F_delays</span><span class="o">=</span><span class="p">[]</span>
+                        <span class="n">F_rates</span><span class="o">=</span><span class="p">[]</span>
+                        <span class="n">F_frac</span><span class="o">=</span><span class="p">[]</span>
+                        <span class="n">F_fs</span><span class="o">=</span><span class="p">[]</span>
+                        <span class="n">F_fs_pcal</span><span class="o">=</span><span class="p">[]</span>
+                        <span class="n">F_side</span><span class="o">=</span><span class="p">[]</span>
+                        <span class="n">F_first_sample</span><span class="o">=</span><span class="p">[]</span>
+
+
+
+                        <span class="n">F1</span><span class="o">=</span><span class="kc">None</span>
+                        
+                        <span class="n">current_scaling_pair</span> <span class="o">=</span> <span class="n">scaling_pair</span>
+                        <span class="n">current_key_sample</span> <span class="o">=</span> <span class="n">key_sample</span>
+                        <span class="n">current_key_station</span> <span class="o">=</span> <span class="n">key_station</span>
+                        <span class="n">current_n_bins_pcal</span> <span class="o">=</span> <span class="n">n_bins_pcal</span>
+                        <span class="n">current_vector_split</span> <span class="o">=</span> <span class="n">vector_split</span>
+                        <span class="n">current_block_time</span> <span class="o">=</span> <span class="n">block_time</span>
+                        <span class="n">current_freq_channel</span> <span class="o">=</span> <span class="n">freq_channel</span>
+                        
+                        <span class="c1">######################################</span>
+                        <span class="c1">#        Update data structures</span>
+                        <span class="c1">######################################</span>
+                        <span class="c1"># Read data</span>
+                        <span class="n">v_dequant</span> <span class="o">=</span> <span class="n">get_samples</span><span class="p">(</span><span class="n">samples_quant</span><span class="p">,</span><span class="n">bits_per_sample</span><span class="p">,</span><span class="n">data_type</span><span class="p">,</span><span class="n">num_samples</span><span class="p">,</span><span class="n">SINGLE_PRECISION</span><span class="p">)</span>
+                        <span class="p">[</span><span class="n">F1</span><span class="p">,</span><span class="n">F_ind</span><span class="p">,</span><span class="n">F_delays</span><span class="p">,</span><span class="n">F_rates</span><span class="p">,</span><span class="n">F_fs</span><span class="p">,</span><span class="n">F_fs_pcal</span><span class="p">,</span><span class="n">F_first_sample</span><span class="p">,</span><span class="n">F_frac</span><span class="p">,</span><span class="n">F_side</span><span class="p">,</span><span class="n">FFT_SIZE</span><span class="p">]</span><span class="o">=</span><span class="n">update_stored_samples</span><span class="p">(</span><span class="n">v_dequant</span><span class="p">,</span><span class="n">F1</span><span class="p">,</span><span class="n">F_ind</span><span class="p">,</span><span class="n">key_station_pol</span><span class="p">,</span><span class="n">F_delays</span><span class="p">,</span><span class="n">F_rates</span><span class="p">,</span><span class="n">F_fs</span><span class="p">,</span><span class="n">F_fs_pcal</span><span class="p">,</span><span class="n">abs_delay</span><span class="p">,</span><span class="n">rate_delay</span><span class="p">,</span><span class="n">fs</span><span class="p">,</span><span class="n">fs_pcal</span><span class="p">,</span><span class="n">F_first_sample</span><span class="p">,</span><span class="n">first_sample</span><span class="p">,</span><span class="n">data_type</span><span class="p">,</span><span class="n">F_frac</span><span class="p">,</span><span class="n">fractional_sample_delay</span><span class="p">,</span><span class="n">shift_delay</span><span class="p">,</span><span class="n">F_side</span><span class="p">,</span><span class="n">sideband</span><span class="p">,</span><span class="n">FFT_SIZE_IN</span><span class="p">)</span>
+                
+
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># TO DO: Discontinued, untested. Update.</span>
+                <span class="c1"># One baseline per task</span>
+        
+                <span class="c1"># If it is an autocorrelation iterate again</span>
+                <span class="k">for</span> <span class="n">iter_process_pcal</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="o">+</span><span class="n">is_autocorr</span><span class="p">):</span>
+                    <span class="c1">#If new pair and first sample, store data; otherwise do product and write to file          </span>
+                    <span class="k">if</span> <span class="n">key_pair_accu</span><span class="o">!=</span><span class="n">current_key_pair_accu</span><span class="p">:</span>
+                        <span class="c1">#New accumulation block:</span>
+                        <span class="c1"># Write accumulated products to file (if it&#39;s not the first block, i.e., there&#39;s no data yet)</span>
+                        <span class="k">if</span> <span class="n">current_key_pair_accu</span><span class="o">!=</span><span class="kc">None</span><span class="p">:</span>
+                            <span class="c1">#Write to stdout (ONLY AFTER ACCUMULATION)</span>
+                            
+                            <span class="c1"># Check if previous partition was all-baselines-per-task</span>
+                            <span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="n">F1</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+                                <span class="n">normalize_after_compute</span><span class="o">=</span><span class="kc">True</span>
+                                <span class="c1"># This call includes not(COMPUTE_FOR_SUB_ACC_PERIOD) to bypass fx, so fx is only done before writting output</span>
+                                <span class="c1"># TO DO: untested!</span>
+                                <span class="p">[</span><span class="n">F_delays</span><span class="p">,</span><span class="n">F_rates</span><span class="p">,</span><span class="n">F_frac</span><span class="p">,</span><span class="n">F_fs</span><span class="p">,</span><span class="n">F_fs_pcal</span><span class="p">,</span><span class="n">F_side</span><span class="p">,</span><span class="n">F_first_sample</span><span class="p">]</span><span class="o">=</span><span class="n">restore_Fs</span><span class="p">(</span><span class="n">last_F_delays</span><span class="p">,</span><span class="n">last_F_rates</span><span class="p">,</span><span class="n">last_F_frac</span><span class="p">,</span><span class="n">last_F_fs</span><span class="p">,</span><span class="n">last_F_fs_pcal</span><span class="p">,</span><span class="n">last_F_side</span><span class="p">,</span><span class="n">last_F_first_sample</span><span class="p">,</span><span class="n">F_delays</span><span class="p">,</span><span class="n">F_rates</span><span class="p">,</span><span class="n">F_frac</span><span class="p">,</span><span class="n">F_fs</span><span class="p">,</span><span class="n">F_fs_pcal</span><span class="p">,</span><span class="n">F_side</span><span class="p">,</span><span class="n">F_first_sample</span><span class="p">)</span>
+                                <span class="p">[</span><span class="n">acc_mat</span><span class="p">,</span><span class="n">count_acc</span><span class="p">,</span><span class="n">count_sub_acc</span><span class="p">,</span><span class="n">n_sp</span><span class="p">,</span><span class="n">last_F_ind</span><span class="p">,</span>\
+                                 <span class="n">failed_acc_count</span><span class="p">,</span><span class="n">dismissed_acc_count</span><span class="p">,</span><span class="n">F1_partial</span><span class="p">,</span><span class="n">F_ind_partial</span><span class="p">,</span>\
+                                 <span class="n">acc_pcal</span><span class="p">,</span><span class="n">pre_pcal</span><span class="p">,</span><span class="n">count_acc_pcal</span><span class="p">,</span><span class="n">F_first_sample_partial</span><span class="p">,</span>\
+                                 <span class="n">F_adj_shift_partial</span><span class="p">,</span><span class="n">F_stack_shift</span><span class="p">,</span><span class="n">F_adj_shift_pcal</span><span class="p">,</span><span class="n">F_stack_shift_pcal</span><span class="p">,</span><span class="n">F_pcal_fix</span><span class="p">,</span><span class="n">F_lti</span><span class="p">]</span> <span class="o">=</span> <span class="n">compute_fx_for_all</span><span class="p">(</span><span class="n">F1_partial</span><span class="p">,</span><span class="n">F_ind_partial</span><span class="p">,</span><span class="n">F1</span><span class="p">,</span>\
+                                                                                       <span class="n">FFT_SIZE</span><span class="p">,</span><span class="n">WINDOWING</span><span class="p">,</span>\
+                                                                                       <span class="n">acc_mat</span><span class="p">,</span><span class="n">count_acc</span><span class="p">,</span>\
+                                                                                       <span class="n">normalize_after_compute</span><span class="p">,</span><span class="n">F_ind</span><span class="p">,</span>\
+                                                                                       <span class="n">last_F_ind</span><span class="p">,</span><span class="n">n_sp</span><span class="p">,</span><span class="n">failed_acc_count</span><span class="p">,</span>\
+                                                                                       <span class="n">dismissed_acc_count</span><span class="p">,</span>\
+                                                                                       <span class="n">current_scaling_pair</span><span class="p">,</span><span class="n">DTYPE_COMPLEX</span><span class="p">,</span>\
+                                                                                       <span class="n">acc_pcal</span><span class="p">,</span><span class="n">pre_pcal</span><span class="p">,</span><span class="n">n_bins_pcal</span><span class="p">,</span><span class="n">count_acc_pcal</span><span class="p">,</span>\
+                                                                                       <span class="n">PHASE_CALIBRATION</span><span class="p">,</span>\
+                                                                                       <span class="ow">not</span><span class="p">(</span><span class="n">COMPUTE_FOR_SUB_ACC_PERIOD</span><span class="p">),</span>\
+                                                                                       <span class="n">F_delays</span><span class="p">,</span><span class="n">F_rates</span><span class="p">,</span><span class="n">F_fs</span><span class="p">,</span><span class="n">current_freq_channel</span><span class="p">,</span>\
+                                                                                       <span class="n">F_first_sample</span><span class="p">,</span><span class="n">F_first_sample_partial</span><span class="p">,</span>\
+                                                                                       <span class="n">F_frac</span><span class="p">,</span><span class="n">current_block_time</span><span class="p">,</span><span class="n">F_adj_shift_partial</span><span class="p">,</span>\
+                                                                                       <span class="n">F_stack_shift</span><span class="p">,</span><span class="n">F_adj_shift_pcal</span><span class="p">,</span><span class="n">F_stack_shift_pcal</span><span class="p">,</span>\
+                                                                                       <span class="n">F_pcal_fix</span><span class="p">,</span><span class="n">F_side</span><span class="p">,</span><span class="n">F_lti</span><span class="p">)</span>
+                                
+                                <span class="c1"># Adjust pcal rotation due to initial alignment with delay model</span>
+                                <span class="k">if</span> <span class="n">PHASE_CALIBRATION</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+                                    <span class="n">acc_pcal</span> <span class="o">=</span> <span class="n">adjust_shift_acc_pcal</span><span class="p">(</span><span class="n">acc_pcal</span><span class="p">,</span><span class="n">F_pcal_fix</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="n">DEBUG_GENERAL_R</span><span class="p">)</span>
+
+                                
+                                <span class="n">lines_out</span> <span class="o">=</span> <span class="n">get_lines_out_for_all</span><span class="p">(</span><span class="n">char_type</span><span class="p">,</span><span class="n">n_sp</span><span class="p">,</span><span class="n">last_F_ind</span><span class="p">,</span><span class="n">current_pairs</span><span class="p">,</span><span class="n">count_acc</span><span class="p">,</span><span class="n">acc_mat</span><span class="p">,</span>\
+                                                                  <span class="n">current_block_first_sample</span><span class="p">,</span><span class="n">acc_pcal</span><span class="p">,</span><span class="n">count_acc_pcal</span><span class="p">,</span><span class="n">current_vector_split</span><span class="p">)</span>
+                                <span class="k">if</span> <span class="n">lines_out</span><span class="o">!=</span><span class="p">[]:</span>
+                                    <span class="k">for</span> <span class="n">line_out</span> <span class="ow">in</span> <span class="n">lines_out</span><span class="p">:</span>
+                                        <span class="nb">print</span><span class="p">(</span><span class="n">line_out</span><span class="p">)</span>
+                                
+
+                                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;zR&quot;</span><span class="o">+</span><span class="n">KEY_SEP</span><span class="o">+</span><span class="s2">&quot;kpa=&quot;</span><span class="o">+</span><span class="n">current_key_pair_accu</span><span class="o">+</span><span class="s2">&quot;,Adjusted stack=[&quot;</span><span class="o">+</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span><span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span><span class="n">F_stack_shift</span><span class="p">)))</span><span class="o">+</span><span class="s2">&quot;]&quot;</span><span class="p">)</span>
+                                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;zR&quot;</span><span class="o">+</span><span class="n">KEY_SEP</span><span class="o">+</span><span class="s2">&quot;kpa=&quot;</span><span class="o">+</span><span class="n">current_key_pair_accu</span><span class="o">+</span><span class="s2">&quot;,Adjusted shifts=[&quot;</span><span class="o">+</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span><span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span><span class="n">F_adj_shift_partial</span><span class="p">)))</span><span class="o">+</span><span class="s2">&quot;]&quot;</span><span class="p">)</span>
+                                
+                                <span class="k">if</span> <span class="p">(</span><span class="n">failed_acc_count</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)</span><span class="ow">or</span><span class="p">(</span><span class="n">dismissed_acc_count</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">):</span>
+                                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;zR&quot;</span><span class="o">+</span><span class="n">KEY_SEP</span><span class="o">+</span><span class="s2">&quot;Failed accs=&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">failed_acc_count</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;,dismissed accs=&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">dismissed_acc_count</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;,in=a&quot;</span><span class="o">+</span><span class="n">current_block_first_sample</span><span class="p">)</span>
+                                          
+                                    <span class="n">failed_acc_count</span><span class="o">=</span><span class="mi">0</span>
+                                    <span class="n">dismissed_acc_count</span><span class="o">=</span><span class="mi">0</span>
+                                <span class="n">acc_mat</span><span class="o">=</span><span class="kc">None</span>
+                                <span class="n">last_F_ind</span><span class="o">=</span><span class="kc">None</span>
+                                <span class="n">F1</span><span class="o">=</span><span class="kc">None</span>
+                            <span class="k">else</span><span class="p">:</span>
+                            
+                                <span class="n">accu_prod_div</span> <span class="o">=</span> <span class="n">normalize_mat</span><span class="p">(</span><span class="n">accu_prod</span><span class="p">,</span><span class="n">count_acc</span><span class="p">)</span>
+                                <span class="n">str_print</span> <span class="o">=</span> <span class="n">get_str_r_out</span><span class="p">(</span><span class="n">current_key_pair_accu</span><span class="p">,</span><span class="n">count_acc</span><span class="p">,</span><span class="n">current_vector_split</span><span class="p">,</span><span class="n">current_block_first_sample</span><span class="p">,</span><span class="n">accu_prod_div</span><span class="p">)</span>
+                                <span class="nb">print</span><span class="p">(</span><span class="n">str_print</span><span class="p">)</span>
+                                
+                                <span class="c1"># Print phase calibration results</span>
+                                <span class="k">if</span> <span class="n">acc_pcal</span><span class="o">!=</span><span class="p">[]:</span>
+                                    <span class="c1"># TO DO: phase calibration currently disabled?</span>
+                                    <span class="c1">##pcal_fft = window_and_fft(acc_pcal,current_n_bins_pcal,C_INI_CR_WINDOW_SQUARE)</span>
+                                    <span class="c1">##acc_pcal_div = np.divide(acc_pcal,count_acc)</span>
+                                    <span class="c1">### values for LSB (start counting from last, take indices from mapper)</span>
+                                    <span class="c1">###pcal_L=</span>
+                                    <span class="c1">### values for USB</span>
+                                    <span class="c1">##str_print = &quot;pcal&quot;+current_key_pair_accu[2:]+&#39;sxa&#39;+str(count_acc)+&#39;\t&#39;+&#39; &#39;.join(current_vector_split[:(META_LEN-1)])+&#39; &#39;+current_block_first_sample+&#39; &#39;+&#39; &#39;.join(map(str, acc_pcal_div))</span>
+                                    <span class="c1">##</span>
+                                    <span class="n">str_print</span> <span class="o">=</span> <span class="n">get_str_pcal_out</span><span class="p">(</span><span class="n">acc_pcal</span><span class="p">,</span><span class="n">current_n_bins_pcal</span><span class="p">,</span><span class="n">count_acc_pcal</span><span class="p">,</span><span class="n">current_key_pair_accu</span><span class="p">,</span><span class="n">current_vector_split</span><span class="p">,</span><span class="n">current_block_first_sample</span><span class="p">)</span>
+                                    <span class="nb">print</span><span class="p">(</span><span class="n">str_print</span><span class="p">)</span>
+
+
+                    
+
+                        <span class="n">accu_prod</span><span class="o">=</span><span class="p">[]</span>
+                        <span class="n">current_key_pair_accu</span> <span class="o">=</span> <span class="n">key_pair_accu</span>
+                        <span class="n">current_key_station</span> <span class="o">=</span> <span class="n">key_station</span>
+                        <span class="n">current_block_first_sample</span> <span class="o">=</span> <span class="n">block_first_sample</span>
+                        <span class="n">current_bits_per_sample</span> <span class="o">=</span> <span class="n">bits_per_sample</span>
+                        <span class="n">current_n_bins_pcal</span> <span class="o">=</span> <span class="n">n_bins_pcal</span>
+                        <span class="n">current_data_type</span> <span class="o">=</span> <span class="n">data_type</span>
+                        <span class="n">current_encoding</span> <span class="o">=</span> <span class="n">encoding</span>
+                        <span class="n">current_freq_channel</span> <span class="o">=</span> <span class="n">freq_channel</span>
+                        <span class="n">count_acc</span><span class="o">=</span><span class="mi">0</span>
+                        <span class="n">count_acc_pcal</span> <span class="o">=</span> <span class="mi">0</span>
+                        <span class="n">acc_pcal</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+                        <span class="n">pre_pcal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+                        <span class="k">if</span> <span class="p">(</span><span class="n">ENCODE_B64</span><span class="o">==</span><span class="mi">1</span><span class="p">)</span><span class="ow">and</span><span class="p">(</span><span class="n">encoding</span><span class="o">==</span><span class="n">C_INI_MEDIA_C_NO</span><span class="p">):</span>
+                            <span class="n">current_samples_quant</span> <span class="o">=</span> <span class="n">samples_quant</span>
+                        <span class="k">elif</span> <span class="n">encoding</span> <span class="o">==</span> <span class="n">C_INI_MEDIA_C_VQ</span><span class="p">:</span>
+                            <span class="n">current_encoding_width</span> <span class="o">=</span> <span class="n">encoding_width</span>
+                        <span class="n">current_key_sample</span> <span class="o">=</span> <span class="n">key_sample</span>
+                        <span class="n">current_vector_split</span> <span class="o">=</span> <span class="n">vector_split</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">current_key_sample</span><span class="o">==</span><span class="n">key_sample</span><span class="p">:</span>
+                       
+                            
+                            <span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="n">FFT_HERE</span><span class="p">):</span>
+                                <span class="c1"># TO DO: untested?</span>
+                                <span class="n">v1fft</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">current_vector_split</span><span class="p">[</span><span class="n">META_LEN</span><span class="p">:])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">complex</span><span class="p">)</span>
+                                <span class="n">v2fft</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">vector_split</span><span class="p">[</span><span class="n">META_LEN</span><span class="p">:])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">complex</span><span class="p">)</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="c1"># If doing FFT here</span>
+                                
+                                <span class="c1">#if current_data_type==&#39;c&#39;:</span>
+                                <span class="c1"># TO DO: check encoding / current_encoding use...</span>
+                                <span class="k">if</span> <span class="p">(</span><span class="n">ENCODE_B64</span><span class="o">==</span><span class="mi">1</span><span class="p">)</span><span class="ow">and</span><span class="p">(</span><span class="n">encoding</span><span class="o">==</span><span class="n">C_INI_MEDIA_C_NO</span><span class="p">):</span>
+                                    
+                                    <span class="n">v1_dequant</span> <span class="o">=</span> <span class="n">get_samples</span><span class="p">(</span><span class="n">current_samples_quant</span><span class="p">,</span><span class="n">current_bits_per_sample</span><span class="p">,</span><span class="n">current_data_type</span><span class="p">,</span><span class="n">num_samples</span><span class="p">,</span><span class="n">SINGLE_PRECISION</span><span class="p">)</span>
+                                    <span class="k">if</span> <span class="n">is_autocorr</span><span class="p">:</span>
+                                        <span class="n">v2_dequant</span> <span class="o">=</span> <span class="n">v1_dequant</span>
+                                    <span class="k">else</span><span class="p">:</span>
+                                        <span class="n">v2_dequant</span> <span class="o">=</span> <span class="n">get_samples</span><span class="p">(</span><span class="n">samples_quant</span><span class="p">,</span><span class="n">bits_per_sample</span><span class="p">,</span><span class="n">data_type</span><span class="p">,</span><span class="n">num_samples</span><span class="p">,</span><span class="n">SINGLE_PRECISION</span><span class="p">)</span>
+                                    
+
+                                
+    
+                                <span class="c1"># TO DO: Need to work on this...</span>
+                                <span class="k">if</span> <span class="p">(</span><span class="n">encoding</span><span class="o">==</span><span class="n">C_INI_MEDIA_C_VQ</span><span class="p">)</span><span class="ow">or</span><span class="p">(</span><span class="n">current_encoding</span><span class="o">==</span><span class="n">C_INI_MEDIA_C_VQ</span><span class="p">):</span>
+                                    
+                                    <span class="c1"># TO DO: untestesd after changes</span>
+                                    <span class="p">[</span><span class="n">v1_dequant</span><span class="p">,</span><span class="n">v2_dequant</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_vq_decoded_samples</span><span class="p">(</span><span class="n">codecs_serial</span><span class="p">,</span><span class="n">codebook_list</span><span class="p">,</span><span class="n">key_station</span><span class="p">,</span><span class="n">current_key_station</span><span class="p">,</span>\
+                                                                                  <span class="n">encoding_width</span><span class="p">,</span><span class="n">current_encoding_width</span><span class="p">,</span><span class="n">v1_quant</span><span class="p">,</span><span class="n">v2_quant</span><span class="p">,</span>\
+                                                                                  <span class="n">vector_split</span><span class="p">,</span><span class="n">dictc01bit</span><span class="p">)</span>
+
+                                <span class="c1"># TO DO: add data type for calling window_and_fft</span>
+                                <span class="c1"># FFT and FFT*</span>
+                                <span class="n">v1fft</span> <span class="o">=</span> <span class="n">window_and_fft</span><span class="p">(</span><span class="n">v1_dequant</span><span class="p">,</span><span class="n">FFT_SIZE</span><span class="p">,</span><span class="n">WINDOWING</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">DTYPE_COMPLEX</span><span class="p">)</span>
+                                <span class="k">if</span> <span class="n">is_autocorr</span><span class="p">:</span>
+                                    <span class="n">v2fft</span> <span class="o">=</span> <span class="n">v1fft</span>
+                                <span class="k">else</span><span class="p">:</span>
+                                    <span class="n">v2fft</span> <span class="o">=</span> <span class="n">window_and_fft</span><span class="p">(</span><span class="n">v2_dequant</span><span class="p">,</span><span class="n">FFT_SIZE</span><span class="p">,</span><span class="n">WINDOWING</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">DTYPE_COMPLEX</span><span class="p">)</span>
+                                                        
+                                
+                            <span class="c1"># Conjugate second one</span>
+                            <span class="n">v2fft</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">conjugate</span><span class="p">(</span><span class="n">v2fft</span><span class="p">)</span>
+                            <span class="c1"># Multiply and accumulate     </span>
+                            <span class="n">accu_prod</span> <span class="o">=</span> <span class="n">multiply_accumulate</span><span class="p">(</span><span class="n">accu_prod</span><span class="p">,</span><span class="n">v1fft</span><span class="p">,</span><span class="n">v2fft</span><span class="p">)</span>
+                            <span class="n">count_acc</span><span class="o">+=</span><span class="nb">len</span><span class="p">(</span><span class="n">v1fft</span><span class="p">)</span>
+                            <span class="c1"># TO DO: raies error y num_chunks1 differ from num_chunks2? Work on this and simplify</span>
+                            
+                            
+                            
+                            <span class="c1"># Phase calibration (only on second iteration if is_autocorr)</span>
+                            <span class="k">if</span> <span class="p">(</span><span class="n">iter_process_pcal</span><span class="p">)</span><span class="ow">and</span><span class="p">(</span><span class="n">PHASE_CALIBRATION</span><span class="p">):</span>
+                                <span class="c1"># TO DO: migrate this functionality to multiple-baselines-per-task modes</span>
+                                <span class="n">pre_pcal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pre_pcal</span><span class="p">,</span><span class="n">v1_dequant</span><span class="p">)</span>
+                                <span class="n">pre_pcal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pre_pcal</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+                                <span class="n">index_saved_pcal</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pre_pcal</span><span class="p">)</span><span class="o">//</span><span class="n">n_bins_pcal</span><span class="p">)</span><span class="o">*</span><span class="n">n_bins_pcal</span>
+                                <span class="n">pcal_process</span><span class="o">=</span><span class="n">pre_pcal</span><span class="p">[:</span><span class="n">index_saved_pcal</span><span class="p">]</span>
+                                <span class="n">pre_pcal</span><span class="o">=</span><span class="n">pre_pcal</span><span class="p">[</span><span class="n">index_saved_pcal</span><span class="p">:]</span>
+                                <span class="n">pcal_reshaped</span> <span class="o">=</span> <span class="n">reshape_pcal</span><span class="p">(</span><span class="n">pcal_process</span><span class="p">,</span><span class="n">n_bins_pcal</span><span class="p">)</span>
+                                <span class="p">[</span><span class="n">acc_pcal</span><span class="p">,</span><span class="n">count_acc_pcal</span><span class="p">]</span> <span class="o">=</span> <span class="n">accumulate_pcal</span><span class="p">(</span><span class="n">acc_pcal</span><span class="p">,</span><span class="n">pcal_reshaped</span><span class="p">,</span><span class="n">count_acc_pcal</span><span class="p">)</span>
+                                
+                                
+        
+                                
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">current_key_sample</span> <span class="o">=</span> <span class="n">key_sample</span>
+                            <span class="n">current_key_station</span> <span class="o">=</span> <span class="n">key_station</span>
+                            <span class="n">current_n_bins_pcal</span> <span class="o">=</span> <span class="n">n_bins_pcal</span>
+                            <span class="n">current_vector_split</span> <span class="o">=</span> <span class="n">vector_split</span>
+                            <span class="n">current_block_time</span> <span class="o">=</span> <span class="n">block_time</span>
+                            <span class="n">current_freq_channel</span> <span class="o">=</span> <span class="n">freq_channel</span>
+                            <span class="k">if</span> <span class="p">(</span><span class="n">ENCODE_B64</span><span class="o">==</span><span class="mi">1</span><span class="p">)</span><span class="ow">and</span><span class="p">(</span><span class="n">vector_split</span><span class="p">[</span><span class="n">INDEX_ENCODING</span><span class="p">]</span><span class="o">==</span><span class="n">C_INI_MEDIA_C_NO</span><span class="p">):</span>
+                                <span class="n">current_samples_quant</span> <span class="o">=</span> <span class="n">samples_quant</span>
+                            <span class="k">elif</span> <span class="n">encoding</span> <span class="o">==</span> <span class="n">C_INI_MEDIA_C_VQ</span><span class="p">:</span>
+                                <span class="n">current_encoding_width</span> <span class="o">=</span> <span class="n">encoding_width</span>
+                                
+
+        <span class="c1">######################################</span>
+        <span class="c1">#         Last write</span>
+        <span class="c1">######################################    </span>
+        <span class="c1">#</span>
+        <span class="c1"># This has to be equivalent to the writes above</span>
+        <span class="c1"># TO DO: group this into function to avoid potential errors</span>
+        <span class="k">if</span> <span class="n">current_key_pair_accu</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            
+            
+            <span class="k">if</span> <span class="n">pairs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">==</span><span class="s2">&quot;A.A&quot;</span><span class="p">:</span> 
+                
+                <span class="k">if</span> <span class="n">count_acc</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+                    <span class="n">normalize_after_compute</span><span class="o">=</span><span class="kc">True</span>
+                    <span class="p">[</span><span class="n">F_delays</span><span class="p">,</span><span class="n">F_rates</span><span class="p">,</span><span class="n">F_frac</span><span class="p">,</span><span class="n">F_fs</span><span class="p">,</span><span class="n">F_fs_pcal</span><span class="p">,</span><span class="n">F_side</span><span class="p">,</span><span class="n">F_first_sample</span><span class="p">]</span><span class="o">=</span><span class="n">restore_Fs</span><span class="p">(</span><span class="n">last_F_delays</span><span class="p">,</span><span class="n">last_F_rates</span><span class="p">,</span><span class="n">last_F_frac</span><span class="p">,</span><span class="n">last_F_fs</span><span class="p">,</span><span class="n">last_F_fs_pcal</span><span class="p">,</span><span class="n">last_F_side</span><span class="p">,</span><span class="n">last_F_first_sample</span><span class="p">,</span><span class="n">F_delays</span><span class="p">,</span><span class="n">F_rates</span><span class="p">,</span><span class="n">F_frac</span><span class="p">,</span><span class="n">F_fs</span><span class="p">,</span><span class="n">F_fs_pcal</span><span class="p">,</span><span class="n">F_side</span><span class="p">,</span><span class="n">F_first_sample</span><span class="p">)</span>
+                    
+                    <span class="c1">########</span>
+                    <span class="c1">#  FX</span>
+                    <span class="c1">########</span>
+                    <span class="p">[</span><span class="n">acc_mat</span><span class="p">,</span><span class="n">count_acc</span><span class="p">,</span><span class="n">count_sub_acc</span><span class="p">,</span><span class="n">n_sp</span><span class="p">,</span><span class="n">last_F_ind</span><span class="p">,</span>\
+                         <span class="n">failed_acc_count</span><span class="p">,</span><span class="n">dismissed_acc_count</span><span class="p">,</span><span class="n">F1_partial</span><span class="p">,</span><span class="n">F_ind_partial</span><span class="p">,</span>\
+                         <span class="n">acc_pcal</span><span class="p">,</span><span class="n">pre_pcal</span><span class="p">,</span><span class="n">count_acc_pcal</span><span class="p">,</span><span class="n">F_first_sample_partial</span><span class="p">,</span>\
+                         <span class="n">F_adj_shift_partial</span><span class="p">,</span><span class="n">F_stack_shift</span><span class="p">,</span><span class="n">F_adj_shift_pcal</span><span class="p">,</span><span class="n">F_stack_shift_pcal</span><span class="p">,</span><span class="n">F_pcal_fix</span><span class="p">,</span><span class="n">F_lti</span><span class="p">]</span> <span class="o">=</span> <span class="n">compute_fx_for_all</span><span class="p">(</span><span class="n">F1_partial</span><span class="p">,</span><span class="n">F_ind_partial</span><span class="p">,</span><span class="n">F1</span><span class="p">,</span>\
+                                                                                             <span class="n">FFT_SIZE</span><span class="p">,</span><span class="n">WINDOWING</span><span class="p">,</span><span class="n">acc_mat</span><span class="p">,</span><span class="n">count_acc</span><span class="p">,</span>\
+                                                                                             <span class="n">normalize_after_compute</span><span class="p">,</span><span class="n">F_ind</span><span class="p">,</span>\
+                                                                                             <span class="n">last_F_ind</span><span class="p">,</span><span class="n">n_sp</span><span class="p">,</span><span class="n">failed_acc_count</span><span class="p">,</span>\
+                                                                                             <span class="n">dismissed_acc_count</span><span class="p">,</span>\
+                                                                                             <span class="n">current_scaling_pair</span><span class="p">,</span><span class="n">DTYPE_COMPLEX</span><span class="p">,</span>\
+                                                                                             <span class="n">acc_pcal</span><span class="p">,</span><span class="n">pre_pcal</span><span class="p">,</span><span class="n">n_bins_pcal</span><span class="p">,</span>\
+                                                                                             <span class="n">count_acc_pcal</span><span class="p">,</span><span class="n">PHASE_CALIBRATION</span><span class="p">,</span>\
+                                                                                             <span class="mi">0</span><span class="p">,</span><span class="n">F_delays</span><span class="p">,</span><span class="n">F_rates</span><span class="p">,</span><span class="n">F_fs</span><span class="p">,</span><span class="n">current_freq_channel</span><span class="p">,</span>\
+                                                                                             <span class="n">F_first_sample</span><span class="p">,</span><span class="n">F_first_sample_partial</span><span class="p">,</span>\
+                                                                                             <span class="n">F_frac</span><span class="p">,</span><span class="n">current_block_time</span><span class="p">,</span><span class="n">F_adj_shift_partial</span><span class="p">,</span>\
+                                                                                             <span class="n">F_stack_shift</span><span class="p">,</span><span class="n">F_adj_shift_pcal</span><span class="p">,</span><span class="n">F_stack_shift_pcal</span><span class="p">,</span>\
+                                                                                             <span class="n">F_pcal_fix</span><span class="p">,</span><span class="n">F_side</span><span class="p">,</span><span class="n">F_lti</span><span class="p">)</span>
+                    
+                    <span class="c1">#########</span>
+                    <span class="c1">#  Pcal</span>
+                    <span class="c1">#########</span>
+                    <span class="k">if</span> <span class="n">PHASE_CALIBRATION</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+                        <span class="n">acc_pcal</span> <span class="o">=</span> <span class="n">adjust_shift_acc_pcal</span><span class="p">(</span><span class="n">acc_pcal</span><span class="p">,</span><span class="n">F_pcal_fix</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="n">DEBUG_GENERAL_R</span><span class="p">)</span>
+
+                    
+                    <span class="c1">#########</span>
+                    <span class="c1">#  Out</span>
+                    <span class="c1">#########</span>
+                    <span class="n">lines_out</span> <span class="o">=</span> <span class="n">get_lines_out_for_all</span><span class="p">(</span><span class="n">char_type</span><span class="p">,</span><span class="n">n_sp</span><span class="p">,</span><span class="n">last_F_ind</span><span class="p">,</span><span class="n">current_pairs</span><span class="p">,</span><span class="n">count_acc</span><span class="p">,</span><span class="n">acc_mat</span><span class="p">,</span>\
+                                                          <span class="n">current_block_first_sample</span><span class="p">,</span><span class="n">current_vector_split</span><span class="p">,</span><span class="n">acc_pcal</span><span class="p">,</span><span class="n">count_acc_pcal</span><span class="p">,</span><span class="n">current_scaling_pair</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">lines_out</span><span class="o">!=</span><span class="p">[]:</span>
+                        <span class="k">for</span> <span class="n">line_out</span> <span class="ow">in</span> <span class="n">lines_out</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="n">line_out</span><span class="p">)</span>
+                    
+                    
+                    <span class="c1">##########</span>
+                    <span class="c1">#  Stats</span>
+                    <span class="c1">##########</span>
+                    <span class="n">lines_stats</span> <span class="o">=</span> <span class="n">get_lines_stats</span><span class="p">(</span><span class="n">current_key_pair_accu</span><span class="p">,</span><span class="n">F_stack_shift</span><span class="p">,</span>\
+                                            <span class="n">F_adj_shift_partial</span><span class="p">,</span><span class="n">F_lti</span><span class="p">,</span><span class="n">last_F_ind</span><span class="p">,</span><span class="n">failed_acc_count</span><span class="p">,</span>\
+                                            <span class="n">current_block_first_sample</span><span class="p">,</span><span class="n">dismissed_acc_count</span><span class="p">)</span>   
+                    <span class="k">if</span> <span class="n">lines_stats</span><span class="o">!=</span><span class="p">[]:</span>
+                        <span class="k">for</span> <span class="n">line_stats</span> <span class="ow">in</span> <span class="n">lines_stats</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="n">line_stats</span><span class="p">)</span>
+                    
+
+                    <span class="n">failed_acc_count</span><span class="o">=</span><span class="mi">0</span>
+                    <span class="n">dismissed_acc_count</span><span class="o">=</span><span class="mi">0</span> 
+                    <span class="n">acc_mat</span><span class="o">=</span><span class="kc">None</span>
+                    <span class="n">last_F_ind</span><span class="o">=</span><span class="kc">None</span>
+                    
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">str_print</span> <span class="o">=</span> <span class="n">line</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">str_print</span><span class="p">)</span> 
+                    
+
+                
+                <span class="c1"># TODO: last print for pcal?? Already in previous block?</span>
+                
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># One baseline per task</span>
+                <span class="c1"># TO DO: discontinued, untested</span>
+                <span class="k">if</span> <span class="n">count_acc</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+                    <span class="n">accu_prod_div</span> <span class="o">=</span> <span class="n">normalize_mat</span><span class="p">(</span><span class="n">accu_prod</span><span class="p">,</span><span class="n">count_acc</span><span class="p">)</span>
+                    <span class="n">str_print</span> <span class="o">=</span> <span class="n">get_str_r_out</span><span class="p">(</span><span class="n">current_key_pair_accu</span><span class="p">,</span><span class="n">count_acc</span><span class="p">,</span><span class="n">current_vector_split</span><span class="p">,</span><span class="n">current_block_first_sample</span><span class="p">,</span><span class="n">accu_prod_div</span><span class="p">)</span>
+                
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">str_print</span> <span class="o">=</span> <span class="n">line</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">str_print</span><span class="p">)</span>
+                <span class="c1"># Print phase calibration results</span>
+                <span class="k">if</span> <span class="n">acc_pcal</span><span class="o">!=</span><span class="p">[]:</span>
+                    <span class="n">str_print</span> <span class="o">=</span> <span class="n">get_str_pcal_out</span><span class="p">(</span><span class="n">acc_pcal</span><span class="p">,</span><span class="n">current_n_bins_pcal</span><span class="p">,</span><span class="n">count_acc_pcal</span><span class="p">,</span><span class="n">current_key_pair_accu</span><span class="p">,</span><span class="n">current_vector_split</span><span class="p">,</span><span class="n">current_block_first_sample</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">str_print</span><span class="p">)</span>
+                    <span class="n">acc_pcal</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+                    <span class="n">pre_pcal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+
+
+    <span class="k">if</span> <span class="n">no_data</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;zR&quot;</span><span class="o">+</span><span class="n">KEY_SEP</span><span class="o">+</span><span class="s2">&quot;No data&quot;</span><span class="p">)</span></div>
+
+
+        
+        
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+
+
+<span class="c1"># &lt;codecell&gt;</span>
+
+
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Antonio Vazquez Alvarez, Victor Pankratius, and Pedro Elosegui.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,219 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>lib_pcal module &#8212; CorrelX 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="lib_profiling module" href="lib_profiling.html" />
+    <link rel="prev" title="lib_net_stats module" href="lib_net_stats.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-lib_pcal">
+<span id="lib-pcal-module"></span><h1>lib_pcal module<a class="headerlink" href="#module-lib_pcal" title="Permalink to this headline">¶</a></h1>
+<p>Phase calibration routines.</p>
+<dl class="function">
+<dt id="lib_pcal.accumulate_pcal">
+<code class="descclassname">lib_pcal.</code><code class="descname">accumulate_pcal</code><span class="sig-paren">(</span><em>acc_pcal</em>, <em>v1pcal</em>, <em>count_acc_pcal</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_pcal.html#accumulate_pcal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_pcal.accumulate_pcal" title="Permalink to this definition">¶</a></dt>
+<dd><p>[Used in one-baseline-per-task mode.]</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_pcal.accumulate_pcal_all">
+<code class="descclassname">lib_pcal.</code><code class="descname">accumulate_pcal_all</code><span class="sig-paren">(</span><em>acc_pcal</em>, <em>pre_pcal</em>, <em>n_bins_pcal</em>, <em>dtype_complex=&lt;class 'complex'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_pcal.html#accumulate_pcal_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_pcal.accumulate_pcal_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accumulate pcal window (all-baselines-per-task mode).</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_pcal.adjust_shift_acc_pcal">
+<code class="descclassname">lib_pcal.</code><code class="descname">adjust_shift_acc_pcal</code><span class="sig-paren">(</span><em>acc_pcal</em>, <em>F_pcal_fix</em>, <em>bypass_adjust_pcal=0</em>, <em>v=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_pcal.html#adjust_shift_acc_pcal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_pcal.adjust_shift_acc_pcal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove delay shift due to delay model.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>acc_pcal</dt>
+<dd>accumulation matrix for the phase calibration signals.</dd>
+<dt>F_pcal_fix</dt>
+<dd>number of samples to roll each of the arrays in acc_pcal.</dd>
+<dt>bypass_adjust_pcal</dt>
+<dd>0 by default.</dd>
+<dt>v</dt>
+<dd>verbose if 1.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>acc_pcal_out</dt>
+<dd>acc_pcal with the rolls (circular shift) applied as defined in F_pcal_fix.</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Asses error raised from this correction. It should be inside a sample in phase.</div>
+<div class="line">Check that corrections are applied to the proper row (F_refs...).</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_pcal.fr_gcd">
+<code class="descclassname">lib_pcal.</code><code class="descname">fr_gcd</code><span class="sig-paren">(</span><em>a</em>, <em>b</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_pcal.html#fr_gcd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_pcal.fr_gcd" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="lib_pcal.get_pcal_ind">
+<code class="descclassname">lib_pcal.</code><code class="descname">get_pcal_ind</code><span class="sig-paren">(</span><em>freqs</em>, <em>sidebands</em>, <em>fs</em>, <em>f_pcal</em>, <em>o_pcal</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_pcal.html#get_pcal_ind"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_pcal.get_pcal_ind" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute window length for phase calibration and get tone seperation.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>freqs <span class="classifier-delimiter">:</span> <span class="classifier">list of float</span></dt>
+<dd>start frequency for the bands [Hz].</dd>
+<dt>sidebands <span class="classifier-delimiter">:</span> <span class="classifier">list of str</span></dt>
+<dd>sideband identifier (L/U).</dd>
+<dt>fs <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>sampling frequency [Hz].</dd>
+<dt>f_pcal <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>frequency separation for phase calibration tones [Hz].</dd>
+<dt>o_pcal <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>frequency offset for phase calibration tones [Hz].</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div><dl class="docutils">
+<dt>n_bins_pcal</dt>
+<dd>number of samples in pcal window.</dd>
+<dt>f_pcal</dt>
+<dd>pcal tone separation [Hz].</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>Limitations / TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Currently only LSB, add USB.</div>
+<div class="line">Change int for float.</div>
+<div class="line">Offset untested.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_pcal.normalize_pcal">
+<code class="descclassname">lib_pcal.</code><code class="descname">normalize_pcal</code><span class="sig-paren">(</span><em>pcal_fft</em>, <em>count_acc_pcal</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_pcal.html#normalize_pcal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_pcal.normalize_pcal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Normalize the FFTs coefficients containing the phase calibration accumulations.</p>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><strong>TO DO:</strong></div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">This needs to be corrected.</div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib_pcal.reshape_pcal">
+<code class="descclassname">lib_pcal.</code><code class="descname">reshape_pcal</code><span class="sig-paren">(</span><em>v1_pcal</em>, <em>n_bins_pcal</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib_pcal.html#reshape_pcal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib_pcal.reshape_pcal" title="Permalink to this definition">¶</a></dt>
+<dd><p>[Used in one-baseline-per-task mode.]</p>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><a href="#id1"><span class="problematic" id="id2">**</span></a>TO DO:</div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Remove and merge implementation with all-baslines-per-task.</div>
+</div>
+</div>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="lib_net_stats.html" title="previous chapter">lib_net_stats module</a></li>
+      <li>Next: <a href="lib_profiling.html" title="next chapter">lib_profiling module</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/lib_pcal.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Antonio Vazquez Alvarez, Victor Pankratius, and Pedro Elosegui.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/lib_pcal.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

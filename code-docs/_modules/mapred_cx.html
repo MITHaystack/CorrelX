@@ -1,0 +1,857 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>mapred_cx &#8212; CorrelX 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for mapred_cx</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># &lt;nbformat&gt;3.0&lt;/nbformat&gt;</span>
+
+<span class="c1"># &lt;codecell&gt;</span>
+
+<span class="c1">#!/usr/bin/env python</span>
+<span class="c1">#</span>
+<span class="c1">#The MIT CorrelX Correlator</span>
+<span class="c1">#</span>
+<span class="c1">#https://github.com/MITHaystack/CorrelX</span>
+<span class="c1">#Contact: correlX@haystack.mit.edu</span>
+<span class="c1">#Project leads: Victor Pankratius, Pedro Elosegui Project developer: A.J. Vazquez Alvarez</span>
+<span class="c1">#</span>
+<span class="c1">#Copyright 2017 MIT Haystack Observatory</span>
+<span class="c1">#</span>
+<span class="c1">#Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the &quot;Software&quot;), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1">#The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</span>
+<span class="c1">#</span>
+<span class="c1">#THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#------------------------------</span>
+<span class="c1">#------------------------------</span>
+<span class="c1">#Project: CorrelX.</span>
+<span class="c1">#File: mapred_cx.py.</span>
+<span class="c1">#Author: A.J. Vazquez Alvarez (ajvazquez@haystack.mit.edu)</span>
+<span class="c1">#Description: </span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Main script to run the CorrelX correlator.</span>
+
+<span class="sd">Parameters</span>
+<span class="sd">----------</span>
+<span class="sd">|  [-c configuration_file] (optional): configuration file with the configuration for the correlation.</span>
+<span class="sd">|  [-s log_output_folder] (optional): folder for logs.</span>
+<span class="sd">|  [-f forced_parameters] (optional): comma sepparated assignments for overriding parameters (for test batching).</span>
+<span class="sd">|  [--help-parameters] (optional): show a list of all parameters available to override the configuration file.</span>
+
+<span class="sd">Returns</span>
+<span class="sd">-------</span>
+<span class="sd">|  Correlation results: &quot;Output directory&quot; in configuration file. </span>
+<span class="sd">|                       Symbolic link to output file added to experiment folder.</span>
+<span class="sd">|  Log files:           Folder specified in -s option.</span>
+
+<span class="sd">Notes</span>
+<span class="sd">-----</span>
+<span class="sd">|</span>
+<span class="sd">| **Example:**</span>
+<span class="sd">|</span>
+<span class="sd">|  python mapred_cx -n 10.0.2.4 -c basic_files_conf/configh.conf -s exp3 -f exper=/home/hduser/basic_files_data/ini_files_eht_two,fftr=1</span>
+<span class="sd">|</span>
+<span class="sd">|</span>
+<span class="sd">| **TO DO:**</span>
+<span class="sd">|</span>
+<span class="sd">|  More detailed documentation.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="c1">#History:</span>
+<span class="c1">#initial version: 2016.11 ajva</span>
+<span class="c1">#MIT Haystack Observatory</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">imp</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">import</span> <span class="nn">const_config</span>
+<span class="n">imp</span><span class="o">.</span><span class="n">reload</span><span class="p">(</span><span class="n">const_config</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">const_config</span> <span class="k">import</span> <span class="o">*</span>
+
+<span class="kn">import</span> <span class="nn">const_hadoop</span>
+<span class="n">imp</span><span class="o">.</span><span class="n">reload</span><span class="p">(</span><span class="n">const_hadoop</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">const_hadoop</span> <span class="k">import</span> <span class="o">*</span>
+
+<span class="kn">import</span> <span class="nn">lib_config</span>
+<span class="n">imp</span><span class="o">.</span><span class="n">reload</span><span class="p">(</span><span class="n">lib_config</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">lib_config</span> <span class="k">import</span> <span class="o">*</span>
+
+<span class="kn">import</span> <span class="nn">lib_ini_exper</span>
+<span class="n">imp</span><span class="o">.</span><span class="n">reload</span><span class="p">(</span><span class="n">lib_ini_exper</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">lib_ini_exper</span> <span class="k">import</span> <span class="o">*</span>
+
+<span class="kn">import</span> <span class="nn">lib_mapredcorr</span>
+<span class="n">imp</span><span class="o">.</span><span class="n">reload</span><span class="p">(</span><span class="n">lib_mapredcorr</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">lib_mapredcorr</span> <span class="k">import</span> <span class="o">*</span>
+
+<span class="kn">import</span> <span class="nn">lib_hadoop_hdfs</span>
+<span class="n">imp</span><span class="o">.</span><span class="n">reload</span><span class="p">(</span><span class="n">lib_hadoop_hdfs</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">lib_hadoop_hdfs</span> <span class="k">import</span> <span class="o">*</span>
+
+<span class="kn">import</span> <span class="nn">lib_net_stats</span>
+<span class="n">imp</span><span class="o">.</span><span class="n">reload</span><span class="p">(</span><span class="n">lib_net_stats</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">lib_net_stats</span> <span class="k">import</span> <span class="o">*</span>
+
+<span class="c1"># Vector quantization                           # VQ disabled</span>
+<span class="c1">#import lib_vq</span>
+<span class="c1">#imp.reload(lib_vq)</span>
+<span class="c1">#from lib_vq import *</span>
+
+
+    
+
+
+<div class="viewcode-block" id="print_execution_times"><a class="viewcode-back" href="../mapred_cx.html#mapred_cx.print_execution_times">[docs]</a><span class="k">def</span> <span class="nf">print_execution_times</span><span class="p">(</span><span class="n">exec_times</span><span class="p">,</span><span class="n">io_times</span><span class="p">,</span><span class="n">bypass_print</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Print execution times.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     exec_times : list of [str_id , num_slaves, num_vcores, hadoop_t_s,hadoop_t_e,hadoop_d] elements where:</span>
+<span class="sd">                     |   str_id:       string with identifier for this run (&quot;pipeline&quot; or &quot;hadoop*&quot;).</span>
+<span class="sd">                     |   num_slaves:   number of worker nodes (requested).</span>
+<span class="sd">                     |   num_vcores:   number of virtual CPU cores per node.</span>
+<span class="sd">                     |   hadoop_t_s:   timing start time in seconds.</span>
+<span class="sd">                     |   hadoop_t_e:   timing end time in seconds.</span>
+<span class="sd">                     |   hadoop_d:     timing duration in seconds.</span>
+<span class="sd">     io_times : same format as exect times (but str_id changes for &quot;put&quot; [local -&gt; distributed filesystem], </span>
+<span class="sd">                        &quot;get&quot; [distributed filesystem -&gt; local], &quot;sort&quot; [output sort].</span>
+<span class="sd">     bypass_print</span>
+<span class="sd">         currently used to indicate that profiling is used. </span>
+<span class="sd">     v</span>
+<span class="sd">         verbose if 1.</span>
+<span class="sd">     file_log</span>
+<span class="sd">         handler to log file.</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     None</span>
+<span class="sd">    </span>
+<span class="sd">    Notes</span>
+<span class="sd">    ------</span>
+<span class="sd">     Devised to show speedup initially, but now running single iteration by default.</span>
+<span class="sd">     Note that the number of nodes is as requested, not the actual number of healthy nodes.</span>
+<span class="sd">     </span>
+<span class="sd">     (!) Note that the execution times are increased when profiling mapper and/or reducer (!).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">if</span> <span class="n">bypass_print</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="n">add_txt</span><span class="o">=</span><span class="s2">&quot; [Profiling active, increased execution times!]&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">add_txt</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+    
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="c1">#if bypass_print==0:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">exec_times</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">exec_times</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Note: 0 nodes and 0 vcores correspond to pipeline execution&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span> 
+        
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Showing results...&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span> 
+        
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">File IO approximate times&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>  
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="s2">&quot;Type&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;File IO. time [s]&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span> 
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">io_times</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="mi">5</span><span class="p">])</span> <span class="o">+</span> <span class="n">add_txt</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>  
+            
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Execution times&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>  
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="s2">&quot;Type&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;Exec. time [s]&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span> 
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">exec_times</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="mi">5</span><span class="p">])</span> <span class="o">+</span> <span class="n">add_txt</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>  </div>
+            
+            <span class="c1">#print(&quot;\nSpeedup&quot;,file=file_log)  </span>
+            <span class="c1">#print(&quot; &quot; + &quot;Nodes&quot;.ljust(10)  + &quot;V. Cores&quot;.ljust(10) + &quot;Speedup&quot;,file=file_log) </span>
+            <span class="c1">#</span>
+            <span class="c1">#base_time = exec_times[0][5]</span>
+            <span class="c1">#for i in exec_times:</span>
+            <span class="c1">#    print(&quot; &quot; + str(i[1]).ljust(10) + str(i[2]).ljust(10)  + str(base_time/max(i[5],1)) + add_txt,file=file_log) </span>
+
+
+
+<div class="viewcode-block" id="print_header"><a class="viewcode-back" href="../mapred_cx.html#mapred_cx.print_header">[docs]</a><span class="k">def</span> <span class="nf">print_header</span><span class="p">(</span><span class="n">header</span><span class="o">=</span><span class="s2">&quot;Header&quot;</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Print header in logging file.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="n">line_l</span> <span class="o">=</span> <span class="s2">&quot;#-----------------------------------------------------&quot;</span>
+        <span class="n">line_e</span> <span class="o">=</span> <span class="s2">&quot;#    &quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">line_l</span> <span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>   
+        <span class="nb">print</span><span class="p">(</span><span class="n">line_e</span> <span class="o">+</span> <span class="n">header</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span> <span class="n">line_l</span> <span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>   </div>
+
+
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    
+    <span class="c1"># Network stats</span>
+    <span class="n">NETWORK_STATS</span><span class="o">=</span><span class="mi">0</span>
+    <span class="c1"># Verbose</span>
+    <span class="n">v</span><span class="o">=</span><span class="mi">1</span>
+    
+    
+    
+    <span class="c1"># Default values for configuration:</span>
+    <span class="n">config_file</span> <span class="o">=</span> <span class="s2">&quot;configh.conf&quot;</span>
+    <span class="n">config_suffix</span> <span class="o">=</span> <span class="s2">&quot;_mod&quot;</span>
+    <span class="n">output_log_folder</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;e%Y%m</span><span class="si">%d</span><span class="s2">_%H%M%S&quot;</span><span class="p">)</span>
+    <span class="n">forced_params</span> <span class="o">=</span><span class="s2">&quot;&quot;</span>
+    <span class="n">nodes_list</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">uname</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span> <span class="c1"># Default first node only #&quot;&quot;</span>
+
+    <span class="c1"># Configuration for parameter help</span>
+    <span class="n">const_config_file</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">+</span><span class="s2">&quot;/const_config.py&quot;</span>    <span class="c1"># File with configuration constants</span>
+    <span class="n">str_help_param</span><span class="o">=</span><span class="s2">&quot;C_ARG_&quot;</span>                                              <span class="c1"># Prefix for constants to be displayed</span>
+    <span class="n">len_str_help_param</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">str_help_param</span><span class="p">)</span>
+
+    <span class="n">timestamp_str</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">_%H%M%S&quot;</span><span class="p">)</span>
+
+
+
+
+    <span class="c1"># Argument parser configuration</span>
+    <span class="n">cparser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s1">&#39;CorrelX&#39;</span><span class="p">)</span>
+    
+    <span class="c1"># TO DO: change option -s for -o</span>
+    <span class="c1"># Configuration file</span>
+    <span class="n">cparser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-c&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store&quot;</span><span class="p">,</span>\
+                         <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;configuration_file&quot;</span><span class="p">,</span><span class="n">default</span><span class="o">=</span><span class="n">config_file</span><span class="p">,</span>\
+                         <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Specify a configuration file.&quot;</span><span class="p">)</span>
+     
+    <span class="n">cparser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-n&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store&quot;</span><span class="p">,</span>\
+                         <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;nodes_list&quot;</span><span class="p">,</span><span class="n">default</span><span class="o">=</span><span class="n">nodes_list</span><span class="p">,</span>\
+                         <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Specify a comma-separated list of nodes.&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># Suffix folder (for having log and output files of different simulations in different folders)</span>
+    <span class="n">cparser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-s&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store&quot;</span><span class="p">,</span>\
+                         <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;output_log_folder&quot;</span><span class="p">,</span><span class="n">default</span><span class="o">=</span><span class="n">output_log_folder</span><span class="p">,</span>\
+                         <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Specify a folder to store the output log files.&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># Forced parameters (for overriding configuration from the configuration file)</span>
+    <span class="n">cparser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-f&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store&quot;</span><span class="p">,</span>\
+                         <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;forced_params&quot;</span><span class="p">,</span><span class="n">default</span><span class="o">=</span><span class="n">forced_params</span><span class="p">,</span>\
+                         <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Specify a comma-separated list of parameter=value to override &quot;</span><span class="o">+</span>\
+                         <span class="s2">&quot;the configuration file(see --help-parameters).&quot;</span><span class="p">)</span>
+    
+    <span class="n">cparser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--help-parameters&#39;</span><span class="p">,</span><span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>\
+                         <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;help_parameters&quot;</span><span class="p">,</span><span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>\
+                         <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Show all parameters for option -f.&quot;</span><span class="p">)</span>
+    
+    
+    <span class="c1"># Get arguments</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">cparser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>   
+    <span class="n">config_file</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">configuration_file</span>
+    <span class="n">output_log_folder</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">output_log_folder</span>
+    <span class="n">forced_params</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">forced_params</span>
+
+    <span class="n">nodes_list</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">nodes_list</span>
+    <span class="n">NODES_LIST</span><span class="o">=</span><span class="n">nodes_list</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+
+
+    <span class="c1"># Help for parameter overrides</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">help_parameters</span><span class="p">:</span>
+        <span class="c1"># Show help and exit</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Showing available configuration parameters:&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">const_config_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f_const</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f_const</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">line</span><span class="p">[:</span><span class="n">len_str_help_param</span><span class="p">]</span><span class="o">==</span><span class="n">str_help_param</span><span class="p">:</span>
+                    <span class="n">line_split</span><span class="o">=</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\&quot;</span><span class="s1">&#39;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">line_split</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">==</span><span class="s2">&quot;display_in_help&quot;</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="n">line_split</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">line_split</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Example: python mapred_cx.py -f ppb=5000,slowstart=0.95&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        
+    
+        <span class="c1"># Timing results</span>
+        <span class="n">exec_times</span> <span class="o">=</span> <span class="p">[]</span>             <span class="c1">#  Execution times</span>
+        <span class="n">output_files_list</span> <span class="o">=</span> <span class="p">[]</span>      <span class="c1">#  Output files</span>
+        <span class="n">io_times</span> <span class="o">=</span> <span class="p">[]</span>               <span class="c1">#  Times to copy files local &lt;-&gt; HDFS (these are estimated times!)</span>
+        
+        <span class="c1"># Network stats</span>
+        <span class="p">[</span><span class="n">v_str_hadoop</span><span class="p">,</span><span class="n">v_stats_param</span><span class="p">,</span><span class="n">v_stats_values_s</span><span class="p">,</span><span class="n">v_stats_values_e</span><span class="p">,</span><span class="n">v_stats_ping</span><span class="p">,</span><span class="n">v_stats_ping</span><span class="p">]</span> <span class="o">=</span> <span class="n">init_net_stats</span><span class="p">()</span>
+        
+        <span class="c1"># Prepare suffix for output and log files</span>
+        <span class="n">suffix_host</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+        <span class="k">with</span> <span class="n">os</span><span class="o">.</span><span class="n">popen</span><span class="p">(</span><span class="s2">&quot;hostname&quot;</span><span class="p">,</span><span class="s1">&#39;r&#39;</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span> <span class="k">as</span> <span class="n">f_out</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f_out</span><span class="p">:</span>
+                <span class="n">suffix_host</span><span class="o">=</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="k">break</span>
+        <span class="n">suffix_log</span><span class="o">=</span><span class="s2">&quot;_&quot;</span><span class="o">+</span><span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">_%H%M%S&quot;</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;_&quot;</span><span class="o">+</span><span class="n">suffix_host</span>
+        <span class="n">config_suffix</span><span class="o">+=</span><span class="n">suffix_log</span>
+        
+        
+        
+        <span class="c1"># Initilialize logging</span>
+        <span class="c1"># Read only log file from configuration file     </span>
+        <span class="p">[</span><span class="n">FILE_LOG</span><span class="p">,</span><span class="n">TEMP_LOG</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_log_file</span><span class="p">(</span><span class="n">config_file</span><span class="o">=</span><span class="n">config_file</span><span class="p">,</span><span class="n">suffix</span><span class="o">=</span><span class="n">suffix_log</span><span class="p">,</span><span class="n">output_log_folder</span><span class="o">=</span><span class="n">output_log_folder</span><span class="p">)</span>
+        
+        
+        <span class="n">print_header</span><span class="p">(</span><span class="n">header</span><span class="o">=</span><span class="s2">&quot;Configuration&quot;</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">)</span>
+        
+        <span class="c1"># Get files to get list of nodes</span>
+        <span class="c1">#NODES_EXEC_FILE = get_nodes_file(config_file)+&quot;_&quot;+suffix_host</span>
+        
+        <span class="k">if</span> <span class="n">NODES_LIST</span><span class="o">==</span><span class="p">[]:</span>
+            <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                <span class="c1">#print(&quot;\n[!] Error with hosts file! &quot; + NODES_EXEC_FILE + &quot;\n     Try running: &#39; ./get_nodelist.sh &gt; &quot; + NODES_EXEC_FILE + &quot; &#39; before launching srun.&quot;,file=FILE_LOG)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">[!] Error with nodes list.&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            
+            <span class="n">master_reduced</span><span class="o">=</span><span class="n">NODES_LIST</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    
+            <span class="c1"># Check if this node is master</span>
+            <span class="p">[</span><span class="n">is_master</span><span class="p">,</span><span class="n">my_name</span><span class="p">,</span><span class="n">my_ip</span><span class="p">]</span> <span class="o">=</span> <span class="n">is_this_node_master</span><span class="p">(</span><span class="n">master</span><span class="o">=</span><span class="n">master_reduced</span><span class="p">,</span><span class="n">temp_log</span><span class="o">=</span><span class="n">TEMP_LOG</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">)</span>
+        
+            <span class="c1"># Substitute localhost with master ip/name (and update config_file to avoid overwriting template)</span>
+            <span class="n">config_file</span> <span class="o">=</span> <span class="n">get_config_mod_for_this_master</span><span class="p">(</span><span class="n">config_file</span><span class="p">,</span><span class="n">config_suffix</span><span class="p">,</span><span class="n">NODES_LIST</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            
+            <span class="c1"># Override configuration parameters</span>
+            <span class="n">override_configuration_parameters</span><span class="p">(</span><span class="n">forced_configuration_string</span><span class="o">=</span><span class="n">forced_params</span><span class="p">,</span><span class="n">config_file</span><span class="o">=</span><span class="n">config_file</span><span class="p">,</span>\
+                                              <span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">)</span>
+        
+            <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Config file updated: &quot;</span> <span class="o">+</span> <span class="n">config_file</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">)</span>  
+        
+            
+            
+        
+            <span class="c1"># Read constants from configuration file</span>
+            <span class="p">[</span><span class="n">MAPPER</span><span class="p">,</span> <span class="n">REDUCER</span><span class="p">,</span> <span class="n">DEPENDENCIES</span><span class="p">,</span> <span class="n">PACKETS_PER_HDFS_BLOCK</span><span class="p">,</span><span class="n">CHECKSUM_SIZE</span><span class="p">,</span>\
+                <span class="n">SRC_DIR</span><span class="p">,</span><span class="n">APP_DIR</span><span class="p">,</span> <span class="n">CONF_DIR</span><span class="p">,</span> <span class="n">TEMPLATES_CONF_DIR</span><span class="p">,</span> <span class="n">TEMPLATES_ENV_DIR</span><span class="p">,</span> <span class="n">HADOOP_DIR</span><span class="p">,</span><span class="n">HADOOP_CONF_DIR</span><span class="p">,</span><span class="n">NODES</span><span class="p">,</span> \
+                <span class="n">MAPPERSH</span><span class="p">,</span><span class="n">REDUCERSH</span><span class="p">,</span><span class="n">JOBSH</span><span class="p">,</span><span class="n">PYTHON_X</span><span class="p">,</span>\
+                <span class="n">USERNAME_MACHINES</span><span class="p">,</span><span class="n">MAX_SLAVES</span><span class="p">,</span><span class="n">SLAVES</span><span class="p">,</span><span class="n">MASTERS</span><span class="p">,</span><span class="n">MASTER_IS_SLAVE</span><span class="p">,</span><span class="n">HADOOP_TEMP_DIR</span><span class="p">,</span><span class="n">DATA_DIR</span><span class="p">,</span><span class="n">DATA_DIR_TMP</span><span class="p">,</span><span class="n">HDFS_DATA_DIR</span><span class="p">,</span><span class="n">HADOOP_START_DELAY</span><span class="p">,</span><span class="n">HADOOP_STOP_DELAY</span><span class="p">,</span>\
+                <span class="n">PREFIX_OUTPUT</span><span class="p">,</span><span class="n">HADOOP_TEXT_DELIMITER</span><span class="p">,</span><span class="n">OUTPUT_DIR</span><span class="p">,</span><span class="n">OUTPUT_SYM</span><span class="p">,</span><span class="n">RUN_PIPELINE</span><span class="p">,</span><span class="n">RUN_HADOOP</span><span class="p">,</span><span class="n">MAX_CPU_VCORES</span><span class="p">,</span>\
+                <span class="n">HDFS_REPLICATION</span><span class="p">,</span><span class="n">OVER_SLURM</span><span class="p">,</span><span class="n">HDFS_COPY_DELAY</span><span class="p">,</span>\
+                <span class="n">FFT_AT_MAPPER</span><span class="p">,</span><span class="n">INI_FOLDER</span><span class="p">,</span>\
+                <span class="n">INI_STATIONS</span><span class="p">,</span> <span class="n">INI_SOURCES</span><span class="p">,</span> <span class="n">INI_DELAY_MODEL</span><span class="p">,</span> <span class="n">INI_DELAYS</span><span class="p">,</span> <span class="n">INI_MEDIA</span><span class="p">,</span> <span class="n">INI_CORRELATION</span><span class="p">,</span>\
+                <span class="n">INTERNAL_LOG_MAPPER</span><span class="p">,</span><span class="n">INTERNAL_LOG_REDUCER</span><span class="p">,</span><span class="n">ADJUST_MAPPERS</span><span class="p">,</span><span class="n">ADJUST_REDUCERS</span><span class="p">,</span><span class="n">FFTS_PER_CHUNK</span><span class="p">,</span><span class="n">TEXT_MODE</span><span class="p">,</span>\
+                <span class="n">USE_NOHASH_PARTITIONER</span><span class="p">,</span><span class="n">USE_LUSTRE_PLUGIN</span><span class="p">,</span><span class="n">LUSTRE_USER_DIR</span><span class="p">,</span><span class="n">LUSTRE_PREFIX</span><span class="p">,</span><span class="n">ONE_BASELINE_PER_TASK</span><span class="p">,</span>\
+                <span class="n">MIN_MAPPER_CHUNK</span><span class="p">,</span><span class="n">MAX_MAPPER_CHUNK</span><span class="p">,</span><span class="n">TASK_SCALING_STATIONS</span><span class="p">,</span><span class="n">SORT_OUTPUT</span><span class="p">,</span><span class="n">BM_AVOID_COPY</span><span class="p">,</span>\
+                <span class="n">BM_DELETE_OUTPUT</span><span class="p">,</span><span class="n">TIMEOUT_STOP</span><span class="p">,</span><span class="n">SINGLE_PRECISION</span><span class="p">,</span><span class="n">PROFILE_MAP</span><span class="p">,</span><span class="n">PROFILE_RED</span><span class="p">]</span> <span class="o">=</span> \
+                    <span class="n">get_configuration</span><span class="p">(</span><span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span><span class="n">config_file</span><span class="o">=</span><span class="n">config_file</span><span class="p">,</span><span class="n">timestamp_str</span><span class="o">=</span><span class="n">timestamp_str</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">)</span>
+    
+            <span class="c1"># Check errors in experiment .ini files</span>
+            <span class="n">init_success</span> <span class="o">=</span> <span class="n">check_errors_ini_exper</span><span class="p">(</span><span class="n">DATA_DIR</span><span class="p">,</span><span class="n">INI_FOLDER</span><span class="p">,</span><span class="n">INI_STATIONS</span><span class="p">,</span><span class="n">INI_SOURCES</span><span class="p">,</span><span class="n">INI_DELAY_MODEL</span><span class="p">,</span><span class="n">INI_MEDIA</span><span class="p">)</span>
+    
+    
+    
+            <span class="k">if</span> <span class="n">init_success</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Failed initialization, exiting!&quot;</span><span class="p">)</span>
+    
+            <span class="k">else</span><span class="p">:</span>
+    
+                <span class="c1"># Get configuration and output folders (specific for this master)</span>
+                <span class="p">[</span><span class="n">APP_DIR</span><span class="p">,</span><span class="n">CONF_DIR</span><span class="p">,</span><span class="n">HADOOP_CONF_DIR</span><span class="p">,</span><span class="n">HADOOP_DEFAULT_CONF_DIR</span><span class="p">,</span><span class="n">OUTPUT_DIR</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_conf_out_dirs</span><span class="p">(</span><span class="n">master_name</span><span class="o">=</span><span class="n">my_name</span><span class="p">,</span>\
+                                                                                                <span class="n">hadoop_dir</span><span class="o">=</span><span class="n">HADOOP_DIR</span><span class="p">,</span>\
+                                                                                                <span class="n">app_dir</span><span class="o">=</span><span class="n">APP_DIR</span><span class="p">,</span>\
+                                                                                                <span class="n">conf_dir</span><span class="o">=</span><span class="n">CONF_DIR</span><span class="p">,</span>\
+                                                                                                <span class="n">suffix_conf</span><span class="o">=</span><span class="n">suffix_host</span><span class="p">,</span>\
+                                                                                                <span class="n">output_dir</span><span class="o">=</span><span class="n">OUTPUT_DIR</span><span class="p">,</span>\
+                                                                                                <span class="n">suffix_out</span><span class="o">=</span><span class="n">output_log_folder</span><span class="p">,</span>\
+                                                                                                <span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">)</span>
+                                                                                                
+    
+                <span class="n">num_slaves</span> <span class="o">=</span> <span class="n">MAX_SLAVES</span>
+                <span class="n">num_vcores</span> <span class="o">=</span> <span class="n">MAX_CPU_VCORES</span>        
+            
+            
+                <span class="c1"># Reduce node list if required by configuration</span>
+                <span class="p">[</span><span class="n">num_slaves</span><span class="p">,</span><span class="n">NODES_LIST</span><span class="p">]</span> <span class="o">=</span> <span class="n">reduce_list_nodes</span><span class="p">(</span><span class="n">num_slaves</span><span class="o">=</span><span class="n">num_slaves</span><span class="p">,</span><span class="n">nodes_list</span><span class="o">=</span><span class="n">NODES_LIST</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">)</span>
+                
+                <span class="c1"># Overwrite nodes file</span>
+                <span class="n">overwrite_nodes_file</span><span class="p">(</span><span class="n">nodes_list</span><span class="o">=</span><span class="n">NODES_LIST</span><span class="p">,</span><span class="n">nodes_file</span><span class="o">=</span><span class="n">CONF_DIR</span><span class="o">+</span><span class="n">NODES</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">)</span>   
+                    
+                              
+                 
+                <span class="c1"># Distribute Hadoop configuration files</span>
+                <span class="c1"># This is required for all nodes to have the proper configuration files. </span>
+                <span class="c1"># This includes all .xml files but also</span>
+                <span class="c1">#   .sh scripts with environment setup.</span>
+                <span class="c1"># Note that HADOOP_CONF_DIR should be a different folder for every deployment i.e. for every different master,</span>
+                <span class="c1">#   and thus name should depend on master name.</span>
+                <span class="n">distribute_files</span><span class="p">(</span><span class="n">simply_copy_local</span><span class="o">=</span><span class="n">OVER_SLURM</span><span class="p">,</span><span class="n">file_group</span><span class="o">=</span><span class="s2">&quot;Hadoop config files&quot;</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span><span class="n">exec_permission</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">,</span>\
+                                 <span class="n">files</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;*&quot;</span><span class="p">],</span><span class="n">source_dir</span><span class="o">=</span><span class="n">TEMPLATES_ENV_DIR</span><span class="p">,</span><span class="n">conf_dir</span><span class="o">=</span><span class="n">CONF_DIR</span><span class="p">,</span>\
+                                 <span class="n">destination_dir</span><span class="o">=</span><span class="n">HADOOP_CONF_DIR</span><span class="p">,</span><span class="n">nodes</span><span class="o">=</span><span class="n">NODES</span><span class="p">,</span><span class="n">username</span><span class="o">=</span><span class="n">USERNAME_MACHINES</span><span class="p">,</span><span class="n">temp_log</span><span class="o">=</span><span class="n">TEMP_LOG</span><span class="p">,</span>\
+                                 <span class="n">force_node</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">NODES_LIST</span><span class="p">))</span>
+            
+            
+                
+                <span class="c1"># Process .ini files</span>
+                <span class="p">[</span><span class="n">stations_serial_str</span><span class="p">,</span><span class="n">media_serial_str</span><span class="p">,</span>\
+                 <span class="n">correlation_serial_str</span><span class="p">,</span><span class="n">delays_serial_str</span><span class="p">,</span>\
+                 <span class="n">AUTO_STATIONS</span><span class="p">,</span> <span class="n">AUTO_POLS</span><span class="p">,</span> <span class="n">FFT_SIZE</span><span class="p">,</span> \
+                 <span class="n">ACCUMULATION_TIME</span><span class="p">,</span> <span class="n">STATIONS</span><span class="p">,</span> \
+                 <span class="n">REF_EPOCH</span><span class="p">,</span> <span class="n">SIGNAL_START</span><span class="p">,</span> \
+                 <span class="n">SIGNAL_DURATION</span><span class="p">,</span><span class="n">INPUT_FILES</span><span class="p">,</span>\
+                 <span class="n">FIRST_FRAME_NUM</span><span class="p">,</span><span class="n">NUM_FRAMES</span><span class="p">,</span><span class="n">CODECS_SERIAL</span><span class="p">,</span>\
+                 <span class="n">max_packet_size</span><span class="p">,</span><span class="n">total_frames</span><span class="p">,</span>\
+                 <span class="n">total_partitions</span><span class="p">,</span><span class="n">windowing</span><span class="p">,</span>\
+                 <span class="n">PHASE_CALIBRATION</span><span class="p">,</span><span class="n">delay_error</span><span class="p">,</span><span class="n">error_str_v</span><span class="p">,</span><span class="n">NUM_POLS</span><span class="p">]</span> <span class="o">=</span> <span class="n">process_ini_files</span><span class="p">(</span><span class="n">DATA_DIR</span><span class="p">,</span>\
+                                                                <span class="n">INI_STATIONS</span><span class="p">,</span>\
+                                                                <span class="n">INI_SOURCES</span><span class="p">,</span>\
+                                                                <span class="n">INI_DELAY_MODEL</span><span class="p">,</span>\
+                                                                <span class="n">INI_DELAYS</span><span class="p">,</span>\
+                                                                <span class="n">INI_MEDIA</span><span class="p">,</span>\
+                                                                <span class="n">INI_CORRELATION</span><span class="p">,</span> <span class="n">ONE_BASELINE_PER_TASK</span><span class="p">)</span>
+                <span class="c1"># TO DO: write a library for error checking.</span>
+                <span class="k">if</span> <span class="n">delay_error</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">init_success</span><span class="o">=</span><span class="mi">0</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ERROR: Incomplete data in delay model file! Exiting...&quot;</span><span class="p">)</span>
+                
+                
+                <span class="k">elif</span> <span class="n">error_str_v</span><span class="o">!=</span><span class="p">[]:</span>
+                    <span class="n">init_success</span><span class="o">=</span><span class="mi">0</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">error_str_v</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                        
+                
+                <span class="k">if</span> <span class="n">init_success</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                    
+                    <span class="c1"># Pipeline mode</span>
+    
+                    <span class="n">print_header</span><span class="p">(</span><span class="n">header</span><span class="o">=</span><span class="s2">&quot;Pipeline execution&quot;</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="n">is_master</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">RUN_PIPELINE</span><span class="p">):</span>
+                        <span class="c1"># Pipeline application execution</span>
+                        <span class="n">pipeline_output_file</span><span class="o">=</span><span class="n">PREFIX_OUTPUT</span> <span class="o">+</span> <span class="s2">&quot;_s&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_v&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.out&quot;</span>
+                        <span class="p">[</span><span class="n">pipeline_t_s</span><span class="p">,</span><span class="n">pipeline_t_e</span><span class="p">,</span><span class="n">pipeline_d</span><span class="p">]</span> <span class="o">=</span> <span class="n">pipeline_app</span><span class="p">(</span><span class="n">python_x</span><span class="o">=</span><span class="n">PYTHON_X</span><span class="p">,</span>\
+                                                                     <span class="n">stations</span><span class="o">=</span><span class="n">STATIONS</span><span class="p">,</span>\
+                                                                     <span class="n">input_files</span><span class="o">=</span><span class="n">INPUT_FILES</span><span class="p">,</span>\
+                                                                     <span class="n">app_dir</span><span class="o">=</span><span class="n">SRC_DIR</span><span class="p">,</span>\
+                                                                     <span class="n">mapper</span><span class="o">=</span><span class="n">MAPPER</span><span class="p">,</span>\
+                                                                     <span class="n">reducer</span><span class="o">=</span><span class="n">REDUCER</span><span class="p">,</span>\
+                                                                     <span class="n">fft_size</span><span class="o">=</span><span class="n">FFT_SIZE</span><span class="p">,</span>\
+                                                                     <span class="n">fft_at_mapper</span><span class="o">=</span><span class="n">FFT_AT_MAPPER</span><span class="p">,</span>\
+                                                                     <span class="n">accumulation_time</span><span class="o">=</span><span class="n">ACCUMULATION_TIME</span><span class="p">,</span>\
+                                                                     <span class="n">signal_start</span><span class="o">=</span><span class="n">SIGNAL_START</span><span class="p">,</span>\
+                                                                     <span class="n">signal_duration</span><span class="o">=</span><span class="n">SIGNAL_DURATION</span><span class="p">,</span>\
+                                                                     <span class="n">first_frame_num</span><span class="o">=</span><span class="n">FIRST_FRAME_NUM</span><span class="p">,</span>\
+                                                                     <span class="n">num_frames</span><span class="o">=</span><span class="n">NUM_FRAMES</span><span class="p">,</span>\
+                                                                     <span class="n">data_dir</span><span class="o">=</span><span class="n">DATA_DIR</span><span class="p">,</span>\
+                                                                     <span class="n">output_dir</span><span class="o">=</span><span class="n">OUTPUT_DIR</span><span class="p">,</span>\
+                                                                     <span class="n">output_sym</span><span class="o">=</span><span class="n">OUTPUT_SYM</span><span class="p">,</span>\
+                                                                     <span class="n">auto_stations</span><span class="o">=</span><span class="n">AUTO_STATIONS</span><span class="p">,</span>\
+                                                                     <span class="n">auto_pols</span><span class="o">=</span><span class="n">AUTO_POLS</span><span class="p">,</span>\
+                                                                     <span class="n">num_pols</span><span class="o">=</span><span class="n">NUM_POLS</span><span class="p">,</span>\
+                                                                     <span class="n">codecs_serial</span><span class="o">=</span><span class="n">CODECS_SERIAL</span><span class="p">,</span>\
+                                                                     <span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span>\
+                                                                     <span class="n">file_log</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">,</span>\
+                                                                     <span class="n">file_out</span><span class="o">=</span><span class="n">pipeline_output_file</span><span class="p">,</span>\
+                                                                     <span class="n">ini_stations</span><span class="o">=</span><span class="n">INI_STATIONS</span><span class="p">,</span>\
+                                                                     <span class="n">ini_media</span><span class="o">=</span><span class="n">INI_MEDIA</span><span class="p">,</span>\
+                                                                     <span class="n">ini_delays</span><span class="o">=</span><span class="n">INI_DELAYS</span><span class="p">,</span>\
+                                                                     <span class="n">internal_log_mapper</span><span class="o">=</span><span class="n">INTERNAL_LOG_MAPPER</span><span class="p">,</span>\
+                                                                     <span class="n">internal_log_reducer</span><span class="o">=</span><span class="n">INTERNAL_LOG_REDUCER</span><span class="p">,</span>\
+                                                                     <span class="n">ffts_per_chunk</span><span class="o">=</span><span class="n">FFTS_PER_CHUNK</span><span class="p">,</span>\
+                                                                     <span class="n">windowing</span><span class="o">=</span><span class="n">windowing</span><span class="p">,</span>\
+                                                                     <span class="n">one_baseline_per_task</span><span class="o">=</span><span class="n">ONE_BASELINE_PER_TASK</span><span class="p">,</span>\
+                                                                     <span class="n">phase_calibration</span><span class="o">=</span><span class="n">PHASE_CALIBRATION</span><span class="p">,</span>\
+                                                                     <span class="n">min_mapper_chunk</span><span class="o">=</span><span class="n">MIN_MAPPER_CHUNK</span><span class="p">,</span>\
+                                                                     <span class="n">max_mapper_chunk</span><span class="o">=</span><span class="n">MAX_MAPPER_CHUNK</span><span class="p">,</span>\
+                                                                     <span class="n">task_scaling_stations</span><span class="o">=</span><span class="n">TASK_SCALING_STATIONS</span><span class="p">,</span>\
+                                                                     <span class="n">sort_output</span><span class="o">=</span><span class="n">SORT_OUTPUT</span><span class="p">,</span>\
+                                                                     <span class="n">single_precision</span><span class="o">=</span><span class="n">SINGLE_PRECISION</span><span class="p">,</span>\
+                                                                     <span class="n">profile_map</span><span class="o">=</span><span class="n">PROFILE_MAP</span><span class="p">,</span>\
+                                                                     <span class="n">profile_red</span><span class="o">=</span><span class="n">PROFILE_RED</span><span class="p">,</span>\
+                                                                     <span class="n">timestamp_str</span><span class="o">=</span><span class="n">timestamp_str</span><span class="p">)</span>
+                        
+            
+                        
+                        <span class="n">exec_times</span><span class="o">+=</span><span class="p">[[</span><span class="s2">&quot;Pipeline&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">pipeline_t_s</span><span class="p">,</span> <span class="n">pipeline_t_e</span><span class="p">,</span> <span class="n">pipeline_d</span><span class="p">]]</span>
+                        <span class="n">output_files_list</span><span class="o">+=</span><span class="p">[</span><span class="n">pipeline_output_file</span><span class="p">]</span>
+                    
+                    
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">exec_times</span><span class="o">+=</span><span class="p">[[</span><span class="s2">&quot;Pipeline&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]</span>
+                        <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Not executed based on configuration.&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">)</span>
+                
+                    
+                    
+                    
+                    <span class="c1">#Hadoop execution</span>
+                    
+                    
+                    
+                    <span class="n">print_header</span><span class="p">(</span><span class="n">header</span><span class="o">=</span><span class="s2">&quot;MapReduce&quot;</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">)</span>
+
+                    <span class="k">if</span> <span class="n">RUN_HADOOP</span><span class="p">:</span>   
+                        <span class="c1"># Process configuration files</span>
+                        <span class="p">[</span><span class="n">list_configurations</span><span class="p">,</span><span class="n">pairs_config</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_list_configuration_files</span><span class="p">(</span><span class="n">config_file</span><span class="p">)</span>
+                        <span class="n">configuration_files</span> <span class="o">=</span> <span class="n">process_hadoop_config_files</span><span class="p">(</span><span class="n">list_configurations</span><span class="p">,</span><span class="n">pairs_config</span><span class="p">,</span>\
+                                                                          <span class="n">templates_dir</span><span class="o">=</span><span class="n">TEMPLATES_CONF_DIR</span><span class="p">,</span>\
+                                                                          <span class="n">conf_dir</span><span class="o">=</span><span class="n">CONF_DIR</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span>\
+                                                                          <span class="n">file_log</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">)</span>
+                    
+    
+                        <span class="c1"># Distribute configuration files</span>
+                    
+                        <span class="c1"># Copy configuration files to all nodes</span>
+                        <span class="n">files</span> <span class="o">=</span> <span class="n">configuration_files</span>
+                        <span class="c1"># This node</span>
+                        <span class="n">distribute_files</span><span class="p">(</span><span class="n">simply_copy_local</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">file_group</span><span class="o">=</span><span class="s2">&quot;Conf - first node&quot;</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span><span class="n">exec_permission</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">,</span>\
+                                     <span class="n">files</span><span class="o">=</span><span class="n">files</span><span class="p">,</span><span class="n">source_dir</span><span class="o">=</span><span class="n">CONF_DIR</span><span class="p">,</span><span class="n">conf_dir</span><span class="o">=</span><span class="n">CONF_DIR</span><span class="p">,</span><span class="n">destination_dir</span><span class="o">=</span><span class="n">HADOOP_CONF_DIR</span><span class="p">,</span>\
+                                     <span class="n">nodes</span><span class="o">=</span><span class="n">NODES</span><span class="p">,</span><span class="n">username</span><span class="o">=</span><span class="n">USERNAME_MACHINES</span><span class="p">,</span><span class="n">temp_log</span><span class="o">=</span><span class="n">TEMP_LOG</span><span class="p">,</span><span class="n">force_node</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">NODES_LIST</span><span class="p">))</span>
+                        <span class="c1"># Other nodes</span>
+                        <span class="n">distribute_files</span><span class="p">(</span><span class="n">simply_copy_local</span><span class="o">=</span><span class="n">OVER_SLURM</span><span class="p">,</span><span class="n">file_group</span><span class="o">=</span><span class="s2">&quot;Conf&quot;</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span><span class="n">exec_permission</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">,</span>\
+                                     <span class="n">files</span><span class="o">=</span><span class="n">files</span><span class="p">,</span><span class="n">source_dir</span><span class="o">=</span><span class="n">CONF_DIR</span><span class="p">,</span><span class="n">conf_dir</span><span class="o">=</span><span class="n">CONF_DIR</span><span class="p">,</span><span class="n">destination_dir</span><span class="o">=</span><span class="n">HADOOP_CONF_DIR</span><span class="p">,</span>\
+                                     <span class="n">nodes</span><span class="o">=</span><span class="n">NODES</span><span class="p">,</span><span class="n">username</span><span class="o">=</span><span class="n">USERNAME_MACHINES</span><span class="p">,</span><span class="n">temp_log</span><span class="o">=</span><span class="n">TEMP_LOG</span><span class="p">,</span><span class="n">force_node</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">NODES_LIST</span><span class="p">))</span>
+            
+            
+            
+                        <span class="c1"># Configure application and distribute it to nodes</span>
+            
+            
+            
+            
+                        <span class="c1"># Interm. sh files for recovering LD_LIBRARY_PATH and calling the mapper and reducer</span>
+                        <span class="c1"># Write these to CONF_DIR, otherwise they may be overwritten (by other tasks running in other nodes)!</span>
+                        
+                        
+
+                        <span class="c1"># Additional dependencies</span>
+                        <span class="n">add_deps</span><span class="o">=</span><span class="p">[</span><span class="n">INI_DELAYS</span><span class="p">,</span><span class="n">INI_MEDIA</span><span class="p">,</span><span class="n">INI_STATIONS</span><span class="p">]</span>
+                        <span class="n">ini_delays_dep</span> <span class="o">=</span> <span class="n">INI_DELAYS</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                        <span class="n">ini_media_dep</span> <span class="o">=</span> <span class="n">INI_MEDIA</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                        <span class="n">ini_stations_dep</span> <span class="o">=</span> <span class="n">INI_STATIONS</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>                        
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Additional dependencies:&quot;</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">+</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">add_deps</span><span class="p">))</span>
+            
+            
+            
+                        <span class="c1"># Create script for mapper</span>
+                        <span class="n">params_mapper</span><span class="o">=</span><span class="n">get_mapper_params_str</span><span class="p">(</span><span class="n">STATIONS</span><span class="p">,</span><span class="n">NUM_POLS</span><span class="p">,</span><span class="n">FFT_SIZE</span><span class="p">,</span><span class="n">ACCUMULATION_TIME</span><span class="p">,</span><span class="n">SIGNAL_START</span><span class="p">,</span><span class="n">SIGNAL_DURATION</span><span class="p">,</span>\
+                                                   <span class="n">FIRST_FRAME_NUM</span><span class="p">,</span><span class="n">NUM_FRAMES</span><span class="p">,</span><span class="n">CODECS_SERIAL</span><span class="p">,</span>\
+                                                   <span class="n">AUTO_STATIONS</span><span class="p">,</span><span class="n">AUTO_POLS</span><span class="p">,</span><span class="n">ini_stations_dep</span><span class="p">,</span><span class="n">ini_media_dep</span><span class="p">,</span>\
+                                                   <span class="n">ini_delays_dep</span><span class="p">,</span><span class="n">FFT_AT_MAPPER</span><span class="p">,</span><span class="n">INTERNAL_LOG_MAPPER</span><span class="p">,</span><span class="n">FFTS_PER_CHUNK</span><span class="p">,</span>\
+                                                   <span class="n">windowing</span><span class="p">,</span>\
+                                                   <span class="n">one_baseline_per_task</span><span class="o">=</span><span class="n">ONE_BASELINE_PER_TASK</span><span class="p">,</span>\
+                                                   <span class="n">phase_calibration</span><span class="o">=</span><span class="n">PHASE_CALIBRATION</span><span class="p">,</span><span class="n">min_mapper_chunk</span><span class="o">=</span><span class="n">MIN_MAPPER_CHUNK</span><span class="p">,</span>
+                                                   <span class="n">max_mapper_chunk</span><span class="o">=</span><span class="n">MAX_MAPPER_CHUNK</span><span class="p">,</span><span class="n">task_scaling_stations</span><span class="o">=</span><span class="n">TASK_SCALING_STATIONS</span><span class="p">,</span>\
+                                                   <span class="n">single_precision</span><span class="o">=</span><span class="n">SINGLE_PRECISION</span><span class="p">)</span>
+                        <span class="n">command_map</span> <span class="o">=</span> <span class="n">get_mr_command</span><span class="p">(</span><span class="n">app_dir</span><span class="o">=</span><span class="n">APP_DIR</span><span class="p">,</span><span class="n">script</span><span class="o">=</span><span class="n">MAPPER</span><span class="p">,</span><span class="n">params</span><span class="o">=</span><span class="n">params_mapper</span><span class="p">)</span>
+                        <span class="n">create_inter_sh</span><span class="p">(</span><span class="n">CONF_DIR</span><span class="o">+</span><span class="n">MAPPERSH</span><span class="p">,</span><span class="n">PYTHON_X</span><span class="p">,</span><span class="n">command_map</span><span class="p">,</span><span class="n">temp_log</span><span class="o">=</span><span class="n">TEMP_LOG</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">)</span>
+                        
+                        
+                        
+                        
+                        <span class="c1"># Get script for reducer</span>
+                        <span class="n">params_reducer</span><span class="o">=</span><span class="n">get_reducer_params_str</span><span class="p">(</span><span class="n">CODECS_SERIAL</span><span class="p">,</span><span class="n">FFT_AT_MAPPER</span><span class="p">,</span><span class="n">INTERNAL_LOG_REDUCER</span><span class="p">,</span><span class="n">FFT_SIZE</span><span class="p">,</span><span class="n">windowing</span><span class="p">,</span>\
+                                                              <span class="n">PHASE_CALIBRATION</span><span class="p">,</span><span class="n">SINGLE_PRECISION</span><span class="p">)</span>
+                        <span class="n">command_red</span> <span class="o">=</span> <span class="n">get_mr_command</span><span class="p">(</span><span class="n">app_dir</span><span class="o">=</span><span class="n">APP_DIR</span><span class="p">,</span><span class="n">script</span><span class="o">=</span><span class="n">REDUCER</span><span class="p">,</span><span class="n">params</span><span class="o">=</span><span class="n">params_reducer</span><span class="p">)</span>
+                        <span class="n">create_inter_sh</span><span class="p">(</span><span class="n">CONF_DIR</span><span class="o">+</span><span class="n">REDUCERSH</span><span class="p">,</span><span class="n">PYTHON_X</span><span class="p">,</span><span class="n">command_red</span><span class="p">,</span><span class="n">temp_log</span><span class="o">=</span><span class="n">TEMP_LOG</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">)</span>
+            
+            
+            
+            
+            
+                        <span class="c1"># Copy application files to all nodes (master-associated folder)</span>
+                        <span class="c1"># TO DO: add add_deps too</span>
+                        <span class="n">files</span> <span class="o">=</span> <span class="n">DEPENDENCIES</span>
+                        <span class="n">files</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">MAPPER</span><span class="p">])</span>
+                        <span class="n">files</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">REDUCER</span><span class="p">])</span>
+                        <span class="n">distribute_files</span><span class="p">(</span><span class="n">simply_copy_local</span><span class="o">=</span><span class="n">OVER_SLURM</span><span class="p">,</span><span class="n">file_group</span><span class="o">=</span><span class="s2">&quot;App&quot;</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span><span class="n">exec_permission</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">,</span>\
+                                     <span class="n">files</span><span class="o">=</span><span class="n">files</span><span class="p">,</span><span class="n">source_dir</span><span class="o">=</span><span class="n">SRC_DIR</span><span class="p">,</span><span class="n">conf_dir</span><span class="o">=</span><span class="n">CONF_DIR</span><span class="p">,</span>\
+                                     <span class="n">destination_dir</span><span class="o">=</span><span class="n">APP_DIR</span><span class="p">,</span><span class="n">nodes</span><span class="o">=</span><span class="n">NODES</span><span class="p">,</span><span class="n">username</span><span class="o">=</span><span class="n">USERNAME_MACHINES</span><span class="p">,</span><span class="n">temp_log</span><span class="o">=</span><span class="n">TEMP_LOG</span><span class="p">,</span>\
+                                     <span class="n">force_node</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">NODES_LIST</span><span class="p">))</span>
+                        <span class="n">files_sh</span> <span class="o">=</span> <span class="p">[</span><span class="n">MAPPERSH</span><span class="p">,</span> <span class="n">REDUCERSH</span><span class="p">]</span>
+                        <span class="n">distribute_files</span><span class="p">(</span><span class="n">simply_copy_local</span><span class="o">=</span><span class="n">OVER_SLURM</span><span class="p">,</span><span class="n">file_group</span><span class="o">=</span><span class="s2">&quot;App-sh&quot;</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span><span class="n">exec_permission</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">,</span>\
+                                     <span class="n">files</span><span class="o">=</span><span class="n">files_sh</span><span class="p">,</span><span class="n">source_dir</span><span class="o">=</span><span class="n">CONF_DIR</span><span class="p">,</span><span class="n">conf_dir</span><span class="o">=</span><span class="n">CONF_DIR</span><span class="p">,</span>\
+                                     <span class="n">destination_dir</span><span class="o">=</span><span class="n">APP_DIR</span><span class="p">,</span><span class="n">nodes</span><span class="o">=</span><span class="n">NODES</span><span class="p">,</span><span class="n">username</span><span class="o">=</span><span class="n">USERNAME_MACHINES</span><span class="p">,</span><span class="n">temp_log</span><span class="o">=</span><span class="n">TEMP_LOG</span><span class="p">,</span>\
+                                     <span class="n">force_node</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">NODES_LIST</span><span class="p">))</span>
+            
+            
+            
+                        <span class="c1"># Stop Hadoop in case it&#39;s running</span>
+    
+                        <span class="n">nodes_to_slaves_masters</span><span class="p">(</span><span class="n">conf_dir</span><span class="o">=</span><span class="n">CONF_DIR</span><span class="p">,</span><span class="n">hadoop_conf_dir</span><span class="o">=</span><span class="n">HADOOP_CONF_DIR</span><span class="p">,</span><span class="n">file_nodes</span><span class="o">=</span><span class="n">NODES</span><span class="p">,</span><span class="n">file_slaves</span><span class="o">=</span><span class="n">SLAVES</span><span class="p">,</span>\
+                                        <span class="n">file_masters</span><span class="o">=</span><span class="n">MASTERS</span><span class="p">,</span><span class="n">max_slaves</span><span class="o">=</span><span class="n">MAX_SLAVES</span><span class="p">,</span><span class="n">master_is_slave</span><span class="o">=</span><span class="n">MASTER_IS_SLAVE</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">)</span>
+                        
+                        <span class="n">cluster_stop</span><span class="p">(</span><span class="n">wait_time</span><span class="o">=</span><span class="n">HADOOP_STOP_DELAY</span><span class="p">,</span><span class="n">hadoop_dir</span><span class="o">=</span><span class="n">HADOOP_DIR</span><span class="p">,</span><span class="n">hadoop_conf_dir</span><span class="o">=</span><span class="n">HADOOP_CONF_DIR</span><span class="p">,</span>\
+                                               <span class="n">timeout</span><span class="o">=</span><span class="n">TIMEOUT_STOP</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">,</span><span class="n">temp_log</span><span class="o">=</span><span class="n">TEMP_LOG</span><span class="p">)</span>
+                        
+                        <span class="c1"># Shut down other hadoop processes (this needs to be done in another way)</span>
+                        <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Forcing shutdown of hadoop processes (in case they were not shut down properly)...&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">)</span>
+                            <span class="c1"># TO DO?: comment line in start-dfs.sh which starts the secondary namenode </span>
+                            
+                        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;kill `ps -axu|grep hadoop|grep &quot;</span> <span class="o">+</span> <span class="n">USERNAME_MACHINES</span> <span class="o">+</span> <span class="s2">&quot;|awk &#39;{print $2}&#39;` &gt; &quot;</span> <span class="o">+</span> <span class="n">TEMP_LOG</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>    
+                            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">TEMP_LOG</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f_log</span><span class="p">:</span>
+                                <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f_log</span><span class="p">:</span>
+                                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">+</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+                        
+                    
+                        <span class="c1"># Iterate on number of slaves</span>
+                        <span class="n">hadoop_failed</span><span class="o">=</span><span class="mi">0</span>
+                        
+                        <span class="c1">#process nodes file, for creating slaves file</span>
+                        <span class="n">nodes_to_slaves_masters</span><span class="p">(</span><span class="n">conf_dir</span><span class="o">=</span><span class="n">CONF_DIR</span><span class="p">,</span><span class="n">hadoop_conf_dir</span><span class="o">=</span><span class="n">HADOOP_CONF_DIR</span><span class="p">,</span><span class="n">file_nodes</span><span class="o">=</span><span class="n">NODES</span><span class="p">,</span><span class="n">file_slaves</span><span class="o">=</span><span class="n">SLAVES</span><span class="p">,</span>\
+                                    <span class="n">file_masters</span><span class="o">=</span><span class="n">MASTERS</span><span class="p">,</span><span class="n">max_slaves</span><span class="o">=</span><span class="n">num_slaves</span><span class="p">,</span><span class="n">master_is_slave</span><span class="o">=</span><span class="n">MASTER_IS_SLAVE</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">)</span>
+                    
+                    
+                    
+                    
+                        <span class="c1"># Update replication (check that it is &lt;= than the number of nodes</span>
+                        <span class="n">replication_forced</span> <span class="o">=</span> <span class="n">HDFS_REPLICATION</span>
+                        <span class="k">if</span> <span class="n">num_slaves</span><span class="o">&lt;=</span><span class="n">HDFS_REPLICATION</span><span class="p">:</span>
+                            <span class="n">replication_forced</span> <span class="o">=</span> <span class="n">num_slaves</span>
+                            <span class="n">replication_file</span> <span class="o">=</span> <span class="s1">&#39;hdfs-site.xml&#39;</span>
+                            <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Updating &quot;</span> <span class="o">+</span> <span class="n">replication_file</span> <span class="o">+</span> <span class="s2">&quot;...&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">)</span>
+        
+                            <span class="n">replication_config</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;Configuration file&#39;</span><span class="p">,</span><span class="n">replication_file</span><span class="p">),(</span><span class="n">C_H_HDFS_REPLICATION</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">num_slaves</span><span class="p">))]</span>
+                            <span class="n">processed_file</span> <span class="o">=</span> <span class="n">process_hcfile</span><span class="p">(</span><span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">,</span><span class="n">pairs</span><span class="o">=</span><span class="n">replication_config</span><span class="p">,</span><span class="n">conf_dir</span><span class="o">=</span><span class="n">CONF_DIR</span><span class="p">,</span>\
+                                                    <span class="n">templates_dir</span><span class="o">=</span><span class="n">CONF_DIR</span><span class="p">)</span>
+        
+                            <span class="n">files</span><span class="o">=</span><span class="p">[</span><span class="n">replication_file</span><span class="p">]</span>
+                            <span class="c1"># This node</span>
+                            <span class="n">distribute_files</span><span class="p">(</span><span class="n">simply_copy_local</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">file_group</span><span class="o">=</span><span class="s2">&quot;Replication - first node&quot;</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span><span class="n">exec_permission</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">,</span><span class="n">files</span><span class="o">=</span><span class="n">files</span><span class="p">,</span><span class="n">source_dir</span><span class="o">=</span><span class="n">CONF_DIR</span><span class="p">,</span><span class="n">conf_dir</span><span class="o">=</span><span class="n">CONF_DIR</span><span class="p">,</span>\
+                                 <span class="n">destination_dir</span><span class="o">=</span><span class="n">HADOOP_CONF_DIR</span><span class="p">,</span><span class="n">nodes</span><span class="o">=</span><span class="n">NODES</span><span class="p">,</span><span class="n">username</span><span class="o">=</span><span class="n">USERNAME_MACHINES</span><span class="p">,</span><span class="n">temp_log</span><span class="o">=</span><span class="n">TEMP_LOG</span><span class="p">,</span>\
+                                 <span class="n">force_node</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">NODES_LIST</span><span class="p">))</span>
+                            <span class="c1"># Other nodes</span>
+                            <span class="n">distribute_files</span><span class="p">(</span><span class="n">simply_copy_local</span><span class="o">=</span><span class="n">OVER_SLURM</span><span class="p">,</span><span class="n">file_group</span><span class="o">=</span><span class="s2">&quot;Replication&quot;</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span><span class="n">exec_permission</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">,</span><span class="n">files</span><span class="o">=</span><span class="n">files</span><span class="p">,</span><span class="n">source_dir</span><span class="o">=</span><span class="n">CONF_DIR</span><span class="p">,</span><span class="n">conf_dir</span><span class="o">=</span><span class="n">CONF_DIR</span><span class="p">,</span>\
+                                 <span class="n">destination_dir</span><span class="o">=</span><span class="n">HADOOP_CONF_DIR</span><span class="p">,</span><span class="n">nodes</span><span class="o">=</span><span class="n">NODES</span><span class="p">,</span><span class="n">username</span><span class="o">=</span><span class="n">USERNAME_MACHINES</span><span class="p">,</span><span class="n">temp_log</span><span class="o">=</span><span class="n">TEMP_LOG</span><span class="p">,</span>\
+                                 <span class="n">force_node</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">NODES_LIST</span><span class="p">))</span>
+                
+                
+                            
+                      
+                    
+    
+                        <span class="c1"># Start Hadoop</span>
+                        <span class="k">if</span> <span class="n">hadoop_failed</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+                            <span class="n">t_nodes</span> <span class="o">=</span> <span class="n">cluster_start</span><span class="p">(</span><span class="n">wait_time</span><span class="o">=</span><span class="n">HADOOP_START_DELAY</span><span class="p">,</span><span class="n">hadoop_conf_dir</span><span class="o">=</span><span class="n">HADOOP_CONF_DIR</span><span class="p">,</span><span class="n">hadoop_dir</span><span class="o">=</span><span class="n">HADOOP_DIR</span><span class="p">,</span><span class="n">file_slaves</span><span class="o">=</span><span class="n">SLAVES</span><span class="p">,</span>\
+                                  <span class="n">temp_dir</span><span class="o">=</span><span class="n">HADOOP_TEMP_DIR</span><span class="p">,</span><span class="n">username</span><span class="o">=</span><span class="n">USERNAME_MACHINES</span><span class="p">,</span><span class="n">single_node</span><span class="o">=</span><span class="n">OVER_SLURM</span><span class="p">,</span>\
+                                  <span class="n">use_lustre_plugin</span><span class="o">=</span><span class="n">USE_LUSTRE_PLUGIN</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">,</span><span class="n">temp_log</span><span class="o">=</span><span class="n">TEMP_LOG</span><span class="p">)</span>
+                    
+    
+                        <span class="k">if</span> <span class="n">t_nodes</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+          
+            
+            
+                            <span class="c1"># Copy media files into distributed filesystem (HDFS or Lustre)</span>
+    
+                            <span class="c1"># (!)Time measurements are approximate!! print and wait statements in function!!</span>
+                            <span class="p">[</span><span class="n">put_t_s</span><span class="p">,</span><span class="n">put_t_e</span><span class="p">,</span><span class="n">put_d</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy_files_to_hdfs</span><span class="p">(</span><span class="n">replication</span><span class="o">=</span><span class="n">HDFS_REPLICATION</span><span class="p">,</span>\
+                                    <span class="n">input_files</span><span class="o">=</span><span class="n">INPUT_FILES</span><span class="p">,</span><span class="n">data_dir</span><span class="o">=</span><span class="n">DATA_DIR</span><span class="p">,</span><span class="n">data_dir_tmp</span><span class="o">=</span><span class="n">DATA_DIR_TMP</span><span class="p">,</span><span class="n">hadoop_dir</span><span class="o">=</span><span class="n">HADOOP_DIR</span><span class="p">,</span>\
+                                    <span class="n">hadoop_conf_dir</span><span class="o">=</span><span class="n">HADOOP_CONF_DIR</span><span class="p">,</span><span class="n">hdfs_data_dir</span><span class="o">=</span><span class="n">HDFS_DATA_DIR</span><span class="p">,</span>\
+                                    <span class="n">packets_per_hdfs_block</span><span class="o">=</span><span class="n">PACKETS_PER_HDFS_BLOCK</span><span class="p">,</span>\
+                                    <span class="n">temp_log</span><span class="o">=</span><span class="n">TEMP_LOG</span><span class="p">,</span><span class="n">copy_delay</span><span class="o">=</span><span class="n">HDFS_COPY_DELAY</span><span class="p">,</span><span class="n">checksum_size</span><span class="o">=</span><span class="n">CHECKSUM_SIZE</span><span class="p">,</span><span class="n">text_mode</span><span class="o">=</span><span class="n">TEXT_MODE</span><span class="p">,</span>\
+                                    <span class="n">use_lustre_plugin</span><span class="o">=</span><span class="n">USE_LUSTRE_PLUGIN</span><span class="p">,</span><span class="n">lustre_prefix</span><span class="o">=</span><span class="n">LUSTRE_PREFIX</span><span class="p">,</span><span class="n">bm_avoid_copy</span><span class="o">=</span><span class="n">BM_AVOID_COPY</span><span class="p">,</span>\
+                                    <span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">)</span> 
+                            <span class="n">io_times</span><span class="o">+=</span><span class="p">[[</span><span class="s2">&quot;HDFS-put &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">num_slaves</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;s-&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">num_vcores</span><span class="p">)</span><span class="o">+</span> <span class="s2">&quot;v&quot;</span> <span class="p">,</span> <span class="n">num_slaves</span><span class="p">,</span> <span class="n">num_vcores</span><span class="p">,</span> <span class="n">put_t_s</span><span class="p">,</span><span class="n">put_t_e</span><span class="p">,</span><span class="n">put_d</span><span class="p">]]</span>
+    
+    
+    
+    
+            
+                            
+                            <span class="n">hdfs_output_file</span> <span class="o">=</span> <span class="n">PREFIX_OUTPUT</span> <span class="o">+</span> <span class="s2">&quot;_s&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">num_slaves</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_v&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">num_vcores</span><span class="p">)</span><span class="o">+</span> <span class="n">suffix_log</span> <span class="o">+</span><span class="s2">&quot;.out&quot;</span>
+                            <span class="k">if</span> <span class="n">NETWORK_STATS</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                                <span class="p">[</span><span class="n">stats_params_s</span><span class="p">,</span><span class="n">stats_values_s</span><span class="p">,</span><span class="n">stats_ping_s</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_network_stats</span><span class="p">(</span><span class="n">nodes_list</span><span class="o">=</span><span class="n">NODES_LIST</span><span class="p">,</span><span class="n">over_slurm</span><span class="o">=</span><span class="n">OVER_SLURM</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">)</span>
+                            
+                            
+                            
+                            
+                            
+                            
+                            <span class="c1"># Run mapreduce</span>
+                            <span class="p">[</span><span class="n">hadoop_t_s</span><span class="p">,</span><span class="n">hadoop_t_e</span><span class="p">,</span><span class="n">hadoop_d</span><span class="p">,</span><span class="n">get_t_s</span><span class="p">,</span><span class="n">get_t_e</span><span class="p">,</span><span class="n">get_d</span><span class="p">,</span><span class="n">sort_t_s</span><span class="p">,</span><span class="n">sort_t_e</span><span class="p">,</span><span class="n">sort_d</span><span class="p">]</span> <span class="o">=</span> \
+                              <span class="n">run_mapreduce_sh</span><span class="p">(</span><span class="n">record_size</span><span class="o">=</span><span class="n">max_packet_size</span><span class="p">,</span>\
+                                                <span class="n">jobsh</span><span class="o">=</span><span class="n">CONF_DIR</span><span class="o">+</span><span class="n">JOBSH</span><span class="p">,</span>\
+                                                <span class="n">mappersh</span><span class="o">=</span><span class="n">CONF_DIR</span><span class="o">+</span><span class="n">MAPPERSH</span><span class="p">,</span>\
+                                                <span class="n">reducersh</span><span class="o">=</span><span class="n">CONF_DIR</span><span class="o">+</span><span class="n">REDUCERSH</span><span class="p">,</span>\
+                                                <span class="n">app_dir</span><span class="o">=</span><span class="n">APP_DIR</span><span class="p">,</span>\
+                                                <span class="n">hadoop_dir</span><span class="o">=</span><span class="n">HADOOP_DIR</span><span class="p">,</span>\
+                                                <span class="n">hadoop_conf_dir</span><span class="o">=</span><span class="n">HADOOP_CONF_DIR</span><span class="p">,</span>\
+                                                <span class="n">folder_deps</span><span class="o">=</span><span class="n">APP_DIR</span><span class="p">,</span>\
+                                                <span class="n">files_deps</span><span class="o">=</span><span class="n">DEPENDENCIES</span><span class="p">,</span>\
+                                                <span class="n">add_deps</span><span class="o">=</span><span class="n">add_deps</span><span class="p">,</span>\
+                                                <span class="n">mapper</span><span class="o">=</span><span class="n">MAPPER</span><span class="p">,</span>\
+                                                <span class="n">reducer</span><span class="o">=</span><span class="n">REDUCER</span><span class="p">,</span>\
+                                                <span class="n">hdfs_data_dir</span><span class="o">=</span><span class="n">HDFS_DATA_DIR</span><span class="p">,</span>\
+                                                <span class="n">hdfs_output_file</span><span class="o">=</span><span class="n">hdfs_output_file</span><span class="p">,</span>\
+                                                <span class="n">output_hadoop</span><span class="o">=</span><span class="n">hdfs_output_file</span><span class="p">,</span>\
+                                                <span class="n">text_mode</span><span class="o">=</span><span class="n">TEXT_MODE</span><span class="p">,</span>\
+                                                <span class="n">hadoop_text_delimiter</span><span class="o">=</span><span class="n">HADOOP_TEXT_DELIMITER</span><span class="p">,</span>\
+                                                <span class="n">temp_log</span><span class="o">=</span><span class="n">TEMP_LOG</span><span class="p">,</span>\
+                                                <span class="n">packets_per_hdfs_block</span><span class="o">=</span><span class="n">PACKETS_PER_HDFS_BLOCK</span><span class="p">,</span>\
+                                                <span class="n">total_frames</span><span class="o">=</span><span class="n">total_frames</span><span class="p">,</span>\
+                                                <span class="n">total_partitions</span><span class="o">=</span><span class="n">total_partitions</span><span class="p">,</span>\
+                                                <span class="n">adjust_mappers</span><span class="o">=</span><span class="n">ADJUST_MAPPERS</span><span class="p">,</span>\
+                                                <span class="n">adjust_reducers</span><span class="o">=</span><span class="n">ADJUST_REDUCERS</span><span class="p">,</span>\
+                                                <span class="n">use_nohash_partitioner</span><span class="o">=</span><span class="n">USE_NOHASH_PARTITIONER</span><span class="p">,</span>\
+                                                <span class="n">use_lustre_plugin</span><span class="o">=</span><span class="n">USE_LUSTRE_PLUGIN</span><span class="p">,</span>\
+                                                <span class="n">lustre_user_dir</span><span class="o">=</span><span class="n">LUSTRE_USER_DIR</span><span class="p">,</span>\
+                                                <span class="n">num_slaves</span><span class="o">=</span><span class="n">num_slaves</span><span class="p">,</span>\
+                                                <span class="n">num_vcores</span><span class="o">=</span><span class="n">num_vcores</span><span class="p">,</span>\
+                                                <span class="n">one_baseline_per_task</span><span class="o">=</span><span class="n">ONE_BASELINE_PER_TASK</span><span class="p">,</span>\
+                                                <span class="n">sort_output</span><span class="o">=</span><span class="n">SORT_OUTPUT</span><span class="p">,</span>\
+                                                <span class="n">bm_delete_output</span><span class="o">=</span><span class="n">BM_DELETE_OUTPUT</span><span class="p">,</span>\
+                                                <span class="n">bypass_reduce</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>\
+                                                <span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span>\
+                                                <span class="n">file_log</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">,</span>\
+                                                <span class="n">output_dir</span><span class="o">=</span><span class="n">OUTPUT_DIR</span><span class="p">,</span>\
+                                                <span class="n">output_sym</span><span class="o">=</span><span class="n">OUTPUT_SYM</span><span class="p">)</span>
+                                 
+                            <span class="k">if</span> <span class="n">NETWORK_STATS</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                                <span class="p">[</span><span class="n">stats_params_e</span><span class="p">,</span><span class="n">stats_values_e</span><span class="p">,</span><span class="n">stats_ping_e</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_network_stats</span><span class="p">(</span><span class="n">nodes_list</span><span class="o">=</span><span class="n">NODES_LIST</span><span class="p">,</span><span class="n">over_slurm</span><span class="o">=</span><span class="n">OVER_SLURM</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">)</span>
+                                <span class="n">delta_stats</span> <span class="o">=</span> <span class="n">compute_txrx_bytes</span><span class="p">(</span><span class="n">stats_values_s</span><span class="p">,</span><span class="n">stats_values_e</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">)</span>
+                            
+                            <span class="c1"># Logging results</span>
+                            <span class="n">str_hadoop</span> <span class="o">=</span> <span class="s2">&quot;Hadoop &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">num_slaves</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;s-&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">num_vcores</span><span class="p">)</span><span class="o">+</span> <span class="s2">&quot;v&quot;</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span>
+                            <span class="n">exec_times</span><span class="o">+=</span><span class="p">[[</span><span class="n">str_hadoop</span> <span class="p">,</span> <span class="n">num_slaves</span><span class="p">,</span> <span class="n">num_vcores</span><span class="p">,</span> <span class="n">hadoop_t_s</span><span class="p">,</span><span class="n">hadoop_t_e</span><span class="p">,</span><span class="n">hadoop_d</span><span class="p">]]</span>
+                            <span class="n">output_files_list</span><span class="o">+=</span><span class="p">[</span><span class="n">hdfs_output_file</span><span class="p">]</span>
+                            <span class="n">str_hdfs_get</span> <span class="o">=</span> <span class="s2">&quot;HDFS-get &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">num_slaves</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;s-&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">num_vcores</span><span class="p">)</span><span class="o">+</span> <span class="s2">&quot;v&quot;</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span>
+                            <span class="n">io_times</span><span class="o">+=</span><span class="p">[[</span><span class="n">str_hdfs_get</span> <span class="p">,</span> <span class="n">num_slaves</span><span class="p">,</span> <span class="n">num_vcores</span><span class="p">,</span> <span class="n">get_t_s</span><span class="p">,</span><span class="n">get_t_e</span><span class="p">,</span><span class="n">get_d</span><span class="p">]]</span>
+    
+                            <span class="n">str_file_sort</span> <span class="o">=</span> <span class="s2">&quot;File-sort &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">num_slaves</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;s-&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">num_vcores</span><span class="p">)</span><span class="o">+</span> <span class="s2">&quot;v&quot;</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span>
+                            <span class="n">io_times</span><span class="o">+=</span><span class="p">[[</span><span class="n">str_file_sort</span> <span class="p">,</span> <span class="n">num_slaves</span><span class="p">,</span> <span class="n">num_vcores</span><span class="p">,</span> <span class="n">sort_t_s</span><span class="p">,</span><span class="n">sort_t_e</span><span class="p">,</span><span class="n">sort_d</span><span class="p">]]</span>
+    
+                            <span class="n">v_str_hadoop</span> <span class="o">+=</span> <span class="p">[</span><span class="n">str_hadoop</span><span class="p">]</span>
+                            
+                            <span class="k">if</span> <span class="n">NETWORK_STATS</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                                <span class="n">v_stats_param</span> <span class="o">+=</span> <span class="p">[</span><span class="n">stats_params_s</span><span class="p">]</span>
+                                <span class="n">v_stats_values_s</span> <span class="o">+=</span> <span class="p">[</span><span class="n">stats_values_s</span><span class="p">]</span>
+                                <span class="n">v_stats_values_e</span> <span class="o">+=</span> <span class="p">[</span><span class="n">stats_values_e</span><span class="p">]</span>
+                                <span class="c1">#v_stats_ping += [stats_ping_s]</span>
+                            
+                                <span class="c1"># Get only network status after mr</span>
+                                <span class="n">v_stats_ping</span> <span class="o">+=</span> <span class="p">[</span><span class="n">stats_ping_e</span><span class="p">]</span>
+    
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">hadoop_failed</span><span class="o">=</span><span class="mi">1</span>
+                            <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Hadoop initialization failed!&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">)</span>
+                                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Check http://localhost:8088/cluster/nodes/unhealthy&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">)</span>
+                                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Check available storage&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">)</span>
+                                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Check available ports&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">)</span>
+                        
+                        <span class="c1"># Cluster is stopped for each iteration</span>
+                        <span class="n">cluster_stop</span><span class="p">(</span><span class="n">wait_time</span><span class="o">=</span><span class="n">HADOOP_STOP_DELAY</span><span class="p">,</span><span class="n">hadoop_dir</span><span class="o">=</span><span class="n">HADOOP_DIR</span><span class="p">,</span><span class="n">hadoop_conf_dir</span><span class="o">=</span><span class="n">HADOOP_CONF_DIR</span><span class="p">,</span>\
+                                               <span class="n">timeout</span><span class="o">=</span><span class="n">TIMEOUT_STOP</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">,</span><span class="n">temp_log</span><span class="o">=</span><span class="n">TEMP_LOG</span><span class="p">)</span>
+        
+                
+                    <span class="c1"># Show results</span>
+                    <span class="n">print_header</span><span class="p">(</span><span class="n">header</span><span class="o">=</span><span class="s2">&quot;Results&quot;</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">)</span>
+                    
+                
+                    <span class="c1"># Print execution times to log file</span>
+                    <span class="k">if</span> <span class="n">PROFILE_MAP</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Profiled mapper, see output folder for results.&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">PROFILE_RED</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Profiled reducer, see output folder for results.&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">)</span>
+                            
+                    <span class="n">print_execution_times</span><span class="p">(</span><span class="n">exec_times</span><span class="o">=</span><span class="n">exec_times</span><span class="p">,</span><span class="n">io_times</span><span class="o">=</span><span class="n">io_times</span><span class="p">,</span><span class="n">bypass_print</span><span class="o">=</span><span class="n">PROFILE_MAP</span> <span class="ow">or</span> <span class="n">PROFILE_RED</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">NETWORK_STATS</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                        <span class="n">print_network_totals</span><span class="p">(</span><span class="n">NODES_LIST</span><span class="p">,</span><span class="n">v_str_hadoop</span><span class="p">,</span><span class="n">v_stats_param</span><span class="p">,</span><span class="n">v_stats_values_s</span><span class="p">,</span><span class="n">v_stats_values_e</span><span class="p">,</span><span class="n">v_stats_ping</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">FILE_LOG</span><span class="p">)</span>
+            
+        <span class="c1"># Close log file</span>
+        <span class="k">if</span> <span class="n">FILE_LOG</span><span class="o">!=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">:</span>
+            <span class="n">FILE_LOG</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    
+    
+        
+        <span class="c1"># Delete temporary files</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;rm &quot;</span> <span class="o">+</span> <span class="n">TEMP_LOG</span><span class="p">)</span>
+
+<span class="c1"># &lt;codecell&gt;</span>
+
+
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Antonio Vazquez Alvarez, Victor Pankratius, and Pedro Elosegui.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

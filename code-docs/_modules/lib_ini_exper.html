@@ -1,0 +1,758 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>lib_ini_exper &#8212; CorrelX 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for lib_ini_exper</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># &lt;nbformat&gt;3.0&lt;/nbformat&gt;</span>
+
+<span class="c1"># &lt;codecell&gt;</span>
+
+<span class="c1">#!/usr/bin/env python</span>
+<span class="c1">#</span>
+<span class="c1">#The MIT CorrelX Correlator</span>
+<span class="c1">#</span>
+<span class="c1">#https://github.com/MITHaystack/CorrelX</span>
+<span class="c1">#Contact: correlX@haystack.mit.edu</span>
+<span class="c1">#Project leads: Victor Pankratius, Pedro Elosegui Project developer: A.J. Vazquez Alvarez</span>
+<span class="c1">#</span>
+<span class="c1">#Copyright 2017 MIT Haystack Observatory</span>
+<span class="c1">#</span>
+<span class="c1">#Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the &quot;Software&quot;), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1">#The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</span>
+<span class="c1">#</span>
+<span class="c1">#THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#------------------------------</span>
+<span class="c1">#------------------------------</span>
+<span class="c1">#Project: CorrelX.</span>
+<span class="c1">#File: lib_ini_exper.py.</span>
+<span class="c1">#Author: A.J. Vazquez Alvarez (ajvazquez@haystack.mit.edu)</span>
+<span class="c1">#Description: </span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Routines for processing the experiment configuration.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="c1">#History:</span>
+<span class="c1">#initial version: 2016.10 ajva</span>
+<span class="c1">#MIT Haystack Observatory</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+
+<span class="kn">import</span> <span class="nn">imp</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+
+<span class="kn">import</span> <span class="nn">lib_ini_files</span>
+<span class="n">imp</span><span class="o">.</span><span class="n">reload</span><span class="p">(</span><span class="n">lib_ini_files</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">lib_ini_files</span> <span class="k">import</span> <span class="o">*</span>
+
+<span class="kn">import</span> <span class="nn">lib_delay_model</span>
+<span class="n">imp</span><span class="o">.</span><span class="n">reload</span><span class="p">(</span><span class="n">lib_delay_model</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">lib_vdif</span>
+<span class="n">imp</span><span class="o">.</span><span class="n">reload</span><span class="p">(</span><span class="n">lib_vdif</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">lib_acc_comp</span>
+<span class="n">imp</span><span class="o">.</span><span class="n">reload</span><span class="p">(</span><span class="n">lib_acc_comp</span><span class="p">)</span>
+
+
+<span class="c1">##################################################################</span>
+<span class="c1">#</span>
+<span class="c1">#                      .ini file processing</span>
+<span class="c1">#</span>
+<span class="c1">##################################################################</span>
+
+
+
+
+
+<div class="viewcode-block" id="process_ini_correlation"><a class="viewcode-back" href="../lib_ini_exper.html#lib_ini_exper.process_ini_correlation">[docs]</a><span class="k">def</span> <span class="nf">process_ini_correlation</span><span class="p">(</span><span class="n">params_array_corr</span><span class="p">,</span><span class="n">file_log</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Process correlation.ini file.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     params_array_corr</span>
+<span class="sd">         list with correlation configuration.</span>
+<span class="sd">     file_log</span>
+<span class="sd">         handler for log file.</span>
+<span class="sd">     v</span>
+<span class="sd">         verbose if 1.</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     stations : int</span>
+<span class="sd">         number of stations.</span>
+<span class="sd">     fft_size : int</span>
+<span class="sd">         number of coefficients in DFT.</span>
+<span class="sd">     accumulation_time : str(float)</span>
+<span class="sd">         accumulation time in seconds.</span>
+<span class="sd">     windowing : str</span>
+<span class="sd">         window type to be applied before DFT.</span>
+<span class="sd">     mjd_start : int</span>
+<span class="sd">         MJD for the start of the scan.</span>
+<span class="sd">     seconds_start : int</span>
+<span class="sd">         number of seconds in MJD for the start of the scan.</span>
+<span class="sd">     seconds_duration : int</span>
+<span class="sd">         duration of the scan in seconds.</span>
+<span class="sd">     phase_calibration : int</span>
+<span class="sd">         1 if phase calibration tones will be extracted, 0 otherwise.</span>
+<span class="sd">     auto_stations : int</span>
+<span class="sd">         1 if compute autocorrelations, 0 otherwise.</span>
+<span class="sd">     auto_pols : int</span>
+<span class="sd">         1 if crosspolarizations (see msvf.py).</span>
+<span class="sd">     first_frame_num : int</span>
+<span class="sd">         [testing only] start reading after this frame id (-1 to read from first frame).</span>
+<span class="sd">     num_frames : int</span>
+<span class="sd">         [testing only] read this number of frames per second (-1 to read all frames)</span>
+<span class="sd">     num_pols : int</span>
+<span class="sd">         [testing only] default -1.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Processing (correlation).ini file&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span> 
+        
+    <span class="n">stations</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">get_param_serial</span><span class="p">(</span><span class="n">params_array_corr</span><span class="p">,</span><span class="n">C_INI_CR_S_ELEMENTS</span><span class="p">,</span><span class="n">C_INI_CR_STATIONS</span><span class="p">))</span>
+    <span class="n">fft_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">get_param_serial</span><span class="p">(</span><span class="n">params_array_corr</span><span class="p">,</span><span class="n">C_INI_CR_S_COMP</span><span class="p">,</span><span class="n">C_INI_CR_FFT</span><span class="p">))</span>
+    <span class="n">accumulation_time</span> <span class="o">=</span> <span class="n">get_param_serial</span><span class="p">(</span><span class="n">params_array_corr</span><span class="p">,</span><span class="n">C_INI_CR_S_COMP</span><span class="p">,</span><span class="n">C_INI_CR_ACC</span><span class="p">)</span>
+    <span class="n">windowing</span> <span class="o">=</span> <span class="n">get_param_serial</span><span class="p">(</span><span class="n">params_array_corr</span><span class="p">,</span><span class="n">C_INI_CR_S_COMP</span><span class="p">,</span><span class="n">C_INI_CR_WINDOW</span><span class="p">)</span>
+    <span class="n">mjd_start</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">get_param_serial</span><span class="p">(</span><span class="n">params_array_corr</span><span class="p">,</span><span class="n">C_INI_CR_S_TIMES</span><span class="p">,</span><span class="n">C_INI_CR_MJD</span><span class="p">))</span>
+    <span class="n">seconds_start</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">get_param_serial</span><span class="p">(</span><span class="n">params_array_corr</span><span class="p">,</span><span class="n">C_INI_CR_S_TIMES</span><span class="p">,</span><span class="n">C_INI_CR_START</span><span class="p">))</span>
+    <span class="n">seconds_duration</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">get_param_serial</span><span class="p">(</span><span class="n">params_array_corr</span><span class="p">,</span><span class="n">C_INI_CR_S_TIMES</span><span class="p">,</span><span class="n">C_INI_CR_DURATION</span><span class="p">))</span>
+     
+    <span class="n">phase_cal_str</span><span class="o">=</span><span class="n">get_param_serial</span><span class="p">(</span><span class="n">params_array_corr</span><span class="p">,</span><span class="n">C_INI_CR_S_COMP</span><span class="p">,</span><span class="n">C_INI_CR_PC</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">phase_cal_str</span><span class="o">==</span><span class="s2">&quot;yes&quot;</span><span class="p">:</span>
+        <span class="n">phase_calibration</span><span class="o">=</span><span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">phase_calibration</span><span class="o">=</span><span class="mi">0</span>
+    
+    <span class="c1"># Autocorrelation same station</span>
+    <span class="n">str_autocorr</span><span class="o">=</span><span class="n">get_param_serial</span><span class="p">(</span><span class="n">params_array_corr</span><span class="p">,</span><span class="n">C_INI_CR_S_ELEMENTS</span><span class="p">,</span><span class="n">C_INI_CR_AUTO_ST</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">str_autocorr</span><span class="o">==</span><span class="s2">&quot;no&quot;</span><span class="p">:</span>
+        <span class="n">auto_stations</span><span class="o">=</span><span class="mi">0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">auto_stations</span><span class="o">=</span><span class="mi">1</span>
+        
+    <span class="c1"># Correlation for different polarizations</span>
+    <span class="n">str_crosspol</span><span class="o">=</span><span class="n">get_param_serial</span><span class="p">(</span><span class="n">params_array_corr</span><span class="p">,</span><span class="n">C_INI_CR_S_ELEMENTS</span><span class="p">,</span><span class="n">C_INI_CR_CROSS_POL</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">str_crosspol</span><span class="o">==</span><span class="s2">&quot;no&quot;</span><span class="p">:</span>
+        <span class="n">auto_pols</span><span class="o">=</span><span class="mi">2</span>
+    <span class="k">else</span><span class="p">:</span>    
+        <span class="n">auto_pols</span><span class="o">=</span><span class="mi">1</span>
+    
+    <span class="c1"># Use only for testing...</span>
+    <span class="n">first_frame_num</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>       <span class="c1"># If &gt;-1 do not read frames with smaller id than this (for every second)</span>
+    <span class="n">num_frames</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>            <span class="c1"># If &gt;-1 do not read more than this number of frames (for every second)</span>
+    <span class="n">num_pols</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    
+    
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; FFT size: </span><span class="se">\t\t\t</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">fft_size</span><span class="p">),</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Accumulation time [s]: </span><span class="se">\t\t</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">accumulation_time</span><span class="p">),</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+    
+
+    <span class="k">return</span><span class="p">([</span><span class="n">stations</span><span class="p">,</span><span class="n">fft_size</span><span class="p">,</span><span class="n">accumulation_time</span><span class="p">,</span><span class="n">windowing</span><span class="p">,</span><span class="n">mjd_start</span><span class="p">,</span><span class="n">seconds_start</span><span class="p">,</span><span class="n">seconds_duration</span><span class="p">,</span><span class="n">phase_calibration</span><span class="p">,</span>\
+            <span class="n">auto_stations</span><span class="p">,</span><span class="n">auto_pols</span><span class="p">,</span>\
+            <span class="n">first_frame_num</span><span class="p">,</span><span class="n">num_frames</span><span class="p">,</span><span class="n">num_pols</span><span class="p">])</span></div>
+
+            
+<div class="viewcode-block" id="process_ini_media"><a class="viewcode-back" href="../lib_ini_exper.html#lib_ini_exper.process_ini_media">[docs]</a><span class="k">def</span> <span class="nf">process_ini_media</span><span class="p">(</span><span class="n">params_array_media</span><span class="p">,</span><span class="n">data_dir</span><span class="p">,</span><span class="n">v</span><span class="p">,</span><span class="n">file_log</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Process media.ini file.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     params_array_corr : list</span>
+<span class="sd">         list with media configuration.</span>
+<span class="sd">     data_dir : str</span>
+<span class="sd">         folder with media files.</span>
+<span class="sd">     v : int</span>
+<span class="sd">         verbose if 1.</span>
+<span class="sd">     file_log : file handler</span>
+<span class="sd">         handler for log file.</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     v_stations : list of str</span>
+<span class="sd">         all stations ids corresponding to all the media files listed.</span>
+<span class="sd">     max_num_channels : int</span>
+<span class="sd">         maximum number of channels per media file.</span>
+<span class="sd">     max_num_pols : int</span>
+<span class="sd">         maximum number of polarizations per media file.</span>
+<span class="sd">     input_files : list of str</span>
+<span class="sd">         filenames for media files. </span>
+<span class="sd">     total_frames : int</span>
+<span class="sd">         total frames considering all media files.</span>
+<span class="sd">     max_packet_size : int</span>
+<span class="sd">         maximum frame size per media file.</span>
+<span class="sd">     error_str_v :  list of str</span>
+<span class="sd">         errors on missing media files ([] if no errors).</span>
+<span class="sd">    </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    |</span>
+<span class="sd">    | **Considerations:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  Currently assuming that all the media files have frames with the same size.</span>
+<span class="sd">    |  Currently assuming that all the files listed are processed, and that there is a section for each</span>
+<span class="sd">    |    of the listed files.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">v_stations</span> <span class="o">=</span> <span class="n">get_all_values_serial</span><span class="p">(</span><span class="n">params_array_media</span><span class="p">,</span><span class="n">C_INI_MEDIA_STATION</span><span class="p">)</span>
+    
+    <span class="n">total_frames</span><span class="o">=</span><span class="mi">0</span>
+    <span class="n">input_files</span><span class="o">=</span><span class="n">get_val_vector</span><span class="p">(</span><span class="n">params_array_media</span><span class="p">,</span><span class="n">C_INI_MEDIA_S_FILES</span><span class="p">,</span><span class="n">C_INI_MEDIA_LIST</span><span class="p">)</span>
+    <span class="n">max_packet_size</span><span class="o">=</span><span class="mi">0</span>
+    
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Checking maximum packet size for the hdfs block size...&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+    
+    
+    <span class="c1"># Compute number of partitions</span>
+    
+    <span class="n">max_num_channels</span><span class="o">=</span><span class="mi">0</span>
+    <span class="n">max_num_pols</span><span class="o">=</span><span class="mi">0</span>
+    <span class="n">error_str_v</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">total_partitions</span><span class="o">=-</span><span class="mi">1</span>
+    <span class="k">for</span> <span class="n">fi</span> <span class="ow">in</span> <span class="n">input_files</span><span class="p">:</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">data_dir</span><span class="o">+</span><span class="n">fi</span><span class="p">):</span>
+            <span class="n">error_str_v</span><span class="o">+=</span><span class="p">[</span><span class="s2">&quot;ERROR: Media file &quot;</span><span class="o">+</span><span class="n">data_dir</span><span class="o">+</span><span class="n">fi</span><span class="o">+</span><span class="s2">&quot; does not exist!&quot;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+        
+            <span class="n">vdif_stats</span><span class="o">=</span><span class="n">lib_vdif</span><span class="o">.</span><span class="n">get_vdif_stats</span><span class="p">(</span><span class="n">data_dir</span><span class="o">+</span><span class="n">fi</span><span class="p">,</span><span class="n">packet_limit</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">offset_bytes</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">only_offset_once</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">packet_size</span><span class="o">=</span><span class="n">vdif_stats</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">packet_size</span><span class="o">&gt;</span><span class="n">max_packet_size</span><span class="p">:</span>
+                <span class="n">max_packet_size</span><span class="o">=</span><span class="n">packet_size</span>
+        
+            <span class="n">channels_asoc_vector</span><span class="o">=</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">get_param_eq_vector</span><span class="p">(</span><span class="n">params_array_media</span><span class="p">,</span><span class="n">fi</span><span class="p">,</span><span class="n">C_INI_MEDIA_CHANNELS</span><span class="p">)]</span>
+            <span class="n">num_channels</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">channels_asoc_vector</span><span class="p">))</span>
+            <span class="n">num_channels_frame</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">channels_asoc_vector</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">num_channels</span><span class="o">&gt;</span><span class="n">max_num_channels</span><span class="p">:</span>
+                <span class="n">max_num_channels</span><span class="o">=</span><span class="n">num_channels</span>
+            <span class="n">pols_asoc_vector</span><span class="o">=</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">get_param_eq_vector</span><span class="p">(</span><span class="n">params_array_media</span><span class="p">,</span><span class="n">fi</span><span class="p">,</span><span class="n">C_INI_MEDIA_POLARIZATIONS</span><span class="p">)]</span>
+            <span class="n">num_pols</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">pols_asoc_vector</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">num_pols</span><span class="o">&gt;</span><span class="n">max_num_pols</span><span class="p">:</span>
+                <span class="n">max_num_pols</span><span class="o">=</span><span class="n">num_pols</span>
+    
+            <span class="n">total_frames</span> <span class="o">+=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getsize</span><span class="p">(</span><span class="n">data_dir</span><span class="o">+</span><span class="n">fi</span><span class="p">)</span><span class="o">//</span><span class="n">packet_size</span>
+        
+    
+        
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Max packet size: &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">max_packet_size</span><span class="p">),</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Max num channels: &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">max_num_channels</span><span class="p">),</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Max num polarizations: &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">max_num_pols</span><span class="p">),</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Total frames: &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">total_frames</span><span class="p">),</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Input files: </span><span class="se">\t</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">input_files</span><span class="p">),</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+    
+    
+    <span class="k">return</span><span class="p">([</span><span class="n">v_stations</span><span class="p">,</span><span class="n">max_num_channels</span><span class="p">,</span><span class="n">max_num_pols</span><span class="p">,</span>\
+             <span class="n">input_files</span><span class="p">,</span><span class="n">total_frames</span><span class="p">,</span><span class="n">max_packet_size</span><span class="p">,</span><span class="n">error_str_v</span><span class="p">])</span>  </div>
+
+
+
+<div class="viewcode-block" id="process_ini_stations"><a class="viewcode-back" href="../lib_ini_exper.html#lib_ini_exper.process_ini_stations">[docs]</a><span class="k">def</span> <span class="nf">process_ini_stations</span><span class="p">(</span><span class="n">params_array_stations</span><span class="p">,</span><span class="n">v_stations</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Process stations.ini file.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     params_array_corr</span>
+<span class="sd">         list with stations configuration.</span>
+<span class="sd">     v_stations</span>
+<span class="sd">         list of str with all stations ids corresponding to all the media files listed (from media).</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     v_id_stations</span>
+<span class="sd">         list of int with the ids corresponding to v_stations.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">v_id_stations</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i_st</span> <span class="ow">in</span> <span class="n">v_stations</span><span class="p">:</span>
+        <span class="n">v_id_stations</span> <span class="o">+=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">get_param_serial</span><span class="p">(</span><span class="n">params_array_stations</span><span class="p">,</span><span class="n">i_st</span><span class="p">,</span><span class="n">C_INI_ST_ID</span><span class="p">))]</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">v_id_stations</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_num_partitions_red"><a class="viewcode-back" href="../lib_ini_exper.html#lib_ini_exper.get_num_partitions_red">[docs]</a><span class="k">def</span> <span class="nf">get_num_partitions_red</span><span class="p">(</span><span class="n">one_baseline_per_task</span><span class="p">,</span><span class="n">accumulation_time</span><span class="p">,</span><span class="n">signal_duration</span><span class="p">,</span><span class="n">stations</span><span class="p">,</span><span class="n">auto_stations</span><span class="p">,</span>\
+                           <span class="n">max_num_channels</span><span class="p">,</span><span class="n">max_num_pols</span><span class="p">,</span><span class="n">v</span><span class="p">,</span><span class="n">file_log</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get number of reducers based on the experiment configuration.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     one_baseline_per_task : int</span>
+<span class="sd">         [default 0] 0 for all baselines per task, 1 for single baseline per task.</span>
+<span class="sd">     accumulation_time : str(float)</span>
+<span class="sd">         accumulation period in seconds.</span>
+<span class="sd">     signal_duration : str(float)</span>
+<span class="sd">         signal duration in seconds.</span>
+<span class="sd">     stations : int</span>
+<span class="sd">         number of stations.</span>
+<span class="sd">     auto_stations : int</span>
+<span class="sd">         1 if compute autocorrelations, 0 otherwise.</span>
+<span class="sd">     max_num_channels : int</span>
+<span class="sd">         maximum number of channels per media file.</span>
+<span class="sd">     max_num_pol : int</span>
+<span class="sd">         maximum number of polarizations per media file.</span>
+<span class="sd">     v : int</span>
+<span class="sd">         verbose if 1.</span>
+<span class="sd">     file_log : file handler</span>
+<span class="sd">         handler to log file.</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     total_partitions : int</span>
+<span class="sd">         number of reducers.</span>
+<span class="sd">     </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">     This function is critical (together with the custom partitioner) to parallelize the </span>
+<span class="sd">          reduce phase and  keep a well balanced load among the reducers.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">num_accs</span> <span class="o">=</span> <span class="n">lib_acc_comp</span><span class="o">.</span><span class="n">get_tot_acc_blocks</span><span class="p">(</span><span class="n">accumulation_time</span><span class="p">,</span><span class="n">signal_duration</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">one_baseline_per_task</span><span class="p">:</span>
+        <span class="n">num_baselines</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">stations</span><span class="o">*</span><span class="p">(</span><span class="n">stations</span><span class="o">-</span><span class="mi">1</span><span class="o">+</span><span class="n">auto_stations</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">total_partitions</span> <span class="o">=</span> <span class="n">num_baselines</span><span class="o">*</span><span class="n">max_num_channels</span><span class="o">*</span><span class="n">max_num_pols</span><span class="o">*</span><span class="n">num_accs</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1">#total_partitions = num_channels*num_accs</span>
+        <span class="n">total_partitions</span> <span class="o">=</span> <span class="n">max_num_channels</span><span class="o">*</span><span class="n">num_accs</span>
+    
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Acc. periods: &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">num_accs</span><span class="p">),</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+    
+    <span class="k">return</span><span class="p">(</span><span class="n">total_partitions</span><span class="p">)</span></div>
+
+
+
+
+<div class="viewcode-block" id="process_ini_files"><a class="viewcode-back" href="../lib_ini_exper.html#lib_ini_exper.process_ini_files">[docs]</a><span class="k">def</span> <span class="nf">process_ini_files</span><span class="p">(</span><span class="n">data_dir</span><span class="p">,</span> <span class="n">ini_stations</span><span class="p">,</span> <span class="n">ini_sources</span><span class="p">,</span> <span class="n">ini_delay_model</span><span class="p">,</span> <span class="n">ini_delays</span><span class="p">,</span> <span class="n">ini_media</span><span class="p">,</span> <span class="n">ini_correlation</span><span class="p">,</span>\
+                      <span class="n">one_baseline_per_task</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">file_log</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Process .ini files.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     data_dir : str</span>
+<span class="sd">         path to folder with media files.</span>
+<span class="sd">     ini_stations : str</span>
+<span class="sd">         path to stations.ini.</span>
+<span class="sd">     ini_sources : str</span>
+<span class="sd">         path to sources.ini.</span>
+<span class="sd">     ini_delay_model : str</span>
+<span class="sd">         path to delay_model.ini.</span>
+<span class="sd">     ini_delays : str</span>
+<span class="sd">         path to delays.ini.</span>
+<span class="sd">     ini_media : str</span>
+<span class="sd">         path to media.ini.</span>
+<span class="sd">     ini_correlation : str</span>
+<span class="sd">         path to correlation.ini.</span>
+<span class="sd">     one_baseline_per_task : int</span>
+<span class="sd">         default 0.</span>
+<span class="sd">     v : int</span>
+<span class="sd">         verbose if 1.</span>
+<span class="sd">     file_log : file handler</span>
+<span class="sd">         handler for log file.</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     stations_serial_str : str</span>
+<span class="sd">         serialized version of stations.ini.</span>
+<span class="sd">     media_serial_str : str</span>
+<span class="sd">         serialized version of media.ini.</span>
+<span class="sd">     correlation_serial_str : str</span>
+<span class="sd">         serialized version of correlation.ini.</span>
+<span class="sd">     delays_serial_str : str</span>
+<span class="sd">         serialized version of delays.ini.</span>
+<span class="sd">     auto_stations : int</span>
+<span class="sd">         1 if compute autocorrelations, 0 otherwise.</span>
+<span class="sd">     auto_pols : int</span>
+<span class="sd">         1 if compute cross-polarization correlations, 2 if only same-polarization correlations (see msvf.py).</span>
+<span class="sd">     fft_size : int</span>
+<span class="sd">         requested number of coefficients in the FFT.</span>
+<span class="sd">     accumulation_time : str</span>
+<span class="sd">         integration period duration [s].</span>
+<span class="sd">     stations : int</span>
+<span class="sd">         number of stations (it will be used to compute number of mappers...).</span>
+<span class="sd">     ref_epoch : int</span>
+<span class="sd">         MJD for the start of the scan.</span>
+<span class="sd">     signal_start : int</span>
+<span class="sd">         seconds after MJD for the start of the scan.</span>
+<span class="sd">     signal_duration : float</span>
+<span class="sd">         duration of the scan [s].</span>
+<span class="sd">     input_files : list of str</span>
+<span class="sd">         filenames for media files.</span>
+<span class="sd">     first_frame_num : int</span>
+<span class="sd">         [default -1] This can be used to force the mapper to start reading frames after this id.</span>
+<span class="sd">     num_frames : int</span>
+<span class="sd">         [default -1] This can be used to force the mapper to read only this number of frames for each second.</span>
+<span class="sd">     codecs_serial : str</span>
+<span class="sd">         [default &quot;0&quot;] Serialized version of the codebook if using compression.  </span>
+<span class="sd">     max_packet_size : int</span>
+<span class="sd">         number of bytes in the largest frame of the media files.</span>
+<span class="sd">     total_frames : int</span>
+<span class="sd">         number of frames in all the media files.</span>
+<span class="sd">     total_partitions : int</span>
+<span class="sd">         number of reducer tasks.</span>
+<span class="sd">     windowing : str</span>
+<span class="sd">         windowing as defined in correlation.ini.</span>
+<span class="sd">     phase_calibration : int</span>
+<span class="sd">         1 if extract phase calibration tones, 0 otherwise.</span>
+<span class="sd">     delay_error : None or str</span>
+<span class="sd">         None if no errors during delay computations, str with error otherwise. </span>
+<span class="sd">     error_str_v : </span>
+<span class="sd">         list of str with errors for media files not existing.</span>
+<span class="sd">     num_pols : int</span>
+<span class="sd">         -1</span>
+<span class="sd">    </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    |</span>
+<span class="sd">    | **TO DO:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  Remove num_pols.</span>
+<span class="sd">    |  Remove vq.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Processing *.ini files&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span> 
+    
+
+    <span class="c1"># media.ini</span>
+    <span class="n">media_serial_str</span> <span class="o">=</span> <span class="n">serialize_config</span><span class="p">(</span><span class="n">ini_media</span><span class="p">)</span>
+    <span class="n">params_array_media</span> <span class="o">=</span> <span class="n">serial_params_to_array</span><span class="p">(</span><span class="n">media_serial_str</span><span class="p">)</span>
+    <span class="p">[</span><span class="n">v_stations</span><span class="p">,</span><span class="n">max_num_channels</span><span class="p">,</span><span class="n">max_num_pols</span><span class="p">,</span>\
+             <span class="n">input_files</span><span class="p">,</span><span class="n">total_frames</span><span class="p">,</span><span class="n">max_packet_size</span><span class="p">,</span><span class="n">error_str_v</span><span class="p">]</span> <span class="o">=</span> <span class="n">process_ini_media</span><span class="p">(</span><span class="n">params_array_media</span><span class="p">,</span><span class="n">data_dir</span><span class="p">,</span><span class="n">v</span><span class="p">,</span><span class="n">file_log</span><span class="p">)</span>
+    
+    
+    <span class="c1"># stations.ini</span>
+    <span class="n">stations_serial_str</span><span class="o">=</span><span class="n">serialize_config</span><span class="p">(</span><span class="n">ini_stations</span><span class="p">)</span>
+    <span class="n">params_array_st</span><span class="o">=</span><span class="n">serial_params_to_array</span><span class="p">(</span><span class="n">stations_serial_str</span><span class="p">)</span>
+    <span class="n">v_id_stations</span> <span class="o">=</span> <span class="n">process_ini_stations</span><span class="p">(</span><span class="n">params_array_st</span><span class="p">,</span><span class="n">v_stations</span><span class="p">)</span>
+    
+    <span class="c1"># correlation.ini</span>
+    <span class="n">correlation_serial_str</span> <span class="o">=</span> <span class="n">serialize_config</span><span class="p">(</span><span class="n">ini_correlation</span><span class="p">)</span>
+    <span class="n">params_array_corr</span> <span class="o">=</span> <span class="n">serial_params_to_array</span><span class="p">(</span><span class="n">correlation_serial_str</span><span class="p">)</span>
+    <span class="p">[</span><span class="n">stations</span><span class="p">,</span><span class="n">fft_size</span><span class="p">,</span><span class="n">accumulation_time</span><span class="p">,</span><span class="n">windowing</span><span class="p">,</span><span class="n">mjd_start</span><span class="p">,</span><span class="n">seconds_start</span><span class="p">,</span><span class="n">seconds_duration</span><span class="p">,</span><span class="n">phase_calibration</span><span class="p">,</span>\
+            <span class="n">auto_stations</span><span class="p">,</span><span class="n">auto_pols</span><span class="p">,</span>\
+            <span class="n">first_frame_num</span><span class="p">,</span><span class="n">num_frames</span><span class="p">,</span><span class="n">num_pols</span><span class="p">]</span> <span class="o">=</span> <span class="n">process_ini_correlation</span><span class="p">(</span><span class="n">params_array_corr</span><span class="p">,</span><span class="n">file_log</span><span class="p">,</span><span class="n">v</span><span class="p">)</span>
+    
+    <span class="c1"># TO DO: merge these three pairs into three variables</span>
+    <span class="n">ref_epoch</span> <span class="o">=</span> <span class="n">mjd_start</span>
+    <span class="n">signal_start</span> <span class="o">=</span> <span class="n">seconds_start</span>
+    <span class="n">signal_duration</span> <span class="o">=</span> <span class="n">seconds_duration</span>
+    
+    
+    <span class="c1"># Read ini file (media.ini) and serialize)</span>
+
+    <span class="n">sources_serial_str</span><span class="o">=</span><span class="n">serialize_config</span><span class="p">(</span><span class="n">ini_sources</span><span class="p">)</span>
+    <span class="n">delay_model_serial_str</span><span class="o">=</span><span class="n">serialize_config</span><span class="p">(</span><span class="n">ini_delay_model</span><span class="p">)</span>
+    
+    <span class="n">params_array_so</span><span class="o">=</span><span class="n">serial_params_to_array</span><span class="p">(</span><span class="n">sources_serial_str</span><span class="p">)</span>
+    <span class="n">params_array_delay_model</span><span class="o">=</span><span class="n">serial_params_to_array</span><span class="p">(</span><span class="n">delay_model_serial_str</span><span class="p">)</span>
+
+    
+    <span class="c1">#model_type = get_param_serial(params_array_corr,C_INI_CR_S_DELAYS,C_INI_CR_MODEL)</span>
+    <span class="n">model_type</span> <span class="o">=</span> <span class="n">C_INI_CR_M_FILE</span>
+
+
+    <span class="n">seconds_per_step</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">accumulation_time</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Delay computations for every acc period!&quot;</span><span class="p">)</span>
+    <span class="n">tot_steps</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">seconds_duration</span><span class="o">/</span><span class="n">seconds_per_step</span><span class="p">))</span>
+    <span class="c1">#correlation.ini</span>
+    <span class="n">delay_error</span><span class="o">=</span><span class="kc">None</span>
+        
+        
+   
+            
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> Recomputing delays:&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span> 
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  MJD: &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">mjd_start</span><span class="p">),</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>  
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  seconds start: &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">seconds_start</span><span class="p">),</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>  
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  tot steps: &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">tot_steps</span><span class="p">),</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span> 
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  seconds per step: &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">seconds_per_step</span><span class="p">),</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span> 
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  output file: &quot;</span><span class="o">+</span><span class="n">ini_delays</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  (Silent output for delay libs)&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span> 
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span> 
+    
+    
+    <span class="c1"># TO DO: remove?</span>
+    <span class="k">if</span> <span class="n">model_type</span><span class="o">==</span><span class="n">C_INI_CR_M_SIMPLE</span> <span class="ow">or</span> <span class="n">model_type</span><span class="o">==</span><span class="s2">&quot;&quot;</span><span class="p">:</span>
+        <span class="c1"># Use simple model</span>
+        <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  Using simple model&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span> 
+        <span class="n">gen_delays_ini_file</span><span class="p">(</span><span class="n">file_stations_ini</span><span class="o">=</span><span class="n">ini_stations</span><span class="p">,</span><span class="n">params_array_stations</span><span class="o">=</span><span class="n">params_array_st</span><span class="p">,</span><span class="n">file_sources_ini</span><span class="o">=</span><span class="n">ini_sources</span><span class="p">,</span>\
+                                <span class="n">params_array_sources</span><span class="o">=</span><span class="n">params_array_so</span><span class="p">,</span>\
+                                <span class="n">file_delays_ini</span><span class="o">=</span><span class="n">ini_delays</span><span class="p">,</span><span class="n">params_array_delay_model</span><span class="o">=</span><span class="n">params_array_delay_model</span><span class="p">,</span>\
+                                <span class="n">mjd_start</span><span class="o">=</span><span class="n">mjd_start</span><span class="p">,</span>\
+                                <span class="n">tot_steps</span><span class="o">=</span><span class="n">tot_steps</span><span class="p">,</span><span class="n">step_seconds</span><span class="o">=</span><span class="n">seconds_per_step</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">seconds_offset</span><span class="o">=</span><span class="n">seconds_start</span><span class="p">)</span>   
+        
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Use model from file</span>
+        <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  Using model from file&quot;</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">file_log</span><span class="p">)</span> 
+    
+        <span class="n">delay_error</span><span class="o">=</span><span class="n">gen_delays_ini_file</span><span class="p">(</span><span class="n">file_stations_ini</span><span class="o">=</span><span class="n">ini_stations</span><span class="p">,</span><span class="n">params_array_stations</span><span class="o">=</span><span class="n">params_array_st</span><span class="p">,</span>\
+                                <span class="n">file_sources_ini</span><span class="o">=</span><span class="n">ini_sources</span><span class="p">,</span>\
+                                <span class="n">params_array_sources</span><span class="o">=</span><span class="n">params_array_so</span><span class="p">,</span>\
+                                <span class="n">file_delay_model_ini</span><span class="o">=</span><span class="n">ini_delay_model</span><span class="p">,</span><span class="n">params_array_delay_model</span><span class="o">=</span><span class="n">params_array_delay_model</span><span class="p">,</span>\
+                                <span class="n">file_delays_ini</span><span class="o">=</span><span class="n">ini_delays</span><span class="p">,</span><span class="n">mjd_start</span><span class="o">=</span><span class="n">mjd_start</span><span class="p">,</span>\
+                                <span class="n">seconds_ref</span><span class="o">=</span><span class="n">seconds_start</span><span class="p">,</span><span class="n">tot_steps</span><span class="o">=</span><span class="n">tot_steps</span><span class="p">,</span><span class="n">step_seconds</span><span class="o">=</span><span class="n">seconds_per_step</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        
+        
+
+        
+    <span class="k">if</span> <span class="n">delay_error</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">delays_serial_str</span><span class="o">=</span><span class="n">serialize_config</span><span class="p">(</span><span class="n">ini_delays</span><span class="p">)</span> 
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">delays_serial_str</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+        
+    
+ 
+    <span class="n">total_partitions</span> <span class="o">=</span> <span class="n">get_num_partitions_red</span><span class="p">(</span><span class="n">one_baseline_per_task</span><span class="p">,</span><span class="n">accumulation_time</span><span class="p">,</span><span class="n">signal_duration</span><span class="p">,</span><span class="n">stations</span><span class="p">,</span><span class="n">auto_stations</span><span class="p">,</span>\
+                                              <span class="n">max_num_channels</span><span class="p">,</span><span class="n">max_num_pols</span><span class="p">,</span><span class="n">v</span><span class="p">,</span><span class="n">file_log</span><span class="p">)</span>
+        
+    
+    
+
+
+    
+    <span class="c1"># VQ</span>
+    <span class="c1"># Codecs for compression</span>
+    <span class="c1"># Generate serialized version of station names and corresponding codecs (codebooks)</span>
+    
+    
+    
+    <span class="c1"># 2016.08.22: disabled compression</span>
+    <span class="c1">#v_bits_sample = get_all_values_serial(params_array_media,C_INI_MEDIA_BITS_SAMPLE)</span>
+    <span class="c1">#v_compression = get_all_values_serial(params_array_media,C_INI_MEDIA_COMPRESSION)</span>
+    <span class="c1">#v_codecs = get_all_values_serial(params_array_media,C_INI_MEDIA_C_CODECS)</span>
+    <span class="n">v_compression</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;no&quot;</span><span class="p">]</span>
+    
+    <span class="k">if</span> <span class="s2">&quot;no&quot;</span> <span class="ow">in</span> <span class="n">v_compression</span><span class="p">:</span>
+        <span class="n">codecs_serial</span> <span class="o">=</span> <span class="s2">&quot;0&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">codecs_serial</span> <span class="o">=</span> <span class="n">get_group_of_serialized_codebooks_noencoding</span><span class="p">(</span><span class="n">v_stations</span><span class="p">,</span><span class="n">v_id_stations</span><span class="p">,</span><span class="n">v_codecs</span><span class="p">,</span><span class="n">v_bits_sample</span><span class="p">)</span>
+    
+    
+
+    
+    <span class="k">return</span><span class="p">([</span><span class="n">stations_serial_str</span><span class="p">,</span><span class="n">media_serial_str</span><span class="p">,</span><span class="n">correlation_serial_str</span><span class="p">,</span><span class="n">delays_serial_str</span><span class="p">,</span>\
+            <span class="n">auto_stations</span><span class="p">,</span> <span class="n">auto_pols</span><span class="p">,</span> <span class="n">fft_size</span><span class="p">,</span> <span class="n">accumulation_time</span><span class="p">,</span> <span class="n">stations</span><span class="p">,</span> <span class="n">ref_epoch</span><span class="p">,</span> <span class="n">signal_start</span><span class="p">,</span> <span class="n">signal_duration</span><span class="p">,</span><span class="n">input_files</span><span class="p">,</span>\
+            <span class="n">first_frame_num</span><span class="p">,</span><span class="n">num_frames</span><span class="p">,</span><span class="n">codecs_serial</span><span class="p">,</span><span class="n">max_packet_size</span><span class="p">,</span><span class="n">total_frames</span><span class="p">,</span><span class="n">total_partitions</span><span class="p">,</span><span class="n">windowing</span><span class="p">,</span>\
+            <span class="n">phase_calibration</span><span class="p">,</span><span class="n">delay_error</span><span class="p">,</span><span class="n">error_str_v</span><span class="p">,</span><span class="n">num_pols</span><span class="p">])</span></div>
+
+
+
+<div class="viewcode-block" id="check_errors_ini_exper"><a class="viewcode-back" href="../lib_ini_exper.html#lib_ini_exper.check_errors_ini_exper">[docs]</a><span class="k">def</span> <span class="nf">check_errors_ini_exper</span><span class="p">(</span><span class="n">data_dir</span><span class="p">,</span><span class="n">ini_folder</span><span class="p">,</span><span class="n">ini_stations</span><span class="p">,</span><span class="n">ini_sources</span><span class="p">,</span><span class="n">ini_delay_model</span><span class="p">,</span><span class="n">ini_media</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check experiment configuration for errors. Currently simply checking existence of paths and files.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     data_dir : str</span>
+<span class="sd">         path to media folder.</span>
+<span class="sd">     ini_folder : str</span>
+<span class="sd">         path to experiment folder.</span>
+<span class="sd">     ini_stations : str</span>
+<span class="sd">         path to stations.ini (absolute).</span>
+<span class="sd">     ini_sources : str</span>
+<span class="sd">         path to sources.ini (absolute).</span>
+<span class="sd">     ini_delay_model : str</span>
+<span class="sd">         path to delay_model.ini (absolute).</span>
+<span class="sd">     ini_media : str</span>
+<span class="sd">         path to media.ini (absolute)</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     init_success : int</span>
+<span class="sd">         0 if errors, 1 otherwise.</span>
+<span class="sd">     </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    |</span>
+<span class="sd">    | **TO DO:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  Add more checks. Consider checking ini files syntax, range of values, etc.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">init_success</span><span class="o">=</span><span class="mi">1</span>
+    <span class="c1"># Check if input folder exists</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">data_dir</span><span class="p">):</span>
+        <span class="n">init_success</span><span class="o">=</span><span class="mi">0</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">ERROR: Input data dir does not exist! (&quot;</span><span class="o">+</span><span class="n">data_dir</span><span class="o">+</span><span class="s2">&quot;)&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># Check if experiment folder exists</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">ini_folder</span><span class="p">):</span>
+        <span class="n">init_success</span><span class="o">=</span><span class="mi">0</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">ERROR: Experiment dir does not exist! (&quot;</span><span class="o">+</span><span class="n">ini_folder</span><span class="o">+</span><span class="s2">&quot;)&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># Check if initialization files for experiment exist</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">ini_file</span><span class="p">,</span><span class="n">t_file</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">([</span><span class="n">ini_stations</span><span class="p">,</span><span class="n">ini_sources</span><span class="p">,</span><span class="n">ini_delay_model</span><span class="p">,</span><span class="n">ini_media</span><span class="p">],</span>\
+                                   <span class="p">[</span><span class="s2">&quot;stations&quot;</span><span class="p">,</span><span class="s2">&quot;sources&quot;</span><span class="p">,</span><span class="s2">&quot;delay model&quot;</span><span class="p">,</span><span class="s2">&quot;media&quot;</span><span class="p">]):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">ini_file</span><span class="p">):</span>
+                <span class="n">init_success</span><span class="o">=</span><span class="mi">0</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ERROR: Initialization file for &quot;</span><span class="o">+</span><span class="n">t_file</span><span class="o">+</span><span class="s2">&quot; does not exist! (&quot;</span><span class="o">+</span><span class="n">ini_file</span><span class="o">+</span><span class="s2">&quot;)&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span><span class="p">(</span><span class="n">init_success</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="gen_delays_ini_file"><a class="viewcode-back" href="../lib_ini_exper.html#lib_ini_exper.gen_delays_ini_file">[docs]</a><span class="k">def</span> <span class="nf">gen_delays_ini_file</span><span class="p">(</span><span class="n">file_stations_ini</span><span class="p">,</span><span class="n">params_array_stations</span><span class="p">,</span><span class="n">file_sources_ini</span><span class="p">,</span><span class="n">params_array_sources</span><span class="p">,</span>\
+                        <span class="n">file_delay_model_ini</span><span class="p">,</span><span class="n">params_array_delay_model</span><span class="p">,</span><span class="n">file_delays_ini</span><span class="p">,</span><span class="n">mjd_start</span><span class="p">,</span><span class="n">seconds_ref</span><span class="p">,</span>\
+                        <span class="n">tot_steps</span><span class="p">,</span><span class="n">step_seconds</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">seconds_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate file with delay polynomials from delay model.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     file_stations_ini : str</span>
+<span class="sd">         path to stations.ini.</span>
+<span class="sd">     params_array_stations : list</span>
+<span class="sd">         configuration of stations.ini.</span>
+<span class="sd">     file_sources_ini : str</span>
+<span class="sd">         path to sources.ini.</span>
+<span class="sd">     params_array_sources : list</span>
+<span class="sd">         configuration of sources.ini.</span>
+<span class="sd">     file_delay_model_ini : str</span>
+<span class="sd">         path to delay_model.ini.</span>
+<span class="sd">     params_array_delay_model : list</span>
+<span class="sd">         configuration of delay_mode.ini.</span>
+<span class="sd">     file_delays_ini : str</span>
+<span class="sd">         path to delays.ini [will write].</span>
+<span class="sd">     mjd_start : int</span>
+<span class="sd">         MJD for the start of the scan.</span>
+<span class="sd">     seconds_ref : int</span>
+<span class="sd">         seconds in MJD for the start of the scan.</span>
+<span class="sd">     tot_steps : int</span>
+<span class="sd">         number of accumulation periods in the scan.</span>
+<span class="sd">     step_seconds : str(float)</span>
+<span class="sd">         accumulation period [s].</span>
+<span class="sd">     seconds_offset</span>
+<span class="sd">         0</span>
+<span class="sd">     v : int</span>
+<span class="sd">         verbose if 1.</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     s_delay</span>
+<span class="sd">         None if error, ini configuration to write if successful.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="c1"># Config parsers</span>
+    <span class="n">s_st</span> <span class="o">=</span> <span class="n">configparser</span><span class="o">.</span><span class="n">ConfigParser</span><span class="p">()</span>
+    <span class="n">s_st</span><span class="o">.</span><span class="n">optionxform</span><span class="o">=</span><span class="nb">str</span>
+    <span class="n">s_st</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">file_stations_ini</span><span class="p">)</span> <span class="c1">#(&#39;stations.ini&#39;)</span>
+    <span class="n">s_so</span> <span class="o">=</span> <span class="n">configparser</span><span class="o">.</span><span class="n">ConfigParser</span><span class="p">()</span>
+    <span class="n">s_so</span><span class="o">.</span><span class="n">optionxform</span><span class="o">=</span><span class="nb">str</span>
+    <span class="n">s_so</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">file_sources_ini</span><span class="p">)</span> <span class="c1">#(&#39;sources.ini&#39;)</span>
+    <span class="n">s_delay</span> <span class="o">=</span> <span class="n">configparser</span><span class="o">.</span><span class="n">ConfigParser</span><span class="p">()</span>
+    <span class="n">s_delay</span><span class="o">.</span><span class="n">optionxform</span><span class="o">=</span><span class="nb">str</span>
+
+
+    <span class="n">seconds_offset</span><span class="o">=</span><span class="mi">0</span>
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;offset:&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">seconds_offset</span><span class="p">))</span>
+
+    <span class="n">s_delay</span><span class="o">=</span><span class="n">lib_delay_model</span><span class="o">.</span><span class="n">compute_initial_delays</span><span class="p">(</span><span class="n">params_array_delay_model</span><span class="p">,</span><span class="n">params_array_stations</span><span class="p">,</span><span class="n">s_st</span><span class="p">,</span><span class="n">s_so</span><span class="p">,</span><span class="n">s_delay</span><span class="p">,</span>\
+                                                <span class="n">mjd_start</span><span class="p">,</span><span class="n">seconds_ref</span><span class="p">,</span><span class="n">tot_steps</span><span class="p">,</span><span class="n">step_seconds</span><span class="p">,</span><span class="n">seconds_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span>\
+                                                <span class="n">file_ini</span><span class="o">=</span><span class="n">file_delays_ini</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="n">s_delay</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Write configuration to file</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_delays_ini</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">configfile</span><span class="p">:</span>
+            <span class="n">s_delay</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">configfile</span><span class="p">)</span>
+    
+        <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Created delays file: &quot;</span><span class="o">+</span><span class="n">file_delays_ini</span><span class="p">)</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">s_delay</span><span class="p">)</span></div>
+
+<span class="c1"># &lt;codecell&gt;</span>
+
+
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Antonio Vazquez Alvarez, Victor Pankratius, and Pedro Elosegui.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

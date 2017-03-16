@@ -1,0 +1,1431 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>lib_delay_model &#8212; CorrelX 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for lib_delay_model</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># &lt;nbformat&gt;3.0&lt;/nbformat&gt;</span>
+
+<span class="c1"># &lt;codecell&gt;</span>
+
+<span class="c1">#!/usr/bin/env python</span>
+<span class="c1">#</span>
+<span class="c1">#The MIT CorrelX Correlator</span>
+<span class="c1">#</span>
+<span class="c1">#https://github.com/MITHaystack/CorrelX</span>
+<span class="c1">#Contact: correlX@haystack.mit.edu</span>
+<span class="c1">#Project leads: Victor Pankratius, Pedro Elosegui Project developer: A.J. Vazquez Alvarez</span>
+<span class="c1">#</span>
+<span class="c1">#Copyright 2017 MIT Haystack Observatory</span>
+<span class="c1">#</span>
+<span class="c1">#Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the &quot;Software&quot;), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1">#The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</span>
+<span class="c1">#</span>
+<span class="c1">#THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#------------------------------</span>
+<span class="c1">#------------------------------</span>
+<span class="c1">#Project: CorrelX.</span>
+<span class="c1">#File: lib_delay_model.py.</span>
+<span class="c1">#Author: A.J. Vazquez Alvarez (ajvazquez@haystack.mit.edu)</span>
+<span class="c1">#Description: </span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Library for calculating delays using polynomial models.</span>
+
+<span class="sd">Known issues</span>
+<span class="sd">------------</span>
+<span class="sd">     (!) Delays currently computed w.r.t. the first station, they should computed w.r.t. the center of the Earth instead.</span>
+<span class="sd">     </span>
+<span class="sd">TO DO</span>
+<span class="sd">-----</span>
+<span class="sd">     Compute absolute delays instead of relative to reference station.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="c1">#History:</span>
+<span class="c1">#initial version: 2016.06 ajva</span>
+<span class="c1">#MIT Haystack Observatory</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span><span class="p">,</span><span class="n">division</span>
+<span class="kn">import</span> <span class="nn">imp</span>
+
+<span class="c1">#from datetime import date</span>
+
+<span class="kn">import</span> <span class="nn">lib_ini_files</span>
+<span class="n">imp</span><span class="o">.</span><span class="n">reload</span><span class="p">(</span><span class="n">lib_ini_files</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">lib_ini_files</span> <span class="k">import</span> <span class="o">*</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">configparser</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">ConfigParser</span> <span class="k">as</span> <span class="nn">configparser</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+    
+ 
+    
+<span class="c1">###########################################</span>
+<span class="c1">#         Debugging</span>
+<span class="c1">###########################################</span>
+    
+<span class="c1"># Basic delay information for testing</span>
+<span class="n">SHOW_DELAY_INFO</span><span class="o">=</span><span class="mi">0</span>
+<span class="c1">#SHOW_DELAY_INFO=0</span>
+
+<span class="c1"># Show information on computation of delays</span>
+<span class="n">DEBUG_GET_DELAY</span><span class="o">=</span><span class="mi">0</span>
+<span class="c1">#DEBUG_GET_DELAY=1         </span>
+    
+<span class="c1"># Show information on computation of the delays, to be used with the option for debugging in rsvf (DEBUG_LIB_DELAY)</span>
+<span class="n">DEBUG_LIB_DELAY_ONLY_HERE</span><span class="o">=</span><span class="mi">0</span>
+<span class="c1">#DEBUG_LIB_DELAY_ONLY_HERE=1 </span>
+ 
+<span class="c1"># Show debug info for delay computation</span>
+<span class="n">DEBUG_FINAL_DELAYS</span><span class="o">=</span><span class="mi">0</span>
+<span class="c1">#DEBUG_FINAL_DELAYS=1        </span>
+
+<span class="c1">###########################################</span>
+<span class="c1">#         Thresholds</span>
+<span class="c1">###########################################</span>
+    
+<span class="c1"># Threshold for warning about too many seconds between referent time (experiment start time) and clock epoch</span>
+<span class="c1">#  (Value taken from fourfit)</span>
+<span class="c1"># TO DO: If this threshold is passed, there may be precision issues with the delay computation, work on this.</span>
+<span class="n">TH_WARNING_DIFF_CLOCK</span><span class="o">=</span><span class="mf">3.0e5</span>
+        
+<span class="c1"># Threshold for considering null a relative delay</span>
+<span class="n">TH_REL_DELAY_ZERO</span><span class="o">=</span><span class="mf">1e-17</span>
+
+
+<span class="c1">###########################################</span>
+<span class="c1">#         Configuration</span>
+<span class="c1">###########################################</span>
+
+<span class="c1"># ---- Absolute/differential polynomials (during correlation) ----</span>
+<span class="c1"># default DIFF_POLY=1</span>
+<span class="n">DIFF_POLY</span><span class="o">=</span><span class="mi">1</span>  <span class="c1"># (Default) Will use differential polynomials for delay computations</span>
+<span class="c1">#DIFF_POLY=0 # This needs debugging</span>
+
+<span class="c1"># ---- Offset at calculation of first delay</span>
+<span class="c1"># deafult DIFF_OFFSET=1</span>
+<span class="n">DIFF_OFFSET</span><span class="o">=</span><span class="mi">1</span>   <span class="c1"># (Deafult) Will apply offset at calculation of first delay</span>
+<span class="c1">#DIFF_OFFSET=0  # Untested</span>
+
+<span class="c1"># ---- Delay model and clock into same polynomial</span>
+<span class="c1"># default SUM_CLK_DIFF=1</span>
+<span class="n">SUM_CLK_DIFF</span><span class="o">=</span><span class="mi">1</span> <span class="c1"># Default (add clock coefficients to delay polynomial)</span>
+<span class="c1">#SUM_CLK_DIFF=0 # Untested</span>
+
+<span class="c1"># --- Order of polynomials used for computations</span>
+<span class="c1"># default LIMIT_POLY_EVAL=5</span>
+<span class="n">LIMIT_POLY_EVAL</span><span class="o">=</span><span class="mi">5</span> <span class="c1"># (read from delay_model.ini file)</span>
+<span class="n">LIMIT_POLY_FOUND</span><span class="o">=</span><span class="mi">2</span> <span class="c1"># (computations) 2 for quadratic, so that it will take the first three elements of the polynomial</span>
+
+<span class="c1"># ---- Type for the coefficients of the polynomials read from the ini files</span>
+<span class="n">TYPE_COEFF_DELAY</span> <span class="o">=</span> <span class="nb">float</span>
+<span class="c1">#TYPE_COEFF_DELAY = np.float64</span>
+<span class="c1">#TYPE_COEFF_DELAY = np.longdouble</span>
+    
+<span class="c1"># ---- Number of decimal positions in coefficients of polynomials to be written as strings</span>
+<span class="c1"># default TOT_DEC_POS=16</span>
+<span class="n">TOT_DEC_POS</span><span class="o">=</span><span class="mi">16</span>
+    
+    
+
+
+
+<span class="c1">###########################################</span>
+<span class="c1">#         Shift and fractional delay</span>
+<span class="c1">###########################################</span>
+
+    
+    
+<div class="viewcode-block" id="get_delay_shift_frac"><a class="viewcode-back" href="../lib_delay_model.html#lib_delay_model.get_delay_shift_frac">[docs]</a><span class="k">def</span> <span class="nf">get_delay_shift_frac</span><span class="p">(</span><span class="n">delay</span><span class="p">,</span><span class="n">fs</span><span class="p">,</span><span class="n">data_type</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute integer and fractional shift.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     delay : float</span>
+<span class="sd">         value for the delay [s].</span>
+<span class="sd">     fs : float</span>
+<span class="sd">         sampling frequency [Hz].</span>
+<span class="sd">     data_type : int</span>
+<span class="sd">         0 for real, 1 for complex.</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     shift_int : int</span>
+<span class="sd">         offset in number of samples.</span>
+<span class="sd">     fractional_sample_delay : float</span>
+<span class="sd">         fractional sample.</span>
+<span class="sd">    </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">     Data type is for being used with complex samples unpacked as a list of integers (in msvf),</span>
+<span class="sd">      otherwise it should be left as zero.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">shift</span> <span class="o">=</span> <span class="n">delay</span> <span class="o">*</span> <span class="n">fs</span>
+
+    <span class="n">fractional_sample_delay</span> <span class="o">=</span> <span class="n">shift</span><span class="o">%</span><span class="mi">1</span>
+    <span class="n">shift_int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">shift</span><span class="o">//</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">data_type</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="n">shift_int</span><span class="o">*=</span><span class="mi">2</span>
+    
+    
+    <span class="k">if</span> <span class="n">fractional_sample_delay</span><span class="o">&gt;</span><span class="mf">0.5</span><span class="p">:</span>
+        <span class="n">fractional_sample_delay</span><span class="o">-=</span><span class="mi">1</span>
+        <span class="n">shift_int</span><span class="o">+=</span><span class="mi">1</span>
+        <span class="k">if</span> <span class="n">data_type</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">shift_int</span><span class="o">+=</span><span class="mi">1</span>
+
+    
+    
+    <span class="k">return</span><span class="p">([</span><span class="n">shift_int</span><span class="p">,</span><span class="n">fractional_sample_delay</span><span class="p">])</span></div>
+    
+
+
+<div class="viewcode-block" id="get_full_frac_val"><a class="viewcode-back" href="../lib_delay_model.html#lib_delay_model.get_full_frac_val">[docs]</a><span class="k">def</span> <span class="nf">get_full_frac_val</span><span class="p">(</span><span class="n">r_recalc</span><span class="p">,</span><span class="n">fs</span><span class="p">,</span><span class="n">diff_frac</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">bypass_correction</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute total offset in number of samples, and also fractional sample correction.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     r_recalc : float</span>
+<span class="sd">         delay.</span>
+<span class="sd">     fs : float</span>
+<span class="sd">         sampling frequency.</span>
+<span class="sd">     diff_frac : 0</span>
+<span class="sd">         [unused] 0 by default.</span>
+<span class="sd">     bypass_correction : int</span>
+<span class="sd">         | if 0: corrects the fractional sample correction to be between -0.5 and +0.5.</span>
+<span class="sd">         | if 1: returns the fractional sample correction between 0 and 1.</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     full_fractional_recalc : float</span>
+<span class="sd">         total offset in number of samples, including fractional part.</span>
+<span class="sd">     fractional_recalc : float</span>
+<span class="sd">         fractional sample correction.</span>
+<span class="sd">    </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">     Bypass correction used in get_frac_over for simplicity.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">fractional_recalc</span><span class="o">=</span><span class="p">((</span><span class="n">r_recalc</span><span class="p">)</span><span class="o">*</span><span class="n">fs</span><span class="p">)</span>
+    <span class="n">full_fractional_recalc</span><span class="o">=</span><span class="n">fractional_recalc</span>
+    <span class="n">fractional_recalc</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">fractional_recalc</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">bypass_correction</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+        <span class="n">fractional_recalc_out</span><span class="o">=</span><span class="n">fractional_recalc</span><span class="o">-</span><span class="p">(</span><span class="n">fractional_recalc</span><span class="o">&gt;</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">fractional_recalc_out</span><span class="o">=</span><span class="n">fractional_recalc</span>
+    <span class="k">return</span><span class="p">([</span><span class="n">full_fractional_recalc</span><span class="p">,</span><span class="n">fractional_recalc_out</span><span class="p">])</span></div>
+
+
+
+<span class="c1">###########################################</span>
+<span class="c1">#         Polynomials</span>
+<span class="c1">###########################################</span>
+
+
+<div class="viewcode-block" id="get_poly_list"><a class="viewcode-back" href="../lib_delay_model.html#lib_delay_model.get_poly_list">[docs]</a><span class="k">def</span> <span class="nf">get_poly_list</span><span class="p">(</span><span class="n">params_array</span><span class="p">,</span><span class="n">section_str</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get list with poly from params array and section string.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     params_array : list</span>
+<span class="sd">         information from delay model ini file (see lib_ini_files.py).</span>
+<span class="sd">     section_str : str</span>
+<span class="sd">         section of the ini file associated with a certain station, source and time (see const_ini_files.py)</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     poly_model : list of float</span>
+<span class="sd">         list of [n-th coeff] with polynomial coefficients for the delay model with n from zero to max_order, in seconds.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    |</span>
+<span class="sd">    | **Configuration (constants):**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  LIMIT_POLY_EVAL:  [2 by default] maximum order coefficient of the polynomial.</span>
+<span class="sd">    |</span>
+<span class="sd">    |</span>
+<span class="sd">    | **Notes:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  Coefficients in the delay model ini file are in microseconds, output polynomials in seconds.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">poly_model_delay</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">TYPE_COEFF_DELAY</span><span class="p">,</span><span class="n">get_val_vector</span><span class="p">(</span><span class="n">params_array</span><span class="p">,</span><span class="n">section_str</span><span class="p">,</span><span class="n">C_INI_MODEL_DELAY</span><span class="p">)))</span>
+    
+
+    <span class="n">poly_model</span><span class="o">=</span><span class="n">poly_model_delay</span>
+    
+    
+    <span class="c1"># microseconds to seconds</span>
+    <span class="n">poly_model</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">poly_model</span><span class="p">,</span><span class="mf">1e-6</span><span class="p">)</span>
+    
+    <span class="n">max_order</span><span class="o">=</span><span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">poly_model</span><span class="p">),</span><span class="n">LIMIT_POLY_EVAL</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">poly_model</span><span class="o">=</span><span class="n">poly_model</span><span class="p">[:</span><span class="n">max_order</span><span class="p">]</span>
+    
+    <span class="k">return</span><span class="p">(</span><span class="n">poly_model</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_poly_clock"><a class="viewcode-back" href="../lib_delay_model.html#lib_delay_model.get_poly_clock">[docs]</a><span class="k">def</span> <span class="nf">get_poly_clock</span><span class="p">(</span><span class="n">params_array</span><span class="p">,</span><span class="n">section_str</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get list with poly from params array and section string.</span>
+<span class="sd">    Clock correction.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     params_array : list</span>
+<span class="sd">         information from delay model ini file (see lib_ini_files.py).</span>
+<span class="sd">     section_str : str</span>
+<span class="sd">         section of the ini file associated with a certain station, source and time (see const_ini_files.py)</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     poly_model : list of float</span>
+<span class="sd">         list of [m-th coeff] with polynomial coefficients for the station clock model with m from zero to max_order-1, in seconds.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">poly_model</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">TYPE_COEFF_DELAY</span><span class="p">,</span><span class="n">get_val_vector</span><span class="p">(</span><span class="n">params_array</span><span class="p">,</span><span class="n">section_str</span><span class="p">,</span><span class="n">C_INI_ST_CLOCK_POLY</span><span class="p">)))</span>
+    
+    <span class="c1"># microseconds to seconds</span>
+    <span class="n">poly_model</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">poly_model</span><span class="p">,</span><span class="mf">1e-6</span><span class="p">)</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">poly_model</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="apply_offset_coefficients_poly"><a class="viewcode-back" href="../lib_delay_model.html#lib_delay_model.apply_offset_coefficients_poly">[docs]</a><span class="k">def</span> <span class="nf">apply_offset_coefficients_poly</span><span class="p">(</span><span class="n">poly_found</span><span class="p">,</span><span class="n">seconds_from_ref</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Apply offset to polynomial, i.e. given a list of polynomial coefficients [p0,p1,p2,...] </span>
+<span class="sd">     from low to high order for f(x), obtain coefficientes for f(x+s) where s is an offset:</span>
+<span class="sd">    </span>
+<span class="sd">      q(x)=p(x+s)=p0+p1(x+s)+p2(x+s)^2+p3(x+s)^3+...</span>
+<span class="sd">    </span>
+<span class="sd">    The functions returns the list of polynomial coefficients [q0,q1,q2,...] for q(x).</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     poly_found : list of float</span>
+<span class="sd">         list of polynomial coefficients [p0,p1,p2,...] (LIMIT_POLY_EVAL coefficients).</span>
+<span class="sd">     seconds_from_ref : float</span>
+<span class="sd">         offset in seconds.</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     poly_found : list of int</span>
+<span class="sd">         list of polynomial coefficients [q0,q1,p2,...] (LIMIT_POLY_FOUND coefficients).</span>
+<span class="sd">     seconds_from_ref : 0 </span>
+<span class="sd">         (since this offset has been applied to the polynomial).</span>
+<span class="sd">    </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    |</span>
+<span class="sd">    | **Configuration:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  LIMIT_POLY_EVAL:  maximum order coefficient in input. (e.g.: 5).</span>
+<span class="sd">    |  LIMIT_POLY_FOUND: maximum order coefficient in output (e.g.: 2).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Note that order of operations is important, first low order, then high order</span>
+    <span class="n">poly_found</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+=</span><span class="n">poly_found</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">seconds_from_ref</span>
+    <span class="n">poly_found</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+=</span><span class="n">poly_found</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">seconds_from_ref</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">poly_found</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+=</span><span class="n">poly_found</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">seconds_from_ref</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">poly_found</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+=</span><span class="n">poly_found</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">seconds_from_ref</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span>
+    <span class="n">poly_found</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+=</span><span class="n">poly_found</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">seconds_from_ref</span><span class="p">,</span><span class="mi">5</span><span class="p">)</span>
+    
+    <span class="n">poly_found</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+=</span><span class="n">poly_found</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="mf">2.0</span><span class="o">*</span><span class="n">seconds_from_ref</span>
+    <span class="n">poly_found</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+=</span><span class="n">poly_found</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">*</span><span class="mf">3.0</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">seconds_from_ref</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">poly_found</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+=</span><span class="n">poly_found</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">*</span><span class="mf">4.0</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">seconds_from_ref</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">poly_found</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+=</span><span class="n">poly_found</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="o">*</span><span class="mf">5.0</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">seconds_from_ref</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span>
+    
+    <span class="n">poly_found</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">+=</span><span class="n">poly_found</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">*</span><span class="mf">3.0</span><span class="o">*</span><span class="n">seconds_from_ref</span>
+    <span class="n">poly_found</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">+=</span><span class="n">poly_found</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">*</span><span class="mf">6.0</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">seconds_from_ref</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">poly_found</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">+=</span><span class="n">poly_found</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="o">*</span><span class="mf">10.0</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">seconds_from_ref</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span> <span class="c1"># check</span>
+    
+    <span class="n">poly_found</span><span class="o">=</span><span class="n">poly_found</span><span class="p">[:</span><span class="n">LIMIT_POLY_FOUND</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+    
+    <span class="n">seconds_from_ref</span><span class="o">=</span><span class="mf">0.0</span>
+    
+    <span class="k">return</span><span class="p">([</span><span class="n">poly_found</span><span class="p">,</span><span class="n">seconds_from_ref</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="get_polynomials_interval"><a class="viewcode-back" href="../lib_delay_model.html#lib_delay_model.get_polynomials_interval">[docs]</a><span class="k">def</span> <span class="nf">get_polynomials_interval</span><span class="p">(</span><span class="n">params_array_delay_model</span><span class="p">,</span><span class="n">params_array_stations</span><span class="p">,</span><span class="n">mjd</span><span class="p">,</span><span class="n">seconds_ref</span><span class="p">,</span><span class="n">seconds_from_ref</span><span class="p">,</span><span class="n">source_id</span><span class="p">,</span><span class="n">station_id</span><span class="p">,</span><span class="n">v</span><span class="p">,</span><span class="n">current_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the polynomials for the delay and clock models for a given station, source and time:</span>
+<span class="sd">      -day: MJD.</span>
+<span class="sd">      -seconds: seconds_ref+seconds_from_ref.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     params_array_delay_model : list</span>
+<span class="sd">         information from delay model ini file (see lib_ini_files.py).</span>
+<span class="sd">     params_array_stations : list</span>
+<span class="sd">         information from stations ini file (see lib_ini_files.py).</span>
+<span class="sd">     mjd : int</span>
+<span class="sd">         MJD for the start of the scan.</span>
+<span class="sd">     seconds_ref : int or float</span>
+<span class="sd">         seconds for the start of the scan.</span>
+<span class="sd">     seconds_from_ref : int or float</span>
+<span class="sd">         offset seconds from the start of the scan.</span>
+<span class="sd">     source_id : int</span>
+<span class="sd">         source id.</span>
+<span class="sd">     station_id : int</span>
+<span class="sd">         station id.</span>
+<span class="sd">     v : int</span>
+<span class="sd">         verbose if 1.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     result : float</span>
+<span class="sd">         delay [s].</span>
+<span class="sd">     poly_found</span>
+<span class="sd">         polynomial (see get_poly_list() for format).</span>
+<span class="sd">     seconds_from_ref</span>
+<span class="sd">         [check this]</span>
+<span class="sd">     poly_station_clock</span>
+<span class="sd">         polynomial for the station clock.</span>
+<span class="sd">     seconds_diff_clock</span>
+<span class="sd">         seconds between the epoch and the start of the clock.</span>
+<span class="sd">     result_dr</span>
+<span class="sd">         geometric delay [s].</span>
+<span class="sd">     result_cr</span>
+<span class="sd">         station clock delay [s].</span>
+<span class="sd">     error_model : { 0, None}</span>
+<span class="sd">         0 if success, None if error.</span>
+<span class="sd">     section_in_model : str</span>
+<span class="sd">         section in the delay model .ini file (for debugging).</span>
+<span class="sd">     no_offset : int</span>
+<span class="sd">         0 if no offset applied from .ini file [default], 1 otherwise.</span>
+<span class="sd">    </span>
+<span class="sd">    </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    |</span>
+<span class="sd">    | **Limitations:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  Currently single source source_id=0.</span>
+<span class="sd">    |</span>
+<span class="sd">    |</span>
+<span class="sd">    | **Notes:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  It returns delay from model ini file.</span>
+<span class="sd">    |  If no model is available returns None.</span>
+<span class="sd">    |  Clock polynomial always zero offset with respect to start time, thus no need to offset (unless delta from start).</span>
+<span class="sd">    |</span>
+<span class="sd">    |</span>
+<span class="sd">    | **TO DO:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  Organize.</span>
+<span class="sd">    |  Further testing on precision.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">result</span><span class="o">=</span><span class="kc">None</span>
+    <span class="n">poly_found</span><span class="o">=</span><span class="kc">None</span>
+    <span class="n">error_model</span><span class="o">=</span><span class="mi">0</span>    
+
+    
+    <span class="n">pre_current_offset</span><span class="o">=</span><span class="n">current_offset</span>
+
+    
+    <span class="c1"># Find section in ini file for this pair station-source and this time.</span>
+    <span class="p">[</span><span class="n">section_in_model</span><span class="p">,</span><span class="n">seconds_ref_poly</span><span class="p">]</span><span class="o">=</span><span class="n">get_section_delay_model</span><span class="p">(</span><span class="n">params_array_delay_model</span><span class="p">,</span><span class="n">mjd</span><span class="p">,</span><span class="n">seconds_ref</span><span class="o">+</span><span class="n">seconds_from_ref</span><span class="p">,</span><span class="n">source_id</span><span class="p">,</span><span class="n">station_id</span><span class="p">,</span><span class="n">v</span><span class="p">)</span>
+    <span class="n">station_str</span><span class="o">=</span><span class="n">get_all_sections</span><span class="p">(</span><span class="n">params_array_stations</span><span class="p">)[</span><span class="n">station_id</span><span class="p">]</span>
+    
+    <span class="c1"># Clock epoch and polynomial</span>
+    <span class="n">poly_station_clock</span> <span class="o">=</span> <span class="n">get_poly_clock</span><span class="p">(</span><span class="n">params_array_stations</span><span class="p">,</span><span class="n">station_str</span><span class="p">)</span>
+    <span class="n">poly_ref_clock</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">get_val_vector</span><span class="p">(</span><span class="n">params_array_stations</span><span class="p">,</span><span class="n">station_str</span><span class="p">,</span><span class="n">C_INI_ST_CLOCK_REF</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">no_offset</span><span class="o">=</span><span class="mi">0</span>
+    
+    <span class="c1"># Consider deleting this, no longer used</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">poly_offset_clock</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">get_val_vector</span><span class="p">(</span><span class="n">params_array_stations</span><span class="p">,</span><span class="n">station_str</span><span class="p">,</span><span class="n">C_INI_ST_CLOCK_OFFSET</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span><span class="o">*</span><span class="mf">1e-6</span>
+        <span class="n">no_offset</span><span class="o">=</span><span class="mi">1</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Clock offset: &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">poly_offset_clock</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot; offset for station &quot;</span><span class="o">+</span><span class="n">station_str</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="n">poly_offset_clock</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="c1">#print(&quot;Zero offset for station &quot;+station_str)</span>
+    
+    <span class="c1"># Reference time</span>
+    <span class="n">seconds_ref_frac</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">seconds_ref</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mf">24.0</span><span class="o">*</span><span class="mf">60.0</span><span class="o">*</span><span class="mf">60.0</span><span class="p">)</span>
+    <span class="n">mjd_and_frac</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">mjd</span><span class="p">)</span><span class="o">+</span><span class="n">seconds_ref_frac</span>
+    
+
+    <span class="c1"># Seconds from epoch for clock</span>
+    <span class="n">seconds_diff_clock</span> <span class="o">=</span> <span class="p">(</span><span class="n">mjd_and_frac</span><span class="o">-</span><span class="n">poly_ref_clock</span><span class="p">)</span><span class="o">*</span><span class="mi">24</span><span class="o">*</span><span class="mi">60</span><span class="o">*</span><span class="mi">60</span>
+    <span class="n">seconds_diff_clock</span><span class="o">+=</span><span class="n">seconds_from_ref</span>
+    
+    
+    <span class="k">if</span> <span class="n">seconds_diff_clock</span><span class="o">&gt;</span><span class="n">TH_WARNING_DIFF_CLOCK</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">SHOW_DELAY_INFO</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Warning: seconds between clock epoch and experiment start time is: &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">seconds_diff_clock</span><span class="p">))</span>
+    
+    <span class="c1"># Clock model  </span>
+    <span class="n">result</span><span class="o">=</span><span class="n">np_polyval</span><span class="p">(</span><span class="n">poly_station_clock</span><span class="p">,</span><span class="n">seconds_diff_clock</span><span class="p">)</span>
+    
+    <span class="c1"># Move reference to start time</span>
+    <span class="n">offset_at_start</span><span class="o">=</span><span class="n">np_polyval</span><span class="p">(</span><span class="n">poly_station_clock</span><span class="p">,</span><span class="n">seconds_diff_clock</span><span class="o">-</span><span class="n">current_offset</span><span class="o">+</span><span class="n">pre_current_offset</span><span class="p">)</span>
+
+    <span class="c1"># Offset of clock polynomial coefficients</span>
+    <span class="c1">#if CLK_OFFSET:</span>
+    <span class="n">poly_station_clock</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">=</span><span class="n">offset_at_start</span>
+    <span class="n">poly_station_clock</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+=</span><span class="n">poly_offset_clock</span>
+
+    <span class="n">seconds_diff_clock</span><span class="o">=</span><span class="mi">0</span>
+    
+    <span class="k">if</span> <span class="n">DEBUG_GET_DELAY</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;gdm &quot;</span><span class="o">+</span>        <span class="nb">str</span><span class="p">(</span> <span class="n">mjd</span>                <span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span><span class="o">+</span>\
+                             <span class="nb">str</span><span class="p">(</span> <span class="n">seconds_ref</span>        <span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span><span class="o">+</span>\
+                             <span class="nb">str</span><span class="p">(</span> <span class="n">seconds_from_ref</span>   <span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span><span class="o">+</span>\
+                <span class="s2">&quot;</span><span class="si">{0:.4f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span> <span class="n">mjd_and_frac</span>       <span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">13</span><span class="p">)</span><span class="o">+</span>\
+                             <span class="nb">str</span><span class="p">(</span> <span class="n">source_id</span>          <span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">+</span>\
+                             <span class="nb">str</span><span class="p">(</span> <span class="n">station_id</span>         <span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">+</span>\
+                <span class="s2">&quot;</span><span class="si">{0:.4f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span> <span class="n">poly_ref_clock</span>     <span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">13</span><span class="p">)</span><span class="o">+</span>\
+                             <span class="nb">str</span><span class="p">(</span> <span class="n">seconds_diff_clock</span> <span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">13</span><span class="p">)</span><span class="o">+</span>\
+                    <span class="s2">&quot; &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span> <span class="n">poly_station_clock</span> <span class="p">)))</span>
+                <span class="c1">#,end=&quot;&quot;)</span>
+    
+    <span class="n">result_cr</span><span class="o">=</span><span class="n">result</span>
+    <span class="n">seconds_from_ref</span><span class="o">+=</span><span class="n">seconds_ref</span><span class="o">-</span><span class="n">seconds_ref_poly</span>
+
+    <span class="c1">#seconds_from_ref-=current_offset</span>
+    
+    <span class="c1"># Delay model</span>
+    <span class="k">if</span> <span class="n">section_in_model</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+        <span class="n">poly_found</span> <span class="o">=</span> <span class="n">get_poly_list</span><span class="p">(</span><span class="n">params_array_delay_model</span><span class="p">,</span><span class="n">section_in_model</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">DEBUG_GET_DELAY</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;gdm     &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">seconds_from_ref</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot; &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">poly_found</span><span class="p">)[:</span><span class="mi">4</span><span class="p">]))</span>
+        
+        <span class="n">result_dr</span><span class="o">=</span><span class="n">np_polyval</span><span class="p">(</span><span class="n">poly_found</span><span class="p">,</span><span class="n">seconds_from_ref</span><span class="p">)</span>
+        <span class="n">result</span><span class="o">+=</span><span class="n">result_dr</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">error_model</span><span class="o">=</span><span class="kc">None</span>
+        <span class="n">result</span><span class="o">=</span><span class="kc">None</span>
+        <span class="n">result_dr</span><span class="o">=</span><span class="kc">None</span>
+        <span class="n">result_cr</span><span class="o">=</span><span class="kc">None</span>
+        <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;not found&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># Apply offset to polynomial and zero offset</span>
+    <span class="p">[</span><span class="n">poly_found</span><span class="p">,</span><span class="n">seconds_from_ref</span><span class="p">]</span> <span class="o">=</span> <span class="n">apply_offset_coefficients_poly</span><span class="p">(</span><span class="n">poly_found</span><span class="p">,</span><span class="n">seconds_from_ref</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">DEBUG_GET_DELAY</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;gdmr &quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">+</span>\
+                <span class="s2">&quot;sfr=&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">seconds_from_ref</span><span class="p">)</span><span class="o">+</span>\
+                <span class="s2">&quot;, mop=&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">poly_found</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span>\
+                <span class="s2">&quot;, sdc=&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">seconds_diff_clock</span><span class="p">)</span><span class="o">+</span>\
+                <span class="s2">&quot;, moc=&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">poly_station_clock</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;---------&quot;</span><span class="p">)</span>
+
+    
+    <span class="k">return</span><span class="p">([</span><span class="n">result</span><span class="p">,</span><span class="n">poly_found</span><span class="p">,</span><span class="n">seconds_from_ref</span><span class="p">,</span><span class="n">poly_station_clock</span><span class="p">,</span><span class="n">seconds_diff_clock</span><span class="p">,</span>\
+               <span class="n">result_dr</span><span class="p">,</span><span class="n">result_cr</span><span class="p">,</span><span class="n">error_model</span><span class="p">,</span><span class="n">section_in_model</span><span class="p">,</span><span class="n">no_offset</span><span class="p">])</span></div>
+    
+
+
+
+<div class="viewcode-block" id="np_polyval"><a class="viewcode-back" href="../lib_delay_model.html#lib_delay_model.np_polyval">[docs]</a><span class="k">def</span> <span class="nf">np_polyval</span><span class="p">(</span><span class="n">pol</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Evaluate a polynomial at x. Numpy polyval, changing order of polynomial (numpy is decreasing order).</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     pol : list of floats</span>
+<span class="sd">         polynomial, leftmost term is zero order.</span>
+<span class="sd">     x : float</span>
+<span class="sd">         value to be evaluated.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     out : float</span>
+<span class="sd">         result.</span>
+<span class="sd">    </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    | -For numpy polyval the rightmost term is zero order.</span>
+<span class="sd">    | (!) --Excerpt from the reference-- &quot;Notes:Horner&#39;s scheme [R65] is used to evaluate the polynomial. </span>
+<span class="sd">    |    Even so, for polynomials of high degree the values may be inaccurate due to rounding errors. </span>
+<span class="sd">    |    Use carefully.&quot;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">polyval</span><span class="p">(</span><span class="n">pol</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span><span class="n">x</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="np_polyder"><a class="viewcode-back" href="../lib_delay_model.html#lib_delay_model.np_polyder">[docs]</a><span class="k">def</span> <span class="nf">np_polyder</span><span class="p">(</span><span class="n">pol</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">o</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get derivative of order o at x. Numpy polyval, changing order of polynomial (numpy is decreasing order).</span>
+<span class="sd">    </span>
+<span class="sd">    See np_polyval() for more info.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">polyval</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">polyder</span><span class="p">(</span><span class="n">pol</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span><span class="n">o</span><span class="p">),</span><span class="n">x</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="np_roots"><a class="viewcode-back" href="../lib_delay_model.html#lib_delay_model.np_roots">[docs]</a><span class="k">def</span> <span class="nf">np_roots</span><span class="p">(</span><span class="n">pol</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get roots of a polynomial. Numpy roots, changing order.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     pol : list of floats</span>
+<span class="sd">         polynomial, leftmost term is zero order.</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     out : list of complex</span>
+<span class="sd">         roots of the polynomial.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">roots</span><span class="p">(</span><span class="n">pol</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span></div>
+
+
+<div class="viewcode-block" id="filter_roots"><a class="viewcode-back" href="../lib_delay_model.html#lib_delay_model.filter_roots">[docs]</a><span class="k">def</span> <span class="nf">filter_roots</span><span class="p">(</span><span class="n">roots</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the real positive smallest delay from a list of complex. </span>
+<span class="sd">    To be called after np_roots(pol).</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     roots : list of complex</span>
+<span class="sd">         roots of a delay polynomial.</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     min_val : float</span>
+<span class="sd">         result.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">filt_roots</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">roots</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">imag</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+            <span class="n">val_r</span> <span class="o">=</span> <span class="n">i</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+            <span class="n">filt_roots</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">val_r</span><span class="p">)</span>       
+    <span class="n">min_val</span><span class="o">=</span><span class="n">filt_roots</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">filt_roots</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">&lt;</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">min_val</span><span class="p">):</span>
+            <span class="n">min_val</span><span class="o">=</span><span class="n">i</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">min_val</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_all_polynomials"><a class="viewcode-back" href="../lib_delay_model.html#lib_delay_model.get_all_polynomials">[docs]</a><span class="k">def</span> <span class="nf">get_all_polynomials</span><span class="p">(</span><span class="n">params_array_delay_model</span><span class="p">,</span><span class="n">params_array_stations</span><span class="p">,</span><span class="n">s_st</span><span class="p">,</span><span class="n">s_so</span><span class="p">,</span><span class="n">mjd_start</span><span class="p">,</span><span class="n">seconds_ref</span><span class="p">,</span>\
+                        <span class="n">seconds_offset</span><span class="p">,</span><span class="n">tot_steps</span><span class="p">,</span><span class="n">step_seconds</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Read and pre-process the delay polynomials from the models in the ini files.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     params_array_delay_model : list</span>
+<span class="sd">         list with configuration of delay_mode.ini.</span>
+<span class="sd">     params_array_stations : list</span>
+<span class="sd">         list with configuration of stations.ini.</span>
+<span class="sd">     s_st : configparser handler</span>
+<span class="sd">         configparser handler for the station ini file.</span>
+<span class="sd">     s_so : configparser handler</span>
+<span class="sd">         configparser handler for the sources ini file.</span>
+<span class="sd">     mjd_start</span>
+<span class="sd">         MJD for the start of the scan.</span>
+<span class="sd">     seconds_ref</span>
+<span class="sd">         seconds for the start of the scan.</span>
+<span class="sd">     seconds_offset</span>
+<span class="sd">         offset seconds from the start of the scan.</span>
+<span class="sd">     tot_steps</span>
+<span class="sd">         number of accumulation periods.</span>
+<span class="sd">     step_seconds</span>
+<span class="sd">         accumulation period duration.</span>
+<span class="sd">     v</span>
+<span class="sd">         verbose if 1.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     seconds_inc_v : 3D list (tot_steps x sources x stations) </span>
+<span class="sd">         offset in seconds since scan start.</span>
+<span class="sd">     max_saved : 2D list (tot_steps x sources)</span>
+<span class="sd">         maximum delay for all stations.</span>
+<span class="sd">     min_saved : 2D list (tot_steps x sources) </span>
+<span class="sd">         minimum delay for all stations.</span>
+<span class="sd">     v_delays : 3D list (tot_steps x sources x stations)</span>
+<span class="sd">         delays in seconds.</span>
+<span class="sd">     v_delay_rates : 3D list (tot_steps x sources x stations) </span>
+<span class="sd">         lists with [poly_delay,seconds_from_ref,poly_station_clock,\</span>
+<span class="sd">                    seconds_diff_clock,result_dr,result_cr,section_in_model] from get_polynomials_interval().</span>
+<span class="sd">     no_offset_total : int</span>
+<span class="sd">         number of times that manual offsets have been applied (based on .ini).</span>
+<span class="sd">    </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    |</span>
+<span class="sd">    | **TO DO:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  Check seconds_offset.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">v_delays</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">v_delay_rates</span><span class="o">=</span><span class="p">[]</span> <span class="c1"># delay rates linear for further use (only component 1 of the polynomial)</span>
+    <span class="c1">#max_saved = -1.0</span>
+    
+    <span class="n">max_saved</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">min_saved</span><span class="o">=</span><span class="p">[]</span>
+    
+    <span class="n">no_offset_total</span><span class="o">=</span><span class="mi">0</span>
+    
+    <span class="n">seconds_inc_v</span><span class="o">=</span><span class="p">[]</span>
+    
+    
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">tot_steps</span><span class="p">):</span>
+
+        <span class="n">seconds_inc</span><span class="o">=</span><span class="n">i</span><span class="o">*</span><span class="n">step_seconds</span><span class="o">+</span><span class="n">seconds_offset</span>
+        
+        <span class="c1">#print(&quot;Computing delay at delta_t=&quot;+str(seconds_inc))</span>
+        <span class="n">seconds_inc_v</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">seconds_inc</span><span class="p">)</span>
+        
+        <span class="n">i_max_saved</span><span class="o">=</span><span class="p">[]</span>
+        <span class="n">i_min_saved</span><span class="o">=</span><span class="p">[]</span>
+        <span class="k">for</span> <span class="n">soj</span> <span class="ow">in</span> <span class="n">s_so</span><span class="o">.</span><span class="n">sections</span><span class="p">():</span>
+    
+            <span class="c1"># Read source data from file</span>
+            <span class="n">so_id</span><span class="o">=</span><span class="n">s_so</span><span class="o">.</span><span class="n">getint</span><span class="p">(</span><span class="n">soj</span><span class="p">,</span><span class="s1">&#39;id&#39;</span><span class="p">)</span>
+
+            <span class="n">e_delays</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">e_delay_rates</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">sti</span> <span class="ow">in</span> <span class="n">s_st</span><span class="o">.</span><span class="n">sections</span><span class="p">():</span>
+        
+                <span class="n">st_id</span><span class="o">=</span><span class="n">s_st</span><span class="o">.</span><span class="n">getint</span><span class="p">(</span><span class="n">sti</span><span class="p">,</span><span class="s1">&#39;id&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">st_id</span><span class="p">)</span>
+    
+
+                <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">seconds_inc</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">mjd_start</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">seconds_ref</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">seconds_inc</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">so_id</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">st_id</span><span class="p">)</span>
+                <span class="p">[</span><span class="n">delay</span><span class="p">,</span><span class="n">poly_delay</span><span class="p">,</span><span class="n">seconds_from_ref</span><span class="p">,</span>
+                            <span class="n">poly_station_clock</span><span class="p">,</span><span class="n">seconds_diff_clock</span><span class="p">,</span>\
+                            <span class="n">result_dr</span><span class="p">,</span><span class="n">result_cr</span><span class="p">,</span><span class="n">error_model</span><span class="p">,</span><span class="n">section_in_model</span><span class="p">,</span><span class="n">no_offset</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_polynomials_interval</span><span class="p">(</span><span class="n">params_array_delay_model</span><span class="p">,</span>\
+                                                                        <span class="n">params_array_stations</span><span class="p">,</span><span class="n">mjd_start</span><span class="p">,</span>\
+                                                                        <span class="n">seconds_ref</span><span class="p">,</span><span class="n">seconds_inc</span><span class="p">,</span><span class="n">so_id</span><span class="p">,</span><span class="n">st_id</span><span class="p">,</span><span class="n">v</span><span class="p">,</span>\
+                                                                        <span class="n">current_offset</span><span class="o">=</span><span class="n">i</span><span class="o">*</span><span class="n">step_seconds</span><span class="p">)</span>
+                
+                <span class="n">no_offset_total</span><span class="o">+=</span><span class="n">no_offset</span>
+                <span class="c1"># TO DO: if and exit later</span>
+                <span class="k">if</span> <span class="n">error_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">return</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+                
+                
+                <span class="n">e_delays</span><span class="o">+=</span><span class="p">[</span><span class="n">delay</span><span class="p">]</span>
+                <span class="n">e_delay_rates</span><span class="o">+=</span><span class="p">[[</span><span class="n">poly_delay</span><span class="p">,</span><span class="n">seconds_from_ref</span><span class="p">,</span><span class="n">poly_station_clock</span><span class="p">,</span><span class="n">seconds_diff_clock</span><span class="p">,</span><span class="n">result_dr</span><span class="p">,</span><span class="n">result_cr</span><span class="p">,</span><span class="n">section_in_model</span><span class="p">]]</span>
+                
+                <span class="c1"># Compute maximum with new computed delays</span>
+            <span class="n">i_max_saved</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">e_delays</span><span class="p">))</span>
+            <span class="n">i_min_saved</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">e_delays</span><span class="p">))</span>
+        
+        <span class="n">v_delays</span> <span class="o">+=</span> <span class="p">[</span><span class="n">e_delays</span><span class="p">]</span>
+        <span class="n">v_delay_rates</span> <span class="o">+=</span> <span class="p">[</span><span class="n">e_delay_rates</span><span class="p">]</span> <span class="c1"># only linear component</span>
+        <span class="n">max_saved</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i_max_saved</span><span class="p">)</span>
+        <span class="n">min_saved</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i_min_saved</span><span class="p">)</span>
+
+    <span class="k">return</span><span class="p">([</span><span class="n">seconds_inc_v</span><span class="p">,</span><span class="n">max_saved</span><span class="p">,</span><span class="n">min_saved</span><span class="p">,</span><span class="n">v_delays</span><span class="p">,</span><span class="n">v_delay_rates</span><span class="p">,</span><span class="n">no_offset_total</span><span class="p">])</span></div>
+
+
+
+
+<span class="c1">###########################################</span>
+<span class="c1">#         Display</span>
+<span class="c1">###########################################</span>
+
+
+<div class="viewcode-block" id="print_delays_header"><a class="viewcode-back" href="../lib_delay_model.html#lib_delay_model.print_delays_header">[docs]</a><span class="k">def</span> <span class="nf">print_delays_header</span><span class="p">(</span><span class="n">v</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Print header for summary of delay information.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     v : int</span>
+<span class="sd">         verbose mode if 1.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     str_out : str</span>
+<span class="sd">         line with header.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">str_out</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;D &quot;</span><span class="o">+</span><span class="s2">&quot;st&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">+</span> <span class="s2">&quot;t0 [s]&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">14</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;total delay [us]&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">+</span>\
+          <span class="s2">&quot;clock [us]&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">+</span>\
+          <span class="s2">&quot;clock rate [us/s]&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">+</span>\
+          <span class="s2">&quot;total rate [us/s]&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">+</span>\
+          <span class="s2">&quot;total accel [us/s/s]&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">25</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">str_out</span><span class="p">)</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">str_out</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="print_delays"><a class="viewcode-back" href="../lib_delay_model.html#lib_delay_model.print_delays">[docs]</a><span class="k">def</span> <span class="nf">print_delays</span><span class="p">(</span><span class="n">sti</span><span class="p">,</span><span class="n">poly_total</span><span class="p">,</span><span class="n">poly_clock</span><span class="p">,</span><span class="n">t0</span><span class="p">,</span><span class="n">t_display</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Print delay information in [us] for debugging.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     sti : int</span>
+<span class="sd">         station id.</span>
+<span class="sd">     poly_total : list of floats</span>
+<span class="sd">         polynomial for total delay (leftmost is zero order).</span>
+<span class="sd">     poly_clock : list of floats</span>
+<span class="sd">         polynomial for clock (leftmost is zero order).</span>
+<span class="sd">     t0 : float</span>
+<span class="sd">         time to evaluate polynomials at.</span>
+<span class="sd">     t_display : float</span>
+<span class="sd">         time to be displayed.</span>
+<span class="sd">     v : int</span>
+<span class="sd">         verbose mode if 1.</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     str_out : str</span>
+<span class="sd">         line with delay information.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">t_display</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">t_display</span><span class="o">=</span><span class="n">t0</span>
+    <span class="n">r_td</span> <span class="o">=</span> <span class="n">np_polyval</span><span class="p">(</span><span class="n">poly_total</span><span class="p">,</span><span class="n">t0</span><span class="p">)</span><span class="o">*</span><span class="mf">1e6</span>
+    <span class="n">r_cd</span> <span class="o">=</span> <span class="n">np_polyval</span><span class="p">(</span><span class="n">poly_clock</span><span class="p">,</span><span class="n">t0</span><span class="p">)</span><span class="o">*</span><span class="mf">1e6</span>
+    <span class="n">r_cr</span> <span class="o">=</span> <span class="n">np_polyder</span><span class="p">(</span><span class="n">poly_clock</span><span class="p">,</span><span class="n">t0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="mf">1e6</span>
+    <span class="n">r_tr</span> <span class="o">=</span> <span class="n">np_polyder</span><span class="p">(</span><span class="n">poly_total</span><span class="p">,</span><span class="n">t0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="mf">1e6</span>
+    <span class="n">r_ta</span> <span class="o">=</span> <span class="n">np_polyder</span><span class="p">(</span><span class="n">poly_total</span><span class="p">,</span><span class="n">t0</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="mf">1e6</span>
+    
+    
+    <span class="n">str_out</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;D &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">sti</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">+</span>\
+              <span class="nb">str</span><span class="p">(</span><span class="n">t_display</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">14</span><span class="p">)</span><span class="o">+</span>\
+              <span class="n">get_str_scf</span><span class="p">(</span><span class="n">r_td</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">+</span>\
+              <span class="n">get_str_scf</span><span class="p">(</span><span class="n">r_cd</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">+</span>\
+              <span class="n">get_str_scf</span><span class="p">(</span><span class="n">r_cr</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">+</span>\
+              <span class="n">get_str_scf</span><span class="p">(</span><span class="n">r_tr</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">+</span>\
+              <span class="n">get_str_scf</span><span class="p">(</span><span class="n">r_ta</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">25</span><span class="p">))</span>
+    
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">str_out</span><span class="p">)</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">str_out</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_str_scf"><a class="viewcode-back" href="../lib_delay_model.html#lib_delay_model.get_str_scf">[docs]</a><span class="k">def</span> <span class="nf">get_str_scf</span><span class="p">(</span><span class="n">val</span><span class="p">,</span><span class="n">tot_dec_pos</span><span class="o">=</span><span class="n">TOT_DEC_POS</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get string representation of float, used for normalization.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">str_format_out</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">str_format_out</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="set_config_delay"><a class="viewcode-back" href="../lib_delay_model.html#lib_delay_model.set_config_delay">[docs]</a><span class="k">def</span> <span class="nf">set_config_delay</span><span class="p">(</span><span class="n">s_delay</span><span class="p">,</span><span class="n">st_so</span><span class="p">,</span><span class="n">seconds_i</span><span class="p">,</span><span class="n">a_delay</span><span class="p">,</span><span class="n">r_delay</span><span class="p">,</span><span class="n">f_delay</span><span class="p">,</span><span class="n">poly_diff</span><span class="p">,</span><span class="n">clock_diff</span><span class="p">,</span><span class="n">clock_abs</span><span class="p">,</span>\
+                     <span class="n">seconds_from_ref</span><span class="p">,</span><span class="n">seconds_diff_clock</span><span class="p">,</span><span class="n">m_delay</span><span class="p">,</span><span class="n">c_delay</span><span class="p">,</span><span class="n">delta_reference_delay</span><span class="p">,</span>\
+                     <span class="n">section_in_model</span><span class="p">):</span>
+                                     
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Save configuration parameters to delay ini file handler.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     s_delay : configparser handler</span>
+<span class="sd">         configparser handler for the delays ini file (to be written).</span>
+<span class="sd">     st_so : str</span>
+<span class="sd">         station - source.</span>
+<span class="sd">     seconds_i : int or float</span>
+<span class="sd">         seconds for the start of this interval since the start of the scan.</span>
+<span class="sd">     a_delay : float</span>
+<span class="sd">         absolute delay [s].</span>
+<span class="sd">     r_delay : float</span>
+<span class="sd">         relative delay (w.r.t. reference station) [s]</span>
+<span class="sd">     f_delay : float</span>
+<span class="sd">         [unused?]</span>
+<span class="sd">     poly_diff : list of float</span>
+<span class="sd">         polynomial for geometric delay.</span>
+<span class="sd">     clock_diff : list of float</span>
+<span class="sd">         polynomial for station clock delay.</span>
+<span class="sd">     clock_abs : float</span>
+<span class="sd">         [unused?] initially for ref station clock.</span>
+<span class="sd">     seconds_from_ref : float</span>
+<span class="sd">         [same as seconds_i ?]</span>
+<span class="sd">     seconds_diff_clock : float</span>
+<span class="sd">         seconds from epoch for the clock (zero if offset).</span>
+<span class="sd">     m_delay : float</span>
+<span class="sd">        geometric-model-only delay.</span>
+<span class="sd">     c_delay : float</span>
+<span class="sd">         clock-only delay.</span>
+<span class="sd">     delta_reference_delay</span>
+<span class="sd">         [unused?]</span>
+<span class="sd">     section_in_model : str</span>
+<span class="sd">         section in delay model (for debugging).</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     s_delay : configparser handler</span>
+<span class="sd">         updated version of input with added information.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Store same polynomials as used previously, otherwise there will be offsets</span>
+    
+    <span class="n">s_delay</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">st_so</span><span class="p">,</span> <span class="n">DELAY_MODEL_ABS_MARKER</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">seconds_i</span><span class="p">),</span>          <span class="nb">str</span><span class="p">(</span><span class="n">a_delay</span><span class="p">))</span>
+    <span class="n">s_delay</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">st_so</span><span class="p">,</span> <span class="n">DELAY_MODEL_REL_MARKER</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">seconds_i</span><span class="p">),</span>  <span class="n">get_str_scf</span><span class="p">(</span><span class="n">r_delay</span><span class="p">))</span>
+    <span class="n">s_delay</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">st_so</span><span class="p">,</span> <span class="n">DELAY_MODEL_REF_MARKER</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">seconds_i</span><span class="p">),</span>  <span class="n">get_str_scf</span><span class="p">(</span><span class="n">f_delay</span><span class="p">))</span>
+    
+    <span class="c1"># See const_ini_files.py for descriptions</span>
+    <span class="n">s_delay</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">st_so</span><span class="p">,</span> <span class="n">DELAY_MODEL_RR0_MARKER</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">seconds_i</span><span class="p">),</span> <span class="n">get_str_scf</span><span class="p">(</span><span class="n">poly_diff</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="n">s_delay</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">st_so</span><span class="p">,</span> <span class="n">DELAY_MODEL_RR1_MARKER</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">seconds_i</span><span class="p">),</span> <span class="n">get_str_scf</span><span class="p">(</span><span class="n">poly_diff</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+    <span class="n">s_delay</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">st_so</span><span class="p">,</span> <span class="n">DELAY_MODEL_RR2_MARKER</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">seconds_i</span><span class="p">),</span> <span class="n">get_str_scf</span><span class="p">(</span><span class="n">poly_diff</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+    
+    <span class="n">s_delay</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">st_so</span><span class="p">,</span> <span class="n">DELAY_MODEL_RC0_MARKER</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">seconds_i</span><span class="p">),</span>         <span class="nb">str</span><span class="p">(</span><span class="n">clock_diff</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="n">s_delay</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">st_so</span><span class="p">,</span> <span class="n">DELAY_MODEL_RC1_MARKER</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">seconds_i</span><span class="p">),</span>         <span class="nb">str</span><span class="p">(</span><span class="n">clock_diff</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+    
+    <span class="n">s_delay</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">st_so</span><span class="p">,</span> <span class="n">DELAY_MODEL_ZC0_MARKER</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">seconds_i</span><span class="p">),</span>         <span class="nb">str</span><span class="p">(</span><span class="n">clock_abs</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="n">s_delay</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">st_so</span><span class="p">,</span> <span class="n">DELAY_MODEL_ZC1_MARKER</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">seconds_i</span><span class="p">),</span>         <span class="nb">str</span><span class="p">(</span><span class="n">clock_abs</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+    
+    <span class="n">s_delay</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">st_so</span><span class="p">,</span> <span class="n">DELAY_MODEL_RRR_MARKER</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">seconds_i</span><span class="p">),</span>         <span class="nb">str</span><span class="p">(</span><span class="n">seconds_from_ref</span><span class="p">))</span>
+
+    <span class="n">s_delay</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">st_so</span><span class="p">,</span> <span class="n">DELAY_MODEL_RCR_MARKER</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">seconds_i</span><span class="p">),</span>         <span class="nb">str</span><span class="p">(</span><span class="n">seconds_diff_clock</span><span class="p">))</span>
+    <span class="n">s_delay</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">st_so</span><span class="p">,</span> <span class="n">DELAY_MODEL_RCM_MARKER</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">seconds_i</span><span class="p">),</span>         <span class="nb">str</span><span class="p">(</span><span class="n">m_delay</span><span class="p">))</span>
+    <span class="n">s_delay</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">st_so</span><span class="p">,</span> <span class="n">DELAY_MODEL_RCC_MARKER</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">seconds_i</span><span class="p">),</span>         <span class="nb">str</span><span class="p">(</span><span class="n">c_delay</span><span class="p">))</span>
+    
+    <span class="n">s_delay</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">st_so</span><span class="p">,</span> <span class="n">DELAY_MODEL_DDD_MARKER</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">seconds_i</span><span class="p">),</span>         <span class="nb">str</span><span class="p">(</span><span class="n">delta_reference_delay</span><span class="p">))</span>
+    
+    <span class="c1"># For debugging:</span>
+    <span class="n">s_delay</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">st_so</span><span class="p">,</span> <span class="n">DELAY_MODEL_SIM_MARKER</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">seconds_i</span><span class="p">),</span>         <span class="nb">str</span><span class="p">(</span><span class="n">section_in_model</span><span class="p">))</span>
+    
+    <span class="k">return</span><span class="p">(</span><span class="n">s_delay</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="create_sections_config_delays"><a class="viewcode-back" href="../lib_delay_model.html#lib_delay_model.create_sections_config_delays">[docs]</a><span class="k">def</span> <span class="nf">create_sections_config_delays</span><span class="p">(</span><span class="n">s_delay</span><span class="p">,</span><span class="n">s_st</span><span class="p">,</span><span class="n">s_so</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Add sections to the delay ini file handler.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     s_delay</span>
+<span class="sd">         configparser handler for the delays ini file.</span>
+<span class="sd">     s_st</span>
+<span class="sd">         configparser handler for the station ini file.</span>
+<span class="sd">     s_so</span>
+<span class="sd">         configparser handler for the sources ini file.</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     s_delay : configparserhandler</span>
+<span class="sd">         updated version of input.</span>
+<span class="sd">     pairs_vv : list of str</span>
+<span class="sd">         list with headers, to be accessed using the station and source ids.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pairs_vv</span> <span class="o">=</span> <span class="p">[]</span>
+    
+    <span class="c1"># Create section for configuration file</span>
+    <span class="k">for</span> <span class="n">sti</span> <span class="ow">in</span> <span class="n">s_st</span><span class="o">.</span><span class="n">sections</span><span class="p">():</span>  
+        <span class="n">pairs_i</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="k">for</span> <span class="n">soj</span> <span class="ow">in</span> <span class="n">s_so</span><span class="o">.</span><span class="n">sections</span><span class="p">():</span>  
+            <span class="c1">#st_so = &quot;st&quot;+s_st.get(sti,&#39;id&#39;)+&quot;-&quot;+&quot;so&quot;+s_so.get(soj,&#39;id&#39;)</span>
+            <span class="n">st_so</span> <span class="o">=</span> <span class="n">get_pair_st_so</span><span class="p">(</span><span class="n">s_st</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">sti</span><span class="p">,</span><span class="s1">&#39;id&#39;</span><span class="p">),</span><span class="n">s_so</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">soj</span><span class="p">,</span><span class="s1">&#39;id&#39;</span><span class="p">))</span>
+            <span class="n">s_delay</span><span class="o">.</span><span class="n">add_section</span><span class="p">(</span><span class="n">st_so</span><span class="p">)</span>
+            <span class="n">pairs_i</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">st_so</span><span class="p">])</span>
+        <span class="n">pairs_vv</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pairs_i</span><span class="p">)</span>
+        
+    <span class="c1"># print(pairs_vv[0][0])</span>
+    <span class="c1"># print(pairs_vv[1][0])</span>
+            
+    <span class="k">return</span><span class="p">([</span><span class="n">s_delay</span><span class="p">,</span><span class="n">pairs_vv</span><span class="p">])</span></div>
+
+
+
+<span class="c1">###########################################</span>
+<span class="c1">#         Delay computations</span>
+<span class="c1">###########################################</span>
+
+
+<div class="viewcode-block" id="get_delay_val"><a class="viewcode-back" href="../lib_delay_model.html#lib_delay_model.get_delay_val">[docs]</a><span class="k">def</span> <span class="nf">get_delay_val</span><span class="p">(</span><span class="n">clock_diff</span><span class="p">,</span><span class="n">poly_diff</span><span class="p">,</span><span class="n">seconds_ref_clock</span><span class="p">,</span><span class="n">seconds_ref_poly</span><span class="p">,</span><span class="n">seconds</span><span class="p">,</span><span class="n">seconds_offset</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">diff_pol</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute delays at seconds_offset+seconds, considering the offsets for each polynomial (seconds_ref_clock and seconds_ref_poly).</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     clock_diff : list of float</span>
+<span class="sd">         polynomial for station clock delay.</span>
+<span class="sd">     poly_diff : list of float</span>
+<span class="sd">         polynomial for geometric model delay.</span>
+<span class="sd">     seconds_ref_clock : float</span>
+<span class="sd">        offset for the station clock polynomial.</span>
+<span class="sd">     seconds_ref_poly : float</span>
+<span class="sd">         offset for the geometric model polynomial.</span>
+<span class="sd">     seconds : float 1D np.array</span>
+<span class="sd">         seconds (for evaluating polys).</span>
+<span class="sd">     seconds_offset : float</span>
+<span class="sd">         offset to be applied to seconds.</span>
+<span class="sd">     v : int</span>
+<span class="sd">         verbose if 1.</span>
+<span class="sd">     diff_pol : int</span>
+<span class="sd">         1 if using differential polynomials.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     r_recalc : float 1D np.array</span>
+<span class="sd">         delays in seconds (model+clock)</span>
+<span class="sd">     m_delay : float 1D np.array</span>
+<span class="sd">         delays in seconds (model)</span>
+<span class="sd">     c_delay : float 1D np.array</span>
+<span class="sd">         delays in seconds (clock)</span>
+<span class="sd">     rate_mc : list of int</span>
+<span class="sd">         [0]</span>
+<span class="sd">     acce_mc : list of int</span>
+<span class="sd">         [0]</span>
+<span class="sd">    </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    |</span>
+<span class="sd">    | **Assumptions:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  If the four first elements of poly_diff are zero the resulting model delay is zero to avoid calling polyval.</span>
+<span class="sd">    |</span>
+<span class="sd">    |</span>
+<span class="sd">    | **Notes:**</span>
+<span class="sd">    |</span>
+<span class="sd">    | simple offset reduces the computation of the offset to only the first value in the timescale provided in seconds.</span>
+<span class="sd">    | No correction for retarded baselines.</span>
+<span class="sd">    |</span>
+<span class="sd">    |</span>
+<span class="sd">    | **TO DO:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  This needs further work.</span>
+<span class="sd">    |  Remove rate_mc and acce_mc, no longer used.</span>
+<span class="sd">    |  Check diff_pol, different behavior ini_exper and lib_fx...</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+
+    
+    <span class="n">zero_r_recalc</span><span class="o">=</span><span class="mi">0</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">seconds</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">if</span> <span class="mi">0</span><span class="o">==</span><span class="n">poly_diff</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">==</span><span class="n">poly_diff</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">==</span><span class="n">poly_diff</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span>
+            <span class="n">zero_r_recalc</span><span class="o">=</span><span class="mi">1</span>
+            <span class="n">m_delay</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">seconds</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">zero_r_recalc</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+        <span class="n">seconds_np</span><span class="o">=</span><span class="n">seconds</span><span class="o">+</span><span class="n">seconds_offset</span><span class="o">+</span><span class="n">seconds_ref_poly</span>
+        <span class="n">m_delay</span><span class="o">=</span><span class="n">np_polyval</span><span class="p">(</span><span class="n">poly_diff</span><span class="p">,</span><span class="n">seconds_np</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">diff_pol</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+        <span class="c1">#c_delay=np_polyval(clock_diff,seconds_np)</span>
+        <span class="c1">#m_delay=np_polyval(poly_diff,seconds_np-m_delay)</span>
+        <span class="n">c_delay</span><span class="o">=</span><span class="n">np_polyval</span><span class="p">(</span><span class="n">clock_diff</span><span class="p">,</span><span class="n">seconds_np</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">c_delay</span><span class="o">=</span><span class="mi">0</span>
+
+    <span class="n">r_recalc</span><span class="o">=</span><span class="n">m_delay</span><span class="o">+</span><span class="n">c_delay</span>
+    <span class="k">if</span> <span class="n">diff_pol</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+        <span class="n">r_recalc</span><span class="o">=-</span><span class="n">r_recalc</span>
+    <span class="n">rate_mc</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">acce_mc</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">return</span><span class="p">([</span><span class="n">r_recalc</span><span class="p">,</span><span class="n">m_delay</span><span class="p">,</span><span class="n">c_delay</span><span class="p">,</span><span class="n">rate_mc</span><span class="p">,</span><span class="n">acce_mc</span><span class="p">])</span></div>
+
+
+  
+
+
+<div class="viewcode-block" id="get_initial_abe"><a class="viewcode-back" href="../lib_delay_model.html#lib_delay_model.get_initial_abe">[docs]</a><span class="k">def</span> <span class="nf">get_initial_abe</span><span class="p">(</span><span class="n">poly_delay</span><span class="p">,</span><span class="n">seconds_ref_poly</span><span class="p">,</span><span class="n">seconds_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute delay due to aberration.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">poly_st_B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">poly_delay</span><span class="p">))</span>
+    <span class="n">t0</span> <span class="o">=</span> <span class="n">seconds_ref_poly</span><span class="o">+</span><span class="n">seconds_offset</span>
+    
+    <span class="c1"># intersection of wavefront propagation with position of current station</span>
+
+    <span class="n">mix_pol</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">poly_st_B</span><span class="p">)</span>
+    <span class="n">mix_pol</span><span class="o">=</span><span class="n">mix_pol</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    
+    
+    <span class="n">mix_pol</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-=</span><span class="mi">1</span>
+
+
+    
+    <span class="c1"># find roots and delete complex and out of window results</span>
+    <span class="c1"># TO DO: check thresholds</span>
+    <span class="n">roots_pol</span> <span class="o">=</span> <span class="n">np_roots</span><span class="p">(</span><span class="n">mix_pol</span><span class="p">)</span>
+
+    <span class="n">roots_pf</span><span class="o">=</span><span class="n">filter_roots</span><span class="p">(</span><span class="n">roots_pol</span><span class="p">)</span>
+    
+    <span class="k">return</span><span class="p">(</span><span class="n">roots_pf</span><span class="p">)</span></div>
+
+
+
+
+<span class="c1">###########################################</span>
+<span class="c1">#         Generation of delays.ini</span>
+<span class="c1">###########################################</span>
+
+
+<div class="viewcode-block" id="compute_initial_delays"><a class="viewcode-back" href="../lib_delay_model.html#lib_delay_model.compute_initial_delays">[docs]</a><span class="k">def</span> <span class="nf">compute_initial_delays</span><span class="p">(</span><span class="n">params_array_delay_model</span><span class="p">,</span><span class="n">params_array_stations</span><span class="p">,</span><span class="n">s_st</span><span class="p">,</span><span class="n">s_so</span><span class="p">,</span><span class="n">s_delay</span><span class="p">,</span><span class="n">mjd_start</span><span class="p">,</span><span class="n">seconds_ref_in</span><span class="p">,</span>\
+                           <span class="n">tot_steps</span><span class="p">,</span><span class="n">step_seconds</span><span class="p">,</span><span class="n">seconds_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">file_ini</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Main script for computing the initial delays and delay polynomials.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">     params_array_delay_model : list</span>
+<span class="sd">         information from delay model ini file (see lib_ini_files.py).</span>
+<span class="sd">     params_array_stations : list</span>
+<span class="sd">         information from stations ini file (see lib_ini_files.py).</span>
+<span class="sd">     s_st</span>
+<span class="sd">         configparser handler for stations ini.</span>
+<span class="sd">     s_so</span>
+<span class="sd">         configparser handler for sources ini.</span>
+<span class="sd">     s_delay</span>
+<span class="sd">         configparser handler for delays ini.</span>
+<span class="sd">     mjd_start</span>
+<span class="sd">         MJD for the start of the scan.</span>
+<span class="sd">     seconds_ref_in</span>
+<span class="sd">         seconds for the start of the scan.</span>
+<span class="sd">     tot_steps</span>
+<span class="sd">         number of accumulation periods.</span>
+<span class="sd">     step_seconds</span>
+<span class="sd">         accumulation period duration [s].</span>
+<span class="sd">     seconds_offset</span>
+<span class="sd">         [should be 0, consider removing]</span>
+<span class="sd">     v</span>
+<span class="sd">         verbose if 1.</span>
+<span class="sd">     file_ini</span>
+<span class="sd">         delays.ini output filename.</span>
+<span class="sd">     </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">     s_delay</span>
+<span class="sd">         configparser handler to delays.ini output filename.</span>
+<span class="sd">     </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    |</span>
+<span class="sd">    | **TO DO:**</span>
+<span class="sd">    |</span>
+<span class="sd">    |  Check seconds_offset, remove.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+
+    <span class="p">[</span><span class="n">s_delay</span><span class="p">,</span><span class="n">pairs_vv</span><span class="p">]</span> <span class="o">=</span> <span class="n">create_sections_config_delays</span><span class="p">(</span><span class="n">s_delay</span><span class="p">,</span><span class="n">s_st</span><span class="p">,</span><span class="n">s_so</span><span class="p">)</span>
+   
+
+
+    <span class="k">if</span> <span class="n">DEBUG_GET_DELAY</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;gdm &quot;</span><span class="o">+</span><span class="s2">&quot;mjd_ref&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span><span class="o">+</span>\
+                <span class="s2">&quot;s_ref&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span><span class="o">+</span>\
+                <span class="s2">&quot;offset&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span><span class="o">+</span>\
+                <span class="s2">&quot;mjd[|4]&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">13</span><span class="p">)</span><span class="o">+</span>\
+                <span class="s2">&quot;so&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">+</span>\
+                <span class="s2">&quot;st&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">+</span>\
+                <span class="s2">&quot;clk_ref[|4]&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">13</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot; &quot;</span><span class="o">+</span>\
+                <span class="s2">&quot;clk_ref_d&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">13</span><span class="p">)</span><span class="o">+</span>\
+                <span class="s2">&quot;   clk_poly_s&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;gdm &quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">90</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;d_poly_s&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">))</span><span class="c1">#,end=&quot;&quot;)</span>
+
+
+    <span class="c1"># Vectors for storing pairs station-source and delays</span>
+    <span class="n">v_st_so</span> <span class="o">=</span> <span class="p">[]</span>
+    
+    
+    
+
+    <span class="c1"># Get EOP values</span>
+    <span class="n">mjd_str</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">mjd_start</span><span class="p">)))</span>
+    
+    <span class="c1">#seconds_ref=int(((mjd_start%1)*(24*60*60))//1)</span>
+    <span class="n">seconds_ref_in</span><span class="o">+=</span><span class="n">seconds_offset</span>
+    
+    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;seconds ref: &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">seconds_ref_in</span><span class="p">))</span>
+
+
+    <span class="n">seconds_ref</span><span class="o">=</span><span class="n">seconds_ref_in</span>
+    <span class="n">info_polynomials</span> <span class="o">=</span> <span class="n">get_all_polynomials</span><span class="p">(</span><span class="n">params_array_delay_model</span><span class="p">,</span><span class="n">params_array_stations</span><span class="p">,</span><span class="n">s_st</span><span class="p">,</span><span class="n">s_so</span><span class="p">,</span><span class="n">mjd_start</span><span class="p">,</span>\
+                                                <span class="n">seconds_ref</span><span class="p">,</span><span class="n">seconds_offset</span><span class="p">,</span><span class="n">tot_steps</span><span class="p">,</span><span class="n">step_seconds</span><span class="p">,</span><span class="n">v</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">info_polynomials</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+
+    <span class="p">[</span><span class="n">seconds_inc_v</span><span class="p">,</span><span class="n">max_saved</span><span class="p">,</span><span class="n">min_saved</span><span class="p">,</span><span class="n">v_delays</span><span class="p">,</span><span class="n">v_delay_rates</span><span class="p">,</span><span class="n">no_offset_total</span><span class="p">]</span> <span class="o">=</span> <span class="n">info_polynomials</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">SHOW_DELAY_INFO</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Delay model:&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Found delay models for t = &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">seconds_ref_in</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot; + [&quot;</span><span class="o">+</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span><span class="n">seconds_inc_v</span><span class="p">))</span><span class="o">+</span><span class="s2">&quot;] s&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">no_offset_total</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Offsets applied!&quot;</span><span class="p">)</span>
+        <span class="c1">#else:</span>
+        <span class="c1">#    print(&quot; No offsets applied.&quot;)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Delay summary:&quot;</span><span class="p">)</span>
+    
+
+    
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_ini</span><span class="o">+</span><span class="s2">&quot;_debug&quot;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">debugfile</span><span class="p">:</span>
+                
+        
+        <span class="n">dh</span> <span class="o">=</span> <span class="n">print_delays_header</span><span class="p">(</span><span class="n">v</span><span class="o">=</span><span class="n">SHOW_DELAY_INFO</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">dh</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">debugfile</span><span class="p">)</span>
+    
+        <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;max delay: &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">max_saved</span><span class="p">))</span>
+            
+        <span class="n">j</span><span class="o">=-</span><span class="mi">1</span>
+        <span class="n">tot_st</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">s_st</span><span class="o">.</span><span class="n">sections</span><span class="p">())</span>
+        
+    
+        <span class="n">seconds_iter</span><span class="o">=-</span><span class="mi">1</span>
+        <span class="n">seconds_ref</span><span class="o">=</span><span class="n">seconds_ref_in</span><span class="o">-</span><span class="mi">1</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">v_delays</span><span class="p">)):</span>
+            <span class="c1">#j+=1      </span>
+            
+            <span class="n">seconds_iter</span><span class="o">+=</span><span class="mi">1</span>
+            
+            <span class="n">seconds_ref</span><span class="o">+=</span><span class="mi">1</span>
+            <span class="c1">#seconds_inc=i*step_seconds+seconds_offset</span>
+            
+            <span class="n">seconds_i</span><span class="o">=</span><span class="n">seconds_ref_in</span><span class="o">+</span><span class="n">j</span><span class="o">*</span><span class="n">step_seconds</span>
+        
+            <span class="n">so_id</span><span class="o">=-</span><span class="mi">1</span>
+            <span class="k">for</span> <span class="n">soj</span> <span class="ow">in</span> <span class="n">s_so</span><span class="o">.</span><span class="n">sections</span><span class="p">():</span>  
+            
+                <span class="n">so_id</span><span class="o">+=</span><span class="mi">1</span>
+                <span class="n">i</span><span class="o">=-</span><span class="mi">1</span>
+                
+                <span class="k">for</span> <span class="n">sti</span> <span class="ow">in</span> <span class="n">s_st</span><span class="o">.</span><span class="n">sections</span><span class="p">():</span>
+                    <span class="n">i</span><span class="o">+=</span><span class="mi">1</span>
+                    
+                    <span class="k">if</span> <span class="n">max_saved</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">so_id</span><span class="p">]</span><span class="o">==</span><span class="n">v_delays</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">i</span><span class="p">]:</span>
+                        <span class="p">[</span><span class="n">poly_delay_max</span><span class="p">,</span><span class="n">seconds_from_ref_max</span><span class="p">,</span><span class="n">poly_station_clock_max</span><span class="p">,</span><span class="n">seconds_diff_clock_max</span><span class="p">,</span><span class="n">result_dr_max</span><span class="p">,</span><span class="n">result_cr_max</span><span class="p">,</span><span class="n">section_in_model_max</span><span class="p">]</span> <span class="o">=</span> <span class="n">v_delay_rates</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
+                        <span class="n">st_max_delay</span><span class="o">=</span><span class="n">i</span>
+                        
+                        
+                <span class="n">delta_reference_delay</span><span class="o">=</span><span class="mi">0</span>
+                
+                <span class="k">if</span> <span class="n">DEBUG_FINAL_DELAYS</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Station with max delay is i=&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">st_max_delay</span><span class="p">))</span>
+
+                
+                <span class="n">i</span><span class="o">=-</span><span class="mi">1</span>
+                <span class="k">for</span> <span class="n">sti</span> <span class="ow">in</span> <span class="n">s_st</span><span class="o">.</span><span class="n">sections</span><span class="p">():</span>       
+                    <span class="n">i</span><span class="o">+=</span><span class="mi">1</span>
+                    <span class="c1">#Moved to &quot;compute_delay&quot;</span>
+                    <span class="c1">#### Create section for configuration file</span>
+                    <span class="c1">#st_so = get_pair_st_so(s_st.get(sti,&#39;id&#39;),s_so.get(soj,&#39;id&#39;))</span>
+                    <span class="n">st_so</span> <span class="o">=</span> <span class="n">pairs_vv</span><span class="p">[</span><span class="n">s_st</span><span class="o">.</span><span class="n">getint</span><span class="p">(</span><span class="n">sti</span><span class="p">,</span><span class="s1">&#39;id&#39;</span><span class="p">)][</span><span class="n">s_so</span><span class="o">.</span><span class="n">getint</span><span class="p">(</span><span class="n">soj</span><span class="p">,</span><span class="s1">&#39;id&#39;</span><span class="p">)][</span><span class="mi">0</span><span class="p">]</span>    <span class="c1"># See create_sections_config_delays()</span>
+                    
+                    
+                    <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="n">sti</span><span class="p">,</span> <span class="s2">&quot; - &quot;</span><span class="p">,</span> <span class="n">soj</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="n">st_so</span><span class="p">)</span>
+
+                    
+                    <span class="c1"># Correct delay with maximum and add to configuration</span>
+                    <span class="n">a_delay</span> <span class="o">=</span> <span class="n">v_delays</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
+                    <span class="n">r_delay</span> <span class="o">=</span> <span class="n">max_saved</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">so_id</span><span class="p">]</span><span class="o">-</span><span class="n">v_delays</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
+                    
+                    
+                    <span class="n">d_delay</span> <span class="o">=</span> <span class="n">v_delay_rates</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> 
+                    <span class="p">[</span><span class="n">poly_delay</span><span class="p">,</span><span class="n">seconds_from_ref</span><span class="p">,</span><span class="n">poly_station_clock</span><span class="p">,</span><span class="n">seconds_diff_clock</span><span class="p">,</span><span class="n">result_dr</span><span class="p">,</span><span class="n">result_cr</span><span class="p">,</span><span class="n">section_in_model</span><span class="p">]</span> <span class="o">=</span> <span class="n">d_delay</span><span class="p">[:]</span>
+                    <span class="n">poly_diff</span> <span class="o">=</span> <span class="p">[</span><span class="n">poly_delay</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="n">poly_delay_max</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>\
+                                 <span class="n">poly_delay</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">poly_delay_max</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>\
+                                 <span class="n">poly_delay</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">-</span><span class="n">poly_delay_max</span><span class="p">[</span><span class="mi">2</span><span class="p">]]</span>
+                    
+                    <span class="n">clock_diff</span> <span class="o">=</span> <span class="p">[</span><span class="n">poly_station_clock</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="n">poly_station_clock_max</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>\
+                                  <span class="n">poly_station_clock</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">poly_station_clock_max</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+                    
+
+
+                    <span class="n">seconds_v</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">])</span>
+                    <span class="n">seconds_offset</span> <span class="o">=</span> <span class="mi">0</span>
+            
+
+
+                    <span class="n">offset_clock</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">polyval</span><span class="p">(</span><span class="n">poly_station_clock_max</span><span class="p">,</span><span class="n">seconds_from_ref</span><span class="p">)</span>
+                    <span class="n">offset_clock</span><span class="o">=</span><span class="mi">0</span>
+
+                    
+                    
+                    <span class="n">clock_diff_pre</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">clock_diff</span><span class="p">[:],</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        
+                    <span class="k">if</span> <span class="n">SUM_CLK_DIFF</span><span class="p">:</span>
+                        <span class="n">poly_diff</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+=</span><span class="n">clock_diff</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="n">poly_diff</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+=</span><span class="n">clock_diff</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                   
+                    <span class="n">clock_diff</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">clock_abs</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">seconds_diff_clock</span><span class="o">=</span><span class="mi">0</span>
+                    
+                    <span class="n">poly_diff</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">poly_diff</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+                
+
+                    <span class="n">initial_offset</span><span class="o">=</span><span class="mi">0</span>
+                    <span class="k">if</span> <span class="n">DIFF_OFFSET</span><span class="p">:</span>
+                        <span class="n">poly_ref_offset</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">poly_delay_max</span><span class="p">)</span>
+                        <span class="n">poly_ref_offset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+=</span> <span class="n">poly_station_clock_max</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="n">poly_ref_offset</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">poly_station_clock_max</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+                        <span class="n">initial_offset</span><span class="o">=</span><span class="n">get_initial_abe</span><span class="p">(</span><span class="n">poly_ref_offset</span><span class="p">,</span><span class="n">seconds_from_ref</span><span class="p">,</span><span class="n">seconds_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+                    <span class="n">f_delay</span><span class="o">=</span><span class="n">initial_offset</span>
+                    
+                
+                   
+                
+                    <span class="c1"># Relative</span>
+                    <span class="p">[</span><span class="n">r_recalc</span><span class="p">,</span><span class="n">m_delay</span><span class="p">,</span><span class="n">c_delay</span><span class="p">,</span><span class="n">rate_mc</span><span class="p">,</span><span class="n">acce_mc</span><span class="p">]</span><span class="o">=</span><span class="n">get_delay_val</span><span class="p">(</span><span class="n">clock_diff</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>\
+                                       <span class="n">poly_diff</span><span class="o">=</span><span class="n">poly_diff</span><span class="p">,</span>\
+                                       <span class="n">seconds_ref_clock</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>\
+                                       <span class="n">seconds_ref_poly</span><span class="o">=</span><span class="n">seconds_from_ref</span><span class="o">+</span><span class="n">initial_offset</span><span class="p">,</span>\
+                                       <span class="n">seconds</span><span class="o">=</span><span class="n">seconds_v</span><span class="p">,</span>\
+                                       <span class="n">seconds_offset</span><span class="o">=</span><span class="n">offset_clock</span><span class="p">,</span>\
+                                       <span class="n">v</span><span class="o">=</span><span class="n">DEBUG_LIB_DELAY_ONLY_HERE</span><span class="p">)</span>
+                    
+
+                    <span class="n">r_delay</span><span class="o">=</span><span class="n">r_recalc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+                
+                    <span class="c1"># Display information</span>
+                    <span class="k">if</span> <span class="n">i</span><span class="o">!=</span><span class="n">st_max_delay</span><span class="p">:</span>
+                        <span class="c1"># Change sign for getting a simple line</span>
+                        <span class="k">if</span> <span class="n">i</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+                            <span class="n">dh_mod</span> <span class="o">=</span> <span class="n">print_delays</span><span class="p">(</span><span class="n">seconds_i</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">poly_diff</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span>\
+                                          <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">clock_diff_pre</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span>\
+                                          <span class="n">seconds_from_ref</span><span class="p">,</span><span class="n">seconds_i</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="n">SHOW_DELAY_INFO</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">dh_mod</span> <span class="o">=</span> <span class="n">print_delays</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">poly_diff</span><span class="p">,</span>\
+                                          <span class="n">clock_diff_pre</span><span class="p">,</span>\
+                                          <span class="n">seconds_from_ref</span><span class="p">,</span><span class="n">seconds_i</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="n">SHOW_DELAY_INFO</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="n">dh_mod</span><span class="p">,</span><span class="n">file</span><span class="o">=</span><span class="n">debugfile</span><span class="p">)</span>
+                  
+
+                    <span class="c1">#m_delay = -m_delay</span>
+                    <span class="n">m_delay</span> <span class="o">=</span> <span class="mf">0.0</span>
+                    <span class="n">c_delay</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+                  
+                    <span class="c1"># Absolute</span>
+                    <span class="p">[</span><span class="n">r_recalc1</span><span class="p">,</span><span class="n">m_delay1</span><span class="p">,</span><span class="n">c_delay1</span><span class="p">,</span><span class="n">rate_mc_u1</span><span class="p">,</span><span class="n">acce_mc_u1</span><span class="p">]</span><span class="o">=</span><span class="n">get_delay_val</span><span class="p">(</span><span class="n">clock_diff</span><span class="o">=</span><span class="n">poly_station_clock</span><span class="p">,</span>\
+                                           <span class="n">poly_diff</span><span class="o">=</span><span class="n">poly_delay</span><span class="p">,</span>\
+                                           <span class="n">seconds_ref_clock</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>\
+                                           <span class="n">seconds_ref_poly</span><span class="o">=</span><span class="n">seconds_from_ref</span><span class="p">,</span>\
+                                           <span class="n">seconds</span><span class="o">=</span><span class="n">seconds_v</span><span class="p">,</span>\
+                                           <span class="n">seconds_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>\
+                                           <span class="n">v</span><span class="o">=</span><span class="n">DEBUG_LIB_DELAY_ONLY_HERE</span><span class="p">,</span>\
+                                           <span class="n">diff_pol</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+
+
+                    <span class="c1"># (Reference station absolute)</span>
+                    <span class="c1">#[r_recalc_max2,m_delay_u2,c_delay_u2,rate_mc_u2,acce_mc_u2]=get_delay_val(\</span>
+                    <span class="c1">#                       clock_diff=poly_station_clock_max,\</span>
+                    <span class="c1">#                       poly_diff=poly_delay_max,\</span>
+                    <span class="c1">#                       seconds_ref_clock=0,\</span>
+                    <span class="c1">#                      seconds_ref_poly=seconds_from_ref_max,\</span>
+                    <span class="c1">#                       seconds=seconds_v,\</span>
+                    <span class="c1">#                       seconds_offset=0,\</span>
+                    <span class="c1">#                       v=DEBUG_LIB_DELAY_ONLY_HERE,\</span>
+                    <span class="c1">#                       diff_pol=0)</span>
+
+                    <span class="n">a_delay</span> <span class="o">=</span> <span class="o">-</span><span class="n">r_recalc1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                              
+                    <span class="n">seconds_from_ref_out</span><span class="o">=</span><span class="n">seconds_from_ref</span>
+                    <span class="k">if</span> <span class="n">DIFF_POLY</span><span class="o">!=</span><span class="mi">0</span><span class="p">:</span>
+                        <span class="n">seconds_from_ref_out</span><span class="o">=</span><span class="n">seconds_from_ref</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">poly_diff</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">poly_delay</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+                        <span class="n">clock_diff</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">poly_station_clock</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+    
+
+                    <span class="n">s_delay</span> <span class="o">=</span> <span class="n">set_config_delay</span><span class="p">(</span><span class="n">s_delay</span><span class="p">,</span><span class="n">st_so</span><span class="p">,</span><span class="n">seconds_i</span><span class="p">,</span><span class="n">a_delay</span><span class="p">,</span><span class="n">r_delay</span><span class="p">,</span><span class="n">f_delay</span><span class="p">,</span>\
+                                     <span class="n">poly_diff</span><span class="p">,</span><span class="n">clock_diff</span><span class="p">,</span><span class="n">clock_abs</span><span class="p">,</span><span class="n">seconds_from_ref_out</span><span class="p">,</span>\
+                                     <span class="n">seconds_diff_clock</span><span class="p">,</span><span class="n">m_delay</span><span class="p">,</span><span class="n">c_delay</span><span class="p">,</span><span class="n">delta_reference_delay</span><span class="p">,</span>\
+                                     <span class="n">section_in_model</span><span class="p">)</span>
+                    
+
+    <span class="k">return</span><span class="p">(</span><span class="n">s_delay</span><span class="p">)</span>       </div>
+    
+
+
+
+
+<span class="c1"># &lt;codecell&gt;</span>
+
+
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Antonio Vazquez Alvarez, Victor Pankratius, and Pedro Elosegui.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
