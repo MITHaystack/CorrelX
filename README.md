@@ -1,6 +1,6 @@
 ![alt tag](https://github.com/MITHaystack/CorrelX/blob/master/gen-docs/correlx-logo.jpg)
 
-# **CorrelX**: A Cloud-Based Software Correlator for Very Long Baseline Interferometry (VLBI)
+### **CorrelX**: A Cloud-Based Software Correlator for Very Long Baseline Interferometry (VLBI)
 
 - [Slides-Overview](https://github.com/MITHaystack/CorrelX/blob/master/correlx-slides.pdf)
 - [User & Developer Guide](https://github.com/MITHaystack/CorrelX/blob/master/correlx-user-developer-guide.pdf)
