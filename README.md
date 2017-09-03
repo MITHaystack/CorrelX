@@ -5,6 +5,7 @@
 - [Slides-Overview](https://github.com/MITHaystack/CorrelX/blob/master/correlx-slides.pdf)
 - [User & Developer Guide](https://github.com/MITHaystack/CorrelX/blob/master/correlx-user-developer-guide.pdf)
 - [Code Documentation](https://mithaystack.github.io/CorrelX)
+- [Demo Videos](https://github.com/MITHaystack/CorrelX/tree/master/demo-videos)
 
 _Project leads: [Victor Pankratius](http://www.victorpankratius.com), Pedro Elosegui._<br>
 _Project developer: [Antonio Vazquez Alvarez](https://www.linkedin.com/in/ajvazquezalvarez)_
